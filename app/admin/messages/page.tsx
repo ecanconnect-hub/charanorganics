@@ -27,8 +27,8 @@ export default function ContactMessagesPage() {
     const fetchMessages = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('contact_messages')
+            const { data, error } = await (supabase
+                .from('contact_messages' as any) as any)
                 .select('*')
                 .order('created_at', { ascending: false });
 
@@ -44,8 +44,8 @@ export default function ContactMessagesPage() {
 
     const updateStatus = async (id: string, status: string) => {
         try {
-            const { error } = await supabase
-                .from('contact_messages')
+            const { error } = await (supabase
+                .from('contact_messages' as any) as any)
                 .update({ status })
                 .eq('id', id);
 
@@ -72,8 +72,8 @@ export default function ContactMessagesPage() {
         if (!confirm('Are you sure you want to delete this message?')) return;
 
         try {
-            const { error } = await supabase
-                .from('contact_messages')
+            const { error } = await (supabase
+                .from('contact_messages' as any) as any)
                 .delete()
                 .eq('id', id);
 
@@ -137,8 +137,8 @@ export default function ContactMessagesPage() {
 
                                         <div className="flex justify-between items-center mt-2">
                                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${message.status === 'new' ? 'bg-blue-100 text-blue-800' :
-                                                    message.status === 'replied' ? 'bg-green-100 text-green-800' :
-                                                        'bg-gray-100 text-gray-600'
+                                                message.status === 'replied' ? 'bg-green-100 text-green-800' :
+                                                    'bg-gray-100 text-gray-600'
                                                 }`}>
                                                 {message.status}
                                             </span>

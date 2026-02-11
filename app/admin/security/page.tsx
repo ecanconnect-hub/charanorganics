@@ -34,8 +34,8 @@ export default function SecurityLogsPage() {
     const fetchLogs = async () => {
         try {
             setLoading(true);
-            let query = supabase
-                .from('security_audit_log_view')
+            let query = (supabase
+                .from('security_audit_log_view' as any) as any)
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(100);

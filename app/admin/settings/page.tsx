@@ -26,8 +26,8 @@ export default function AppSettingsPage() {
     const fetchSettings = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('app_settings')
+            const { data, error } = await (supabase
+                .from('app_settings' as any) as any)
                 .select('*');
 
             if (error) throw error;
@@ -35,8 +35,8 @@ export default function AppSettingsPage() {
             setSettings(data || []);
 
             // Parse values
-            const emailSetting = data?.find(s => s.key === 'order_notification_email');
-            const maintenanceSetting = data?.find(s => s.key === 'site_maintenance');
+            const emailSetting = data?.find((s: any) => s.key === 'order_notification_email');
+            const maintenanceSetting = data?.find((s: any) => s.key === 'site_maintenance');
 
             if (emailSetting) {
                 // Remove quotes if stored as JSON string
@@ -71,8 +71,8 @@ export default function AppSettingsPage() {
                 }
             ];
 
-            const { error } = await supabase
-                .from('app_settings')
+            const { error } = await (supabase
+                .from('app_settings' as any) as any)
                 .upsert(updates as any);
 
             if (error) throw error;

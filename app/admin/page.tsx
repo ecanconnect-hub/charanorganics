@@ -52,36 +52,36 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
         try {
-            const { count: ordersCount } = await supabase
-                .from('orders')
+            const { count: ordersCount } = await (supabase
+                .from('orders' as any) as any)
                 .select('*', { count: 'exact', head: true });
 
-            const { count: pendingCount } = await supabase
-                .from('orders')
+            const { count: pendingCount } = await (supabase
+                .from('orders' as any) as any)
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'pending');
 
-            const { count: confirmedCount } = await supabase
-                .from('orders')
+            const { count: confirmedCount } = await (supabase
+                .from('orders' as any) as any)
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'confirmed');
 
-            const { count: shippedCount } = await supabase
-                .from('orders')
+            const { count: shippedCount } = await (supabase
+                .from('orders' as any) as any)
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'shipped');
 
-            const { count: deliveredCount } = await supabase
-                .from('orders')
+            const { count: deliveredCount } = await (supabase
+                .from('orders' as any) as any)
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'delivered');
 
-            const { count: usersCount } = await supabase
-                .from('profiles')
+            const { count: usersCount } = await (supabase
+                .from('profiles' as any) as any)
                 .select('*', { count: 'exact', head: true });
 
-            const { data: deliveredOrders } = await supabase
-                .from('orders')
+            const { data: deliveredOrders } = await (supabase
+                .from('orders' as any) as any)
                 .select('total_amount')
                 .eq('status', 'delivered');
 
@@ -89,14 +89,14 @@ export default function AdminDashboard() {
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const { count: todayCount } = await supabase
-                .from('orders')
+            const { count: todayCount } = await (supabase
+                .from('orders' as any) as any)
                 .select('*', { count: 'exact', head: true })
                 .gte('created_at', today.toISOString());
 
             const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            const { data: monthlyOrders } = await supabase
-                .from('orders')
+            const { data: monthlyOrders } = await (supabase
+                .from('orders' as any) as any)
                 .select('total_amount')
                 .eq('status', 'delivered')
                 .gte('created_at', firstDayOfMonth.toISOString());
@@ -121,8 +121,8 @@ export default function AdminDashboard() {
 
     const fetchRecentOrders = async () => {
         try {
-            const { data } = await supabase
-                .from('orders')
+            const { data } = await (supabase
+                .from('orders' as any) as any)
                 .select(`
           *,
           profile:profiles (full_name, email)
@@ -138,8 +138,8 @@ export default function AdminDashboard() {
 
     const fetchAllOrders = async () => {
         try {
-            const { data } = await supabase
-                .from('orders')
+            const { data } = await (supabase
+                .from('orders' as any) as any)
                 .select(`
           *,
           profile:profiles (full_name, email)
