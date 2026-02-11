@@ -31,10 +31,10 @@ export default function AdminCategoriesPage() {
         }
 
         const { data: profile } = await supabase
-            .from('profiles')
+            .from('profiles' as any)
             .select('role')
             .eq('id', user.id)
-            .single();
+            .single() as { data: any, error: any };
 
         if (profile?.role !== 'admin') {
             router.push('/');
@@ -58,8 +58,8 @@ export default function AdminCategoriesPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this category?')) return;
 
-        const { error } = await supabase
-            .from('sections')
+        const { error } = await (supabase
+            .from('sections' as any) as any)
             .delete()
             .eq('id', id);
 

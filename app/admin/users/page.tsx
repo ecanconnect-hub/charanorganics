@@ -26,12 +26,12 @@ export default function AdminUsersPage() {
         }
 
         const { data: profile } = await supabase
-            .from('profiles')
+            .from('profiles' as any)
             .select('role')
             .eq('id', user.id)
-            .single();
+            .single() as { data: any, error: any };
 
-        if ((profile as any)?.role !== 'admin') {
+        if (profile?.role !== 'admin') {
             router.push('/');
             return;
         }

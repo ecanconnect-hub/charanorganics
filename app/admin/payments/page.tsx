@@ -34,12 +34,12 @@ export default function AdminPaymentsPage() {
         }
 
         const { data: profile } = await supabase
-            .from('profiles')
+            .from('profiles' as any)
             .select('role')
             .eq('id', user.id)
-            .single();
+            .single() as { data: any, error: any };
 
-        if ((profile as any)?.role !== 'admin') {
+        if (profile?.role !== 'admin') {
             router.push('/');
             return;
         }
@@ -84,8 +84,8 @@ export default function AdminPaymentsPage() {
     const handleVerify = async (paymentId: string, orderId: string) => {
         if (!user) return;
 
-        const { error: paymentError } = await supabase
-            .from('payments')
+        const { error: paymentError } = await (supabase
+            .from('payments' as any) as any)
             .update({
                 status: 'verified',
                 verified_at: new Date().toISOString(),
@@ -99,8 +99,8 @@ export default function AdminPaymentsPage() {
             return;
         }
 
-        const { error: orderError } = await supabase
-            .from('orders')
+        const { error: orderError } = await (supabase
+            .from('orders' as any) as any)
             .update({ status: 'confirmed' })
             .eq('id', orderId);
 
@@ -118,8 +118,8 @@ export default function AdminPaymentsPage() {
         const reason = prompt('Enter rejection reason:');
         if (!reason) return;
 
-        const { error } = await supabase
-            .from('payments')
+        const { error } = await (supabase
+            .from('payments' as any) as any)
             .update({
                 status: 'rejected',
                 rejection_reason: reason,

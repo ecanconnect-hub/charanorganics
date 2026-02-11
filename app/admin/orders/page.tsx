@@ -32,13 +32,13 @@ export default function AdminOrdersPage() {
             return;
         }
 
-        const { data: profile } = await supabase
-            .from('profiles')
+        const { data: profile } = await (supabase
+            .from('profiles') as any)
             .select('role')
             .eq('id', user.id)
-            .single();
+            .single() as { data: any, error: any };
 
-        if ((profile as any)?.role !== 'admin') {
+        if (profile?.role !== 'admin') {
             router.push('/');
             return;
         }
@@ -48,8 +48,8 @@ export default function AdminOrdersPage() {
 
     const fetchOrders = async () => {
         setLoading(true);
-        const { data } = await supabase
-            .from('orders')
+        const { data } = await (supabase
+            .from('orders' as any) as any)
             .select(`
                 *,
                 profile:profiles (full_name, email, phone),
@@ -106,8 +106,8 @@ export default function AdminOrdersPage() {
 
     const viewOrderDetails = async (order: any) => {
         // Fetch full order details including items
-        const { data: orderItems } = await supabase
-            .from('order_items')
+        const { data: orderItems } = await (supabase
+            .from('order_items' as any) as any)
             .select(`
                 *,
                 product:products (title_en, image_url)
@@ -115,8 +115,8 @@ export default function AdminOrdersPage() {
             .eq('order_id', order.id);
 
         // Fetch order history
-        const { data: orderHistory } = await supabase
-            .from('order_history')
+        const { data: orderHistory } = await (supabase
+            .from('order_history' as any) as any)
             .select(`
                 *,
                 changed_by_profile:profiles!changed_by (full_name, email)
