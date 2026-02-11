@@ -85,8 +85,8 @@ export default function NewCategoryPage() {
                 throw new Error('Please fill in all required fields (ID, English Title, Telugu Title)');
             }
 
-            const { error } = await supabase
-                .from('sections' as any)
+            const { error } = await (supabase
+                .from('sections' as any) as any)
                 .insert([{
                     ...formData,
                     is_enabled: true
