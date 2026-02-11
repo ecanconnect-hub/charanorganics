@@ -129,8 +129,8 @@ export default function EditCategoryPage() {
         try {
             console.log('Updating category with data:', formData);
 
-            const { data, error } = await supabase
-                .from('sections' as any)
+            const { data, error } = await (supabase
+                .from('sections' as any) as any)
                 .update({
                     section_id: formData.section_id,
                     title_en: formData.title_en,
