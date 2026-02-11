@@ -30,13 +30,15 @@ export default function AdminProductsPage() {
             return;
         }
 
-        const { data: profile } = await (supabase
-            .from('profiles')
+        const profileRes: any = await (supabase
+            .from('profiles' as any)
             .select('role')
             .eq('id', user.id)
             .single() as any);
 
-        if (profile?.role !== 'admin') {
+        const adminRole = profileRes?.data?.role;
+
+        if (adminRole !== 'admin') {
             router.push('/');
             return;
         }

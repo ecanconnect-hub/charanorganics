@@ -33,13 +33,15 @@ export default function AdminPaymentsPage() {
             return;
         }
 
-        const { data: profile } = await (supabase
+        const profileRes: any = await (supabase
             .from('profiles' as any)
             .select('role')
             .eq('id', user.id)
             .single() as any);
 
-        if ((profile as any)?.role !== 'admin') {
+        const adminRole = profileRes?.data?.role;
+
+        if (adminRole !== 'admin') {
             router.push('/');
             return;
         }
