@@ -14,23 +14,22 @@ export async function ProductSections() {
     const locale = 'en';
 
     // Fetch enabled sections ordered by display_order
-    const { data: sections } = await supabase
-        .from('sections')
+    const { data: sections } = await (supabase
+        .from('sections' as any) as any)
         .select('*')
         .eq('is_enabled', true)
         .order('display_order', { ascending: true });
 
-    if (!sections || sections.length === 0) {
+    if (!sections || (sections as any[]).length === 0) {
         return null;
     }
 
-    return (
-        <div className="section-padding bg-[rgb(var(--muted))]">
-            {sections.map(async (section) => {
-                // Fetch products for this section
-                const { data: productSections } = await supabase
-                    .from('product_sections')
-                    .select(`
+    // Fetch products for all sections sequentially or in parallel
+    const sectionsWithProducts = await Promise.all(
+        (sections as any[]).map(async (section) => {
+            const { data: productSections } = await (supabase
+                .from('product_sections' as any) as any)
+                .select(`
             product:products (
               id,
               product_id,
@@ -42,14 +41,25 @@ export async function ProductSections() {
               is_active
             )
           `)
-                    .eq('section_id', section.id)
-                    .order('display_order', { ascending: true })
-                    .limit(8);
+                .eq('section_id', (section as any).id)
+                .order('display_order', { ascending: true })
+                .limit(8);
 
-                const products = productSections
-                    ?.map(ps => ps.product)
-                    .filter(p => p && p.is_active) || [];
+            const products = (productSections as any[])
+                ?.map(ps => ps.product)
+                .filter(p => p && p.is_active) || [];
 
+            return {
+                ...section,
+                products
+            };
+        })
+    );
+
+    return (
+        <div className="section-padding bg-[rgb(var(--muted))]">
+            {sectionsWithProducts.map((section) => {
+                const products = section.products;
                 if (products.length === 0) return null;
 
                 const title = locale === 'en' ? section.title_en : section.title_te;

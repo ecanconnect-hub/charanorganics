@@ -62,8 +62,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     const fetchData = useCallback(async () => {
         // Fetch Variants
         try {
-            const { data: variantData, error: variantError } = await supabase
-                .from('product_variants')
+            const { data: variantData, error: variantError } = await (supabase
+                .from('product_variants' as any) as any)
                 .select('*')
                 .eq('product_id', product.id)
                 .eq('enabled', true)
@@ -93,8 +93,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
             // Check if user has purchased this product
             try {
-                const { data: purchaseData, error: purchaseError } = await supabase
-                    .from('order_items')
+                const { data: purchaseData, error: purchaseError } = await (supabase
+                    .from('order_items' as any) as any)
                     .select('id, orders!inner(status, user_id)')
                     .eq('product_id', product.id)
                     .eq('orders.user_id', user.id)
@@ -112,8 +112,8 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         // Fetch Reviews
         setLoadingReviews(true);
         try {
-            const { data: reviewData, error: reviewError } = await supabase
-                .from('reviews')
+            const { data: reviewData, error: reviewError } = await (supabase
+                .from('reviews' as any) as any)
                 .select('*, profiles(full_name)')
                 .eq('product_id', product.id)
                 .order('created_at', { ascending: false });
@@ -544,8 +544,8 @@ function RelatedProducts({ currentProductId, category }: { currentProductId: str
         async function fetchRelated() {
             setLoading(true);
             try {
-                let query = supabase
-                    .from('products')
+                let query = (supabase
+                    .from('products' as any) as any)
                     .select('*')
                     .eq('is_active', true)
                     .neq('id', currentProductId)

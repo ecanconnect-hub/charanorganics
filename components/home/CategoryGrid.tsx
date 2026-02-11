@@ -42,8 +42,8 @@ export function CategoryGrid({ sections, limitMobile = false }: CategoryGridProp
 
         try {
             // Fetch product counts for each section from the mapping table
-            const { data, error } = await supabase
-                .from('product_sections')
+            const { data, error } = await (supabase
+                .from('product_sections' as any) as any)
                 .select('section_id');
 
             if (error) {

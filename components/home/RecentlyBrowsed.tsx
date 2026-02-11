@@ -23,8 +23,8 @@ export function RecentlyBrowsed() {
 
                 if (session?.user) {
                     // Fetch from database
-                    const { data } = await supabase
-                        .from('browsing_history')
+                    const { data } = await (supabase
+                        .from('browsing_history' as any) as any)
                         .select(`
               product:products (
                 id,
@@ -41,9 +41,9 @@ export function RecentlyBrowsed() {
                         .order('viewed_at', { ascending: false })
                         .limit(4);
 
-                    const recentProducts = data
-                        ?.map(item => item.product)
-                        .filter(p => p && p.is_active) || [];
+                    const recentProducts = (data as any[])
+                        ?.map((item: any) => item.product)
+                        .filter((p: any) => p && p.is_active) || [];
 
                     setProducts(recentProducts);
                 } else {
@@ -52,8 +52,8 @@ export function RecentlyBrowsed() {
                         const browsedIds = JSON.parse(localStorage.getItem('recently_browsed') || '[]');
 
                         if (browsedIds.length > 0) {
-                            const { data } = await supabase
-                                .from('products')
+                            const { data } = await (supabase
+                                .from('products' as any) as any)
                                 .select('id, product_id, title_en, title_te, image_url, mrp, current_price, is_active')
                                 .in('id', browsedIds.slice(0, 4))
                                 .eq('is_active', true);

@@ -16,8 +16,8 @@ export function TopBar() {
 
     useEffect(() => {
         const fetchMessage = async () => {
-            const { data } = await supabase
-                .from('site_content')
+            const { data } = await (supabase
+                .from('site_content' as any) as any)
                 .select('content_en, content_te')
                 .eq('content_key', 'top_bar_message')
                 .single();

@@ -22,8 +22,8 @@ export function HeroSection() {
 
     useEffect(() => {
         const fetchContent = async () => {
-            const { data } = await supabase
-                .from('site_content')
+            const { data } = await (supabase
+                .from('site_content' as any) as any)
                 .select('*')
                 .in('content_key', ['hero_title', 'hero_subtitle']);
 

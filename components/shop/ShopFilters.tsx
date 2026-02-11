@@ -30,8 +30,8 @@ export function ShopFilters() {
 
     const fetchSections = async () => {
         setLoading(true);
-        const { data } = await supabase
-            .from('sections')
+        const { data } = await (supabase
+            .from('sections' as any) as any)
             .select('*')
             .eq('is_enabled', true)
             .order('display_order');
@@ -43,8 +43,8 @@ export function ShopFilters() {
     };
 
     const fetchPriceRange = async () => {
-        const { data } = await supabase
-            .from('products')
+        const { data } = await (supabase
+            .from('products' as any) as any)
             .select('current_price')
             .eq('is_active', true);
 
@@ -155,8 +155,8 @@ export function ShopFilters() {
                                 key={section.id}
                                 onClick={() => handleSectionFilter(section.section_id)}
                                 className={`text-left px-2.5 py-1.5 rounded-md transition-all duration-200 font-semibold text-xs ${isSelected
-                                        ? 'bg-green-600 text-white shadow-sm'
-                                        : 'text-gray-600 hover:bg-gray-50'
+                                    ? 'bg-green-600 text-white shadow-sm'
+                                    : 'text-gray-600 hover:bg-gray-50'
                                     }`}
                             >
                                 {locale === 'te' ? section.title_te : section.title_en}

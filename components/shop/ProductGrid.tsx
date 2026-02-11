@@ -33,16 +33,16 @@ export function ProductGrid() {
             const search = searchParams.get('q');
 
             // Build query
-            let query = supabase
-                .from('products')
+            let query = (supabase
+                .from('products' as any) as any)
                 .select('*', { count: 'exact' })
                 .eq('is_active', true);
 
             // Apply section filter - UPDATED: Now handles multiple sections
             if (sections.length > 0) {
                 // Get all section UUIDs from section_ids
-                const { data: sectionData, error: sectionError } = await supabase
-                    .from('sections')
+                const { data: sectionData, error: sectionError } = await (supabase
+                    .from('sections' as any) as any)
                     .select('id, section_id')
                     .in('section_id', sections);
 
@@ -52,8 +52,8 @@ export function ProductGrid() {
                     const sectionUUIDs = sectionData.map((s: any) => s.id);
 
                     // Get all products that belong to ANY of the selected sections
-                    const { data: sectionProducts, error: mappingError } = await supabase
-                        .from('product_sections')
+                    const { data: sectionProducts, error: mappingError } = await (supabase
+                        .from('product_sections' as any) as any)
                         .select('product_id')
                         .in('section_id', sectionUUIDs);
 
@@ -129,8 +129,8 @@ export function ProductGrid() {
     }, [searchParams]);
 
     const fetchRecommendedProducts = async () => {
-        const { data } = await supabase
-            .from('products')
+        const { data } = await (supabase
+            .from('products' as any) as any)
             .select('*')
             .eq('is_active', true)
             .order('created_at', { ascending: false })
