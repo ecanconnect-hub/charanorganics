@@ -28,13 +28,17 @@ export default function PaymentPage() {
     const [uploading, setUploading] = useState(false);
     const [screenshot, setScreenshot] = useState<File | null>(null);
     const [utrNumber, setUtrNumber] = useState('');
+    const [phone, setPhone] = useState('');
     const [step, setStep] = useState(1); // 1 = Pay, 2 = Confirm (UTR/Screen)
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         setIsMobile(isMobileDevice());
+        const searchParams = new URLSearchParams(window.location.search);
+        const phoneFromUrl = searchParams.get('phone') || '';
+        setPhone(phoneFromUrl);
         if (orderId) {
-            fetchOrder();
+            fetchOrder(phoneFromUrl);
         }
     }, [orderId]);
 
@@ -45,23 +49,29 @@ export default function PaymentPage() {
         }
     }, [order]);
 
-    const fetchOrder = async () => {
+    const fetchOrder = async (phoneValue?: string) => {
         try {
-            const { data, error } = await (supabase as any).rpc('get_payment_info', {
-                p_order_id: orderId
+            const response = await fetch('/api/payment/details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId,
+                    phone: phoneValue || phone || undefined
+                })
             });
 
-            if (error || !data || data.length === 0) {
+            const data = await response.json();
+
+            if (!response.ok) {
                 toast.error('Order not found or already paid');
                 return;
             }
 
-            const orderData = data[0];
             setOrder({
-                id: orderData.id,
-                total_amount: orderData.amount,
-                status: orderData.status,
-                order_id: orderId
+                id: data.id,
+                total_amount: data.totalAmount,
+                status: data.status,
+                order_id: data.orderId
             });
         } catch (err) {
             console.error('Fetch order error:', err);
@@ -156,21 +166,28 @@ export default function PaymentPage() {
                 publicUrl = data.publicUrl;
             }
 
-            // Secure Submission via RPC
-            const { error: submitError } = await (supabase as any).rpc('submit_payment_details_v2', {
-                p_order_uuid: order.id,
-                p_utr: utrNumber || null,
-                p_screenshot_url: publicUrl || null
+            const submitResponse = await fetch('/api/payment/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId,
+                    phone: phone || undefined,
+                    utr: utrNumber || undefined,
+                    screenshotUrl: publicUrl || undefined
+                })
             });
 
-            if (submitError) throw submitError;
+            const submitResult = await submitResponse.json();
+            if (!submitResponse.ok) {
+                throw new Error(submitResult.error || 'Failed to submit payment details');
+            }
 
             // Send order confirmation email
             try {
                 await fetch('/api/send-order-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderId })
+                    body: JSON.stringify({ orderId, phone: phone || undefined })
                 });
             } catch (emailError) {
                 // Don't fail the submission if email fails

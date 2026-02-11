@@ -2,36 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { Database } from '@/lib/supabase/database.types';
-import { emailService } from '@/lib/email-service/EmailService';
-import { OrderConfirmationTemplate } from '@/lib/email-service/templates/OrderConfirmationTemplate';
-
-// Rate Limiting (Simple In-Memory)
-const rateLimit = new Map<string, number>();
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 5; // 5 requests per minute per IP
-
-function isRateLimited(ip: string): boolean {
-    const now = Date.now();
-    const windowStart = now - RATE_LIMIT_WINDOW;
-
-    // Clean up old entries
-    for (const [key, timestamp] of rateLimit.entries()) {
-        if (timestamp < windowStart) {
-            rateLimit.delete(key);
-        }
-    }
-
-    const requestCount = Array.from(rateLimit.entries()).filter(
-        ([key, timestamp]) => key.startsWith(ip) && timestamp > windowStart
-    ).length;
-
-    if (requestCount >= MAX_REQUESTS) {
-        return true;
-    }
-
-    rateLimit.set(`${ip}-${now}`, now);
-    return false;
-}
+import { checkRateLimit } from '@/lib/middleware/rateLimit';
 
 // Input Validation Schema
 const checkoutSchema = z.object({
@@ -56,11 +27,18 @@ const adminDb = createClient<Database>(supabaseUrl, serviceRoleKey);
 
 export async function POST(req: NextRequest) {
     // 1. Rate Limiting
-    const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    if (isRateLimited(ip)) {
+    const { allowed, remaining, resetTime } = await checkRateLimit(req);
+    if (!allowed) {
         return NextResponse.json(
             { error: 'Too many requests. Please try again later.' },
-            { status: 429 }
+            {
+                status: 429,
+                headers: {
+                    'X-RateLimit-Remaining': '0',
+                    'X-RateLimit-Reset': resetTime.toISOString(),
+                    'Retry-After': Math.ceil((resetTime.getTime() - Date.now()) / 1000).toString(),
+                },
+            }
         );
     }
 
@@ -195,15 +173,23 @@ export async function POST(req: NextRequest) {
 
         // Email will be sent AFTER payment proof submission, not here
 
-        return NextResponse.json({
-            success: true,
-            orderId: typedResult.order_id
-        });
+        return NextResponse.json(
+            {
+                success: true,
+                orderId: typedResult.order_id
+            },
+            {
+                headers: {
+                    'X-RateLimit-Remaining': remaining.toString(),
+                    'X-RateLimit-Reset': resetTime.toISOString(),
+                },
+            }
+        );
 
     } catch (error: any) {
         console.error('Checkout API error:', error);
         return NextResponse.json(
-            { error: 'Internal server error', message: error.message },
+            { error: 'Internal server error' },
             { status: 500 }
         );
     }

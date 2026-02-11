@@ -53,13 +53,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const signIn = async (email: string, password: string) => {
         try {
-            // TODO: Re-enable after running BRUTE_FORCE_PROTECTION.sql in Supabase
-            // Brute force check before attempting login
-            // const { data: isBlocked } = await (supabase as any).rpc('check_brute_force', { p_email: email });
-            // if (isBlocked) {
-            //     toast.error('Too many failed attempts. Account temporarily locked.');
-            //     throw new Error('Account temporarily locked');
-            // }
+            // Brute-force check (best effort; continue gracefully if function isn't deployed)
+            try {
+                const { data: isBlocked } = await (supabase as any).rpc('check_brute_force', { p_email: email });
+                if (isBlocked) {
+                    toast.error('Too many failed attempts. Account temporarily locked.');
+                    throw new Error('__ACCOUNT_BLOCKED__');
+                }
+            } catch (rateLimitCheckError) {
+                if (rateLimitCheckError instanceof Error && rateLimitCheckError.message === '__ACCOUNT_BLOCKED__') {
+                    throw new Error('Account temporarily locked');
+                }
+                console.warn('Brute-force check unavailable:', rateLimitCheckError);
+            }
 
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,

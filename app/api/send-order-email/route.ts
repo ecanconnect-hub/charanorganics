@@ -4,6 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/lib/supabase/database.types';
 import { emailService } from '@/lib/email-service/EmailService';
@@ -12,15 +14,46 @@ import { OrderConfirmationTemplate } from '@/lib/email-service/templates/OrderCo
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { orderId } = body;
+        const { orderId, phone } = body;
 
-        if (!orderId) {
+        if (!orderId || typeof orderId !== 'string') {
             return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
         }
+
+        const cookieStore = await cookies();
+        const authClient = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+                cookies: {
+                    getAll() {
+                        return cookieStore.getAll();
+                    },
+                    setAll() {
+                        // No cookie mutation needed in this route.
+                    },
+                },
+            }
+        );
+
+        const {
+            data: { user },
+        } = await authClient.auth.getUser();
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
         const supabase = createClient<Database>(supabaseUrl, serviceRoleKey);
+
+        let isAdmin = false;
+        if (user) {
+            const { data: requesterProfile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single() as { data: { role: string } | null };
+
+            isAdmin = requesterProfile?.role === 'admin';
+        }
 
         // Fetch order details with payment information
         const { data: orderData, error: orderError } = await supabase
@@ -44,6 +77,12 @@ export async function POST(request: NextRequest) {
         if (orderError || !orderData) {
             console.error('Order fetch error:', orderError);
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
+        const isOwner = !!user && orderData.user_id === user.id;
+        const hasPhoneMatch = typeof phone === 'string' && phone.trim() !== '' && orderData.shipping_phone === phone.trim();
+        if (!isAdmin && !isOwner && !hasPhoneMatch) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         // Get user email
@@ -111,7 +150,7 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
         console.error('Send email API error:', error);
         return NextResponse.json(
-            { error: 'Failed to send email', message: error.message },
+            { error: 'Failed to send email' },
             { status: 500 }
         );
     }

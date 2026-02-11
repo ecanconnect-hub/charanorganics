@@ -183,7 +183,9 @@ export default function CheckoutPage() {
                 localStorage.removeItem('guest_cart');
             }
 
-            router.push(`/payment/${result.orderId}`);
+            const params = new URLSearchParams();
+            params.set('phone', phone);
+            router.push(`/payment/${result.orderId}?${params.toString()}`);
         } catch (error: any) {
             console.error('Order error:', error);
             toast.error(error.message || 'An error occurred');
