@@ -33,12 +33,12 @@ export default function AdminOrdersPage() {
         }
 
         const { data: profile } = await (supabase
-            .from('profiles') as any)
+            .from('profiles' as any)
             .select('role')
             .eq('id', user.id)
-            .single() as { data: any, error: any };
+            .single() as any);
 
-        if (profile?.role !== 'admin') {
+        if ((profile as any)?.role !== 'admin') {
             router.push('/');
             return;
         }
