@@ -5,7 +5,7 @@
  * for server components and API routes.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export interface SessionData {
@@ -22,15 +22,21 @@ export interface SessionData {
  * Returns null if no valid session exists
  */
 export async function getServerSession(): Promise<SessionData | null> {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
-    const supabase = createClient(
+    const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
                 get(name: string) {
                     return cookieStore.get(name)?.value;
+                },
+                set() {
+                    // Session reader does not mutate cookies.
+                },
+                remove() {
+                    // Session reader does not mutate cookies.
                 },
             },
         }

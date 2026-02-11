@@ -14,6 +14,12 @@ interface RateLimitConfig {
     maxRequests: number; // Maximum requests per window
 }
 
+interface RateLimitRow {
+    id: string;
+    window_start: string;
+    request_count: number;
+}
+
 // Default rate limit configurations
 const RATE_LIMITS: Record<string, RateLimitConfig> = {
     '/api/auth/login': { windowMs: 15 * 60 * 1000, maxRequests: 5 }, // 5 attempts per 15 minutes
@@ -72,12 +78,13 @@ export const checkRateLimit = async (
 
     try {
         // Get or create rate limit record
-        const { data: existing, error: fetchError } = await supabase
+        const { data: existingData, error: fetchError } = await supabase
             .from('rate_limits')
             .select('*')
             .eq('identifier', identifier)
             .eq('endpoint', pathname)
             .single();
+        const existing = existingData as RateLimitRow | null;
 
         if (fetchError && fetchError.code !== 'PGRST116') {
             // Error other than "not found"
@@ -88,8 +95,8 @@ export const checkRateLimit = async (
 
         if (!existing) {
             // Create new rate limit record
-            await supabase
-                .from('rate_limits')
+            await (supabase
+                .from('rate_limits') as any)
                 .insert({
                     identifier,
                     endpoint: pathname,
@@ -109,8 +116,8 @@ export const checkRateLimit = async (
         // Check if window has expired
         if (recordWindowStart < windowStart) {
             // Reset window
-            await supabase
-                .from('rate_limits')
+            await (supabase
+                .from('rate_limits') as any)
                 .update({
                     request_count: 1,
                     window_start: now.toISOString(),
@@ -135,8 +142,8 @@ export const checkRateLimit = async (
         }
 
         // Increment request count
-        await supabase
-            .from('rate_limits')
+        await (supabase
+            .from('rate_limits') as any)
             .update({
                 request_count: existing.request_count + 1,
             })
