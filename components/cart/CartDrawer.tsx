@@ -45,7 +45,6 @@ export function CartDrawer() {
                         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900">Your Cart</h2>
-                                <p className="text-sm text-gray-500">{items.length} {items.length === 1 ? 'item' : 'items'}</p>
                             </div>
                             <button
                                 onClick={closeCart}

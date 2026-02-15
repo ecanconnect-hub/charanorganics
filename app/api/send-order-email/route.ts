@@ -85,12 +85,24 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        // Get user email
-        const userEmail = orderData.email;
+        // Get user email - Try order record first, then profile
+        let recipientEmail = orderData.email;
 
-        if (!userEmail) {
+        if (!recipientEmail && orderData.user_id) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('email')
+                .eq('id', orderData.user_id)
+                .single();
+
+            if (profile?.email) {
+                recipientEmail = profile.email;
+            }
+        }
+
+        if (!recipientEmail) {
             console.error('No email found for order:', orderId);
-            return NextResponse.json({ error: 'No email found' }, { status: 400 });
+            return NextResponse.json({ error: 'No email found linked to this order' }, { status: 400 });
         }
 
         // Prepare email data
@@ -127,7 +139,7 @@ export async function POST(request: NextRequest) {
 
         // Send email to customer
         await emailService.sendEmail(
-            userEmail,
+            recipientEmail, // Use the resolved email
             `Order Confirmation #${orderData.order_id}`,
             emailHtml
         );

@@ -156,8 +156,7 @@ export async function POST(req: NextRequest) {
             p_subtotal: subtotal,
             p_shipping_total: shippingFee,
             p_total_amount: totalAmount,
-            p_user_id: user ? user.id : null,
-            p_email: user?.email || body.email
+            p_user_id: user ? user.id : null
         });
 
         if (rpcError) {
