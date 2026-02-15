@@ -194,6 +194,9 @@ export default function PaymentPage() {
                 console.error('Failed to send confirmation email:', emailError);
             }
 
+            // Clear guest cart as payment is now submitted for verification
+            localStorage.removeItem('guest_cart');
+
             toast.success('Payment details submitted! We will verify and confirm your order soon.');
             router.push(`/order-confirmation/${orderId}`);
         } catch (error: any) {
@@ -219,14 +222,22 @@ export default function PaymentPage() {
             <div className="container mx-auto px-4 max-w-2xl">
                 {/* Progress Tracker */}
                 <div className="flex items-center justify-center mb-10 gap-4">
-                    <div className={`flex items-center gap-2 transition-colors ${step >= 1 ? 'text-green-600' : 'text-gray-400'}`}>
-                        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 1 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>1</span>
-                        <span className="font-black uppercase tracking-widest text-[10px] italic">Pay Now</span>
-                    </div>
-                    <div className={`w-12 h-0.5 transition-colors ${step >= 2 ? 'bg-green-600' : 'bg-gray-200'}`}></div>
-                    <div className={`flex items-center gap-2 transition-colors ${step >= 2 ? 'text-green-600' : 'text-gray-400'}`}>
-                        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 2 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>2</span>
-                        <span className="font-black uppercase tracking-widest text-[10px] italic">Confirm</span>
+                    <div className="flex items-center justify-center mb-10 gap-4">
+                        <button
+                            onClick={() => setStep(1)}
+                            className={`flex items-center gap-2 transition-colors ${step >= 1 ? 'text-green-600' : 'text-gray-400'} hover:text-green-700`}
+                        >
+                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 1 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>1</span>
+                            <span className="font-black uppercase tracking-widest text-[10px] italic">Pay Now</span>
+                        </button>
+                        <div className={`w-12 h-0.5 transition-colors ${step >= 2 ? 'bg-green-600' : 'bg-gray-200'}`}></div>
+                        <button
+                            onClick={() => setStep(2)}
+                            className={`flex items-center gap-2 transition-colors ${step >= 2 ? 'text-green-600' : 'text-gray-400'} hover:text-green-700`}
+                        >
+                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 2 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>2</span>
+                            <span className="font-black uppercase tracking-widest text-[10px] italic">Confirm</span>
+                        </button>
                     </div>
                 </div>
 
@@ -318,11 +329,11 @@ export default function PaymentPage() {
                                         </div>
 
                                         <Button
-                                            variant="outline"
+                                            variant="primary"
                                             size="lg"
                                             fullWidth
                                             onClick={() => setStep(2)}
-                                            className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs border-2"
+                                            className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-green-900/20"
                                         >
                                             I have paid, Proceed to Confirm
                                         </Button>
@@ -383,7 +394,7 @@ export default function PaymentPage() {
                                             size="lg"
                                             fullWidth
                                             onClick={() => setStep(2)}
-                                            className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs"
+                                            className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-green-900/20"
                                         >
                                             I have paid, Proceed to Confirm
                                         </Button>

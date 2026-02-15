@@ -179,9 +179,10 @@ export default function CheckoutPage() {
             }
 
             // Clear guest cart on success
-            if (!user) {
-                localStorage.removeItem('guest_cart');
-            }
+            // MOVED TO PAYMENT PAGE: Only clear cart after payment proof is submitted
+            // if (!user) {
+            //     localStorage.removeItem('guest_cart');
+            // }
 
             const params = new URLSearchParams();
             params.set('phone', phone);

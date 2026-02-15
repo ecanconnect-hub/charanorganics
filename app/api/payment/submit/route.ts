@@ -95,6 +95,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to update order status' }, { status: 400 });
         }
 
+        // Clear cart items for this user now that payment is submitted
+        if (order.user_id) {
+            await serviceClient
+                .from('cart_items')
+                .delete()
+                .eq('user_id', order.user_id);
+        }
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Payment submit API error:', error);
