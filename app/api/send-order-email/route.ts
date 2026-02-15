@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
                 .from('profiles')
                 .select('email')
                 .eq('id', orderData.user_id)
-                .single();
+                .single() as any;
 
             if (profile?.email) {
                 recipientEmail = profile.email;
