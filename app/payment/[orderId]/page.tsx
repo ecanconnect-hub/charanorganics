@@ -99,8 +99,8 @@ export default function PaymentPage() {
         const upiName = process.env.NEXT_PUBLIC_UPI_NAME!;
         const amount = order?.total_amount || 0;
 
-        // Automatically move to confirmation step
-        setStep(2);
+        // Don't auto-advance. Let user confirm they paid.
+        // setStep(2); 
 
         openUPIApp({
             upiId,
@@ -278,6 +278,54 @@ export default function PaymentPage() {
                                         <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                             This will open your preferred UPI app (PhonePe, GPay, etc.)
                                         </p>
+
+                                        {/* Mobile UPI ID Display */}
+                                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+                                            <div className="flex-1">
+                                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">UPI ID</p>
+                                                <p className="text-sm font-black text-gray-900 tracking-tight">8247838125@ybl</p>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText('8247838125@ybl');
+                                                    toast.success('UPI ID copied!', {
+                                                        icon: '📋',
+                                                        style: {
+                                                            borderRadius: '8px',
+                                                            background: '#2cdea3ff',
+                                                            color: '#fff',
+                                                            fontWeight: '600',
+                                                            fontSize: '13px'
+                                                        }
+                                                    });
+                                                }}
+                                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-xs uppercase tracking-wide transition-colors flex items-center gap-2 shadow-sm"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                </svg>
+                                                Copy
+                                            </button>
+                                        </div>
+
+                                        <div className="relative py-2">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <div className="w-full border-t border-gray-100"></div>
+                                            </div>
+                                            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">
+                                                <span className="bg-white px-4 italic">AFTER PAYMENT</span>
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            variant="outline"
+                                            size="lg"
+                                            fullWidth
+                                            onClick={() => setStep(2)}
+                                            className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs border-2"
+                                        >
+                                            I have paid, Proceed to Confirm
+                                        </Button>
                                     </div>
                                 ) : (
                                     <div className="text-center space-y-6">
