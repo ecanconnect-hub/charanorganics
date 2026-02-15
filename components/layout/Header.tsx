@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -30,6 +30,12 @@ export function Header() {
     const [lastScrollY, setLastScrollY] = useState(0);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
+
+    // Search State
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const searchContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -58,17 +64,45 @@ export function Header() {
             setUser(session?.user ?? null);
         });
 
+        // Click outside handler for search
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+                // If clicking outside search container, close it
+                setIsSearchOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsSearchOpen(false);
+                setIsMobileMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleKeyDown);
+
         return () => {
             window.removeEventListener('scroll', handleScroll);
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleKeyDown);
             subscription.unsubscribe();
         };
     }, [lastScrollY]);
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+        setIsSearchOpen(false);
+        setIsMobileMenuOpen(false);
+        router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
+    };
 
     const navLinks = [
         { href: '/', label: t('home') },
         { href: '/shop', label: t('shop') },
         { href: '/about', label: t('about') },
-        { href: '/track-order', label: t('trackOrder') },
+        // Track order removed from nav
         { href: '/contact', label: t('contact') },
     ];
 
@@ -179,6 +213,78 @@ export function Header() {
                         ))}
                     </nav>
 
+                    {/* Desktop Search */}
+                    <div className="hidden md:flex items-center ml-2 mr-0" ref={searchContainerRef}>
+                        <form onSubmit={handleSearchSubmit} className={`relative flex items-center transition-all duration-300 ease-out ${isSearchOpen ? 'w-64' : 'w-28'}`}>
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search..."
+                                className={`absolute right-0 top-1/2 -translate-y-1/2 bg-white text-gray-900 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 shadow-sm
+                                    ${isSearchOpen
+                                        ? 'w-full h-11 pl-10 pr-10 opacity-100 pointer-events-auto'
+                                        : 'w-full h-10 opacity-0 pointer-events-none'
+                                    }`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (isSearchOpen) {
+                                        // Submit if open (this path might not be reachable if we hide the button, but good for safety)
+                                        if (searchQuery.trim()) {
+                                            handleSearchSubmit({ preventDefault: () => { } } as React.FormEvent);
+                                        } else {
+                                            searchInputRef.current?.focus();
+                                        }
+                                    } else {
+                                        setIsSearchOpen(true);
+                                        setTimeout(() => searchInputRef.current?.focus(), 100);
+                                    }
+                                }}
+                                className={`absolute right-0 top-1/2 -translate-y-1/2 w-full h-10 flex items-center px-3 gap-2 rounded-lg bg-gray-100 text-gray-900 hover:text-green-600 hover:bg-green-50 hover:border-green-200 border border-transparent transition-all duration-300 z-10 ${isSearchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
+                            >
+                                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <span className="text-sm font-medium">Search</span>
+                            </button>
+                            {/* Search Icon inside Input (visible when open) */}
+                            <div className={`absolute left-0 top-0 h-full w-10 flex items-center justify-center text-gray-500 pointer-events-none transition-opacity duration-300 ${isSearchOpen ? 'opacity-100' : 'opacity-0'}`}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            {/* Close/Clear Button when open */}
+                            {isSearchOpen && (
+                                <button
+                                    type="button"
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        if (searchQuery) {
+                                            setSearchQuery('');
+                                            searchInputRef.current?.focus();
+                                        } else {
+                                            setIsSearchOpen(false);
+                                        }
+                                    }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 z-20"
+                                >
+                                    {searchQuery ? (
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    )}
+                                </button>
+                            )}
+                        </form>
+                    </div>
+
                     {/* Actions (Desktop Only now) */}
                     <div className="hidden md:flex items-center gap-2 md:gap-6">
                         {/* Language Toggle */}
@@ -242,6 +348,35 @@ export function Header() {
             {isMobileMenuOpen && (
                 <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md shadow-xl border-t border-gray-100/80 py-5 px-6 animate-fade-in-down transition-all duration-300 max-h-[85vh] overflow-y-auto">
                     <nav className="flex flex-col gap-1">
+                        {/* Mobile Search - Top of menu */}
+                        <div className="mb-4">
+                            <form onSubmit={handleSearchSubmit} className="relative">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search products..."
+                                    className="w-full h-12 pl-11 pr-10 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium py-3 text-base shadow-sm"
+                                // autoFocus might not work well with transition, so we rely on user tap or effect
+                                />
+                                <div className="absolute left-0 top-0 h-full w-11 flex items-center justify-center text-gray-600 pointer-events-none">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-0 top-0 h-full w-11 flex items-center justify-center text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </form>
+                        </div>
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}

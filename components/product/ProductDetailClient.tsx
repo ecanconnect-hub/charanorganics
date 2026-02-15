@@ -224,9 +224,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
                             {/* Badges inside container */}
                             <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-                                <span className="bg-green-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm">
-                                    Authentic Ayurveda
-                                </span>
+                                <Link href="/shop" className="group">
+                                    <span className="bg-green-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm group-hover:bg-green-700 transition-colors cursor-pointer">
+                                        Authentic Ayurveda
+                                    </span>
+                                </Link>
                             </div>
 
                             {/* Wishlist Button inside container */}

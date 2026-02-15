@@ -120,13 +120,15 @@ export default function HomePage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                <div className="inline-flex items-center gap-7 bg-white/80 backdrop-blur-md border border-green-200 px-4 py-2 rounded-full mb-6 shadow-sm relative">
-                  <span className="flex h-2 w-2 relative -translate-y-4 -ml-8 md:-translate-y-2.5 md:-ml-1">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-70"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600"></span>
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-green-700">Premium Organic Essence</span>
-                </div>
+                <Link href="/shop">
+                  <div className="inline-flex items-center gap-7 bg-white/80 backdrop-blur-md border border-green-200 px-4 py-2 rounded-full mb-6 shadow-sm relative cursor-pointer hover:bg-white hover:shadow-md transition-all group">
+                    <span className="flex h-2 w-2 relative -translate-y-4 -ml-8 md:-translate-y-2.5 md:-ml-1">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-70"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600"></span>
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-green-700 group-hover:text-green-800">Premium Organic Essence</span>
+                  </div>
+                </Link>
 
                 <h1 className="text-5xl md:text-7xl lg:text-8xl font-normal text-gray-900 mb-8 tracking-tight leading-[0.9] lg:leading-[0.85] font-serif">
                   {t('home.heroTitle')}<br />

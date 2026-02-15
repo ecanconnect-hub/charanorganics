@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase/client';
@@ -14,6 +14,7 @@ import { ProductCard } from '@/components/product/ProductCard';
 
 export function ProductGrid() {
     const searchParams = useSearchParams();
+    const requestRef = useRef(0); // Track request ID to handle race conditions
 
     const [products, setProducts] = useState<any[]>([]);
     const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
@@ -21,6 +22,7 @@ export function ProductGrid() {
     const [totalCount, setTotalCount] = useState(0);
 
     const fetchProducts = useCallback(async () => {
+        const requestId = ++requestRef.current;
         setLoading(true);
 
         try {
@@ -65,6 +67,7 @@ export function ProductGrid() {
                         query = query.in('id', productIds);
                     } else {
                         // No products in these sections
+                        if (requestRef.current !== requestId) return;
                         setProducts([]);
                         setTotalCount(0);
                         await fetchRecommendedProducts();
@@ -73,6 +76,7 @@ export function ProductGrid() {
                     }
                 } else {
                     // Sections not found
+                    if (requestRef.current !== requestId) return;
                     setProducts([]);
                     setTotalCount(0);
                     await fetchRecommendedProducts();
@@ -91,7 +95,7 @@ export function ProductGrid() {
 
             // Apply search filter
             if (search) {
-                query = query.or(`title_en.ilike.%${search}%,title_te.ilike.%${search}%`);
+                query = query.or(`title_en.ilike.%${search}%,title_te.ilike.%${search}%,description_en.ilike.%${search}%,description_te.ilike.%${search}%`);
             }
 
             // Apply sorting
@@ -109,7 +113,12 @@ export function ProductGrid() {
                     query = query.order('created_at', { ascending: false });
             }
 
+            // Limit results to 20 as requested
+            query = query.limit(20);
+
             const { data, count, error } = await query;
+
+            if (requestRef.current !== requestId) return; // Prevent race conditions
 
             if (error) throw error;
 
@@ -122,9 +131,13 @@ export function ProductGrid() {
             }
         } catch (error: any) {
             console.error('Error fetching products:', error?.message || error);
-            setProducts([]);
+            if (requestRef.current === requestId) {
+                setProducts([]);
+            }
         } finally {
-            setLoading(false);
+            if (requestRef.current === requestId) {
+                setLoading(false);
+            }
         }
     }, [searchParams]);
 
@@ -140,7 +153,18 @@ export function ProductGrid() {
     };
 
     useEffect(() => {
-        fetchProducts();
+        let isCancelled = false;
+
+        const fetchData = async () => {
+            if (isCancelled) return;
+            await fetchProducts();
+        };
+
+        fetchData();
+
+        return () => {
+            isCancelled = true;
+        };
     }, [fetchProducts]);
 
     if (loading) {
