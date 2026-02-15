@@ -215,7 +215,7 @@ export function Header() {
 
                     {/* Desktop Search */}
                     <div className="hidden md:flex items-center ml-2 mr-0" ref={searchContainerRef}>
-                        <form onSubmit={handleSearchSubmit} className={`relative flex items-center transition-all duration-300 ease-out ${isSearchOpen ? 'w-64' : 'w-28'}`}>
+                        <form onSubmit={handleSearchSubmit} className={`relative flex items-center transition-all duration-300 ease-out ${isSearchOpen ? 'w-64' : 'w-32'}`}>
                             <input
                                 ref={searchInputRef}
                                 type="text"
@@ -224,7 +224,7 @@ export function Header() {
                                 placeholder="Search..."
                                 className={`absolute right-0 top-1/2 -translate-y-1/2 bg-white text-gray-900 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 shadow-sm
                                     ${isSearchOpen
-                                        ? 'w-full h-11 pl-10 pr-10 opacity-100 pointer-events-auto'
+                                        ? 'w-full h-11 !pl-20 !pr-14 opacity-100 pointer-events-auto'
                                         : 'w-full h-10 opacity-0 pointer-events-none'
                                     }`}
                             />
@@ -243,12 +243,12 @@ export function Header() {
                                         setTimeout(() => searchInputRef.current?.focus(), 100);
                                     }
                                 }}
-                                className={`absolute right-0 top-1/2 -translate-y-1/2 w-full h-10 flex items-center px-3 gap-2 rounded-lg bg-gray-100 text-gray-900 hover:text-green-600 hover:bg-green-50 hover:border-green-200 border border-transparent transition-all duration-300 z-10 ${isSearchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
+                                className={`absolute right-0 top-1/2 -translate-y-1/2 w-full h-10 flex flex-row items-center justify-center px-3 gap-2 rounded-lg bg-gray-100 text-gray-900 hover:text-green-600 hover:bg-green-50 hover:border-green-200 border border-transparent transition-all duration-300 z-10 ${isSearchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
                             >
                                 <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                <span className="text-sm font-medium">Search</span>
+                                <span className="text-sm font-medium whitespace-nowrap">Search</span>
                             </button>
                             {/* Search Icon inside Input (visible when open) */}
                             <div className={`absolute left-0 top-0 h-full w-10 flex items-center justify-center text-gray-500 pointer-events-none transition-opacity duration-300 ${isSearchOpen ? 'opacity-100' : 'opacity-0'}`}>
@@ -356,7 +356,7 @@ export function Header() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search products..."
-                                    className="w-full h-12 pl-11 pr-10 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium py-3 text-base shadow-sm"
+                                    className="w-full h-12 !pl-16 !pr-14 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium py-3 text-base shadow-sm"
                                 // autoFocus might not work well with transition, so we rely on user tap or effect
                                 />
                                 <div className="absolute left-0 top-0 h-full w-11 flex items-center justify-center text-gray-600 pointer-events-none">
