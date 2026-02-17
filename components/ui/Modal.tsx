@@ -8,7 +8,6 @@
 
 import { ReactNode, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from './Button';
 
 interface ModalProps {
     isOpen: boolean;
@@ -54,9 +53,9 @@ export function Modal({
 
     const sizes = {
         sm: 'max-w-md',
-        md: 'max-w-lg',
-        lg: 'max-w-2xl',
-        xl: 'max-w-4xl',
+        md: 'max-w-xl',
+        lg: 'max-w-3xl',
+        xl: 'max-w-5xl',
     };
 
     return (
@@ -73,7 +72,7 @@ export function Modal({
                     />
 
                     {/* Modal */}
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-3 sm:p-4">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -81,16 +80,16 @@ export function Modal({
                             transition={{ type: 'spring', duration: 0.3 }}
                             className={`
                 relative w-full ${sizes[size]} 
-                bg-white rounded-xl shadow-2xl 
-                max-h-[90vh] overflow-hidden
+                bg-white rounded-2xl shadow-2xl 
+                max-h-[92vh] overflow-hidden
               `}
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}
                             {(title || showCloseButton) && (
-                                <div className="flex items-center justify-between px-6 py-4 border-b border-[rgb(var(--border))]">
+                                <div className="flex items-center justify-between border-b border-[rgb(var(--border))] px-4 py-3 sm:px-6 sm:py-4">
                                     {title && (
-                                        <h2 className="text-2xl font-semibold text-[rgb(var(--foreground))]">
+                                        <h2 className="text-lg font-semibold text-[rgb(var(--foreground))] sm:text-2xl">
                                             {title}
                                         </h2>
                                     )}
@@ -118,7 +117,7 @@ export function Modal({
                             )}
 
                             {/* Content */}
-                            <div className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-8rem)]">
+                            <div className="max-h-[calc(92vh-7rem)] overflow-y-auto px-4 py-3 sm:px-6 sm:py-4">
                                 {children}
                             </div>
                         </motion.div>

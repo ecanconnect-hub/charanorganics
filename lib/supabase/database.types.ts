@@ -387,6 +387,35 @@ export interface Database {
                     delivered_at?: string | null
                 }
             }
+            order_history: {
+                Row: {
+                    id: string
+                    order_id: string
+                    previous_status: 'pending_payment' | 'payment_verification' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | null
+                    status: 'pending_payment' | 'payment_verification' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+                    notes: string | null
+                    changed_by: string | null
+                    changed_at: string
+                }
+                Insert: {
+                    id?: string
+                    order_id: string
+                    previous_status?: 'pending_payment' | 'payment_verification' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | null
+                    status: 'pending_payment' | 'payment_verification' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+                    notes?: string | null
+                    changed_by?: string | null
+                    changed_at?: string
+                }
+                Update: {
+                    id?: string
+                    order_id?: string
+                    previous_status?: 'pending_payment' | 'payment_verification' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | null
+                    status?: 'pending_payment' | 'payment_verification' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+                    notes?: string | null
+                    changed_by?: string | null
+                    changed_at?: string
+                }
+            }
             order_items: {
                 Row: {
                     id: string

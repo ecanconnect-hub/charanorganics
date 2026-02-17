@@ -1,14 +1,15 @@
 /**
  * Admin Layout Component
- * Secure wrapper for all admin pages with role verification and session management
+ * Shared shell for all admin pages.
  */
 
 'use client';
 
-import { useState, ReactNode, useEffect } from 'react';
+import { ReactNode, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAdminSecurity, verifyAdminAccess } from '@/lib/admin/security';
+import { usePathname } from 'next/navigation';
+import { useAdminSecurity } from '@/lib/admin/security';
 import { useAuth } from '@/lib/auth/context';
 
 interface AdminLayoutProps {
@@ -17,8 +18,25 @@ interface AdminLayoutProps {
     subtitle?: string;
 }
 
+interface NavItem {
+    href: string;
+    label: string;
+    icon: string;
+}
+
+const navItems: NavItem[] = [
+    { href: '/admin', label: 'Dashboard', icon: 'DB' },
+    { href: '/admin/orders', label: 'Orders', icon: 'OR' },
+    { href: '/admin/products', label: 'Products', icon: 'PR' },
+    { href: '/admin/categories', label: 'Categories', icon: 'CT' },
+    { href: '/admin/payments', label: 'Payments', icon: 'PY' },
+    { href: '/admin/users', label: 'Users', icon: 'US' },
+    { href: '/admin/security', label: 'Security', icon: 'SC' },
+    { href: '/admin/messages', label: 'Messages', icon: 'MS' },
+    { href: '/admin/settings', label: 'App Settings', icon: 'ST' }
+];
+
 export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
-    const router = useRouter();
     const pathname = usePathname();
     const { signOut } = useAuth();
 
@@ -26,41 +44,21 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [verifying, setVerifying] = useState(true);
 
-    // Enable admin security (3-hour timeout, activity logging)
-    // Pass verification state setter to sync loading UI
     useAdminSecurity(setVerifying);
-
-    // Verify admin access on mount and path changes is now handled by useAdminSecurity
-    // useEffect(() => {
-    //     // Removed redundant check - useAdminSecurity handles session validation
-    //     setVerifying(false);
-    // }, []);
-
-    const navItems = [
-        { href: '/admin', label: 'Dashboard', icon: '📊' },
-        { href: '/admin/orders', label: 'Orders', icon: '📦' },
-        { href: '/admin/products', label: 'Products', icon: '🛍️' },
-        { href: '/admin/categories', label: 'Categories', icon: '📁' },
-        { href: '/admin/payments', label: 'Payments', icon: '💳' },
-        { href: '/admin/users', label: 'Users', icon: '👥' },
-        { href: '/admin/security', label: 'Security', icon: '🛡️' },
-        { href: '/admin/messages', label: 'Messages', icon: '📨' },
-        { href: '/admin/settings', label: 'App Settings', icon: '⚙️' },
-    ];
 
     if (verifying) {
         return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-                <div className="w-16 h-16 bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6 animate-bounce overflow-hidden p-3 border border-indigo-100">
-                    <img src="/favicon.ico" alt="Logo" className="w-full h-full object-contain" />
+            <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
+                <div className="mb-6 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-xl">
+                    <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={110} height={110} className="h-full w-full scale-125 object-cover" />
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                    <div className="text-gray-900 font-bold text-xl animate-pulse">Verifying Admin Access...</div>
-                    <div className="text-gray-500 text-sm">Please wait while we secure your session</div>
-                    <div className="mt-8 flex gap-2">
-                        <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                        <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                        <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
+                    <div className="text-xl font-bold text-gray-900">Verifying Admin Access...</div>
+                    <div className="text-sm text-gray-500">Please wait while we secure your session</div>
+                    <div className="mt-6 flex gap-2">
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-indigo-600 [animation-delay:-0.3s]" />
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-indigo-600 [animation-delay:-0.15s]" />
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-indigo-600" />
                     </div>
                 </div>
             </div>
@@ -69,175 +67,160 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Mobile Header */}
-            <div className="lg:hidden bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-4 sticky top-0 z-50 shadow-lg">
+            <div className="sticky top-0 z-50 bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white shadow-lg lg:hidden">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden p-1.5 border border-indigo-100">
-                            <img src="/favicon.ico" alt="Logo" className="w-full h-full object-contain" />
+                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg">
+                            <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={46} height={46} className="h-full w-full scale-125 object-cover" />
                         </div>
                         <h1 className="text-xl font-bold">Admin Panel</h1>
                     </div>
                     <button
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        onClick={() => setSidebarOpen((value) => !value)}
+                        className="rounded-lg p-2 transition-colors hover:bg-white/10"
+                        aria-label="Toggle menu"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                 </div>
             </div>
 
-            {/* Sidebar Overlay (Mobile) */}
             {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                <button
+                    type="button"
+                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
                     onClick={() => setSidebarOpen(false)}
-                ></div>
+                    aria-label="Close sidebar"
+                />
             )}
 
-            {/* Sidebar - FIXED POSITION */}
-            <aside
-                style={{
-                    width: sidebarCollapsed ? '80px' : '256px',
-                    transition: 'width 0.3s ease-in-out'
-                }}
-                className={`
-                    fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 shadow-xl flex flex-col
-                    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-                `}
-            >
-                {/* Logo & Collapse Button */}
-                <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 flex items-center justify-between shrink-0">
-                    {!sidebarCollapsed ? (
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg overflow-hidden p-2 border border-indigo-100">
-                                <img src="/favicon.ico" alt="Logo" className="w-full h-full object-contain" />
+            <div className="lg:flex">
+                <aside
+                    style={{ width: sidebarCollapsed ? '80px' : '256px' }}
+                    className={`fixed left-0 top-0 z-50 flex h-full flex-col border-r border-gray-200 bg-white shadow-xl transition-transform duration-300 lg:sticky lg:z-30 lg:h-screen ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+                        }`}
+                >
+                    <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5">
+                        {!sidebarCollapsed ? (
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg">
+                                    <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={60} height={60} className="h-full w-full scale-125 object-cover" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-gray-900 leading-tight">Charan Organics</h2>
+                                    <p className="text-xs font-semibold text-indigo-600">Admin Panel</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-lg font-bold text-gray-900">Charan Organics</h2>
-                                <p className="text-indigo-600 text-xs font-semibold">Admin Panel</p>
+                        ) : (
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg">
+                                <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={46} height={46} className="h-full w-full scale-125 object-cover" />
                             </div>
-                        </div>
-                    ) : (
-                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg mx-auto overflow-hidden p-2 border border-indigo-100">
-                            <img src="/favicon.ico" alt="Logo" className="w-full h-full object-contain" />
-                        </div>
-                    )}
+                        )}
 
-                    <button
-                        onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                        className="hidden lg:block p-2 hover:bg-white rounded-lg transition-colors"
-                        title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    >
-                        <svg
-                            className={`w-5 h-5 text-gray-600 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                        <button
+                            onClick={() => setSidebarCollapsed((value) => !value)}
+                            className="hidden rounded-lg p-2 transition-colors hover:bg-white lg:block"
+                            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                         >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
-                        </svg>
-                    </button>
-                </div>
+                            <svg
+                                className={`h-5 w-5 text-gray-600 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    </div>
 
-                {/* Navigation */}
-                <nav className="p-4 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={() => setSidebarOpen(false)}
-                                className={`
-                                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium shrink-0
-                                    ${isActive
+                    <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+                        {navItems.map((item) => {
+                            const isActive = pathname === item.href;
+
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={() => setSidebarOpen(false)}
+                                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${isActive
                                         ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200'
                                         : 'text-gray-700 hover:bg-gray-100'
-                                    }
-                                    ${sidebarCollapsed ? 'justify-center' : ''}
-                                `}
-                                title={sidebarCollapsed ? item.label : ''}
-                            >
-                                <span className="text-xl shrink-0">{item.icon}</span>
-                                {!sidebarCollapsed && <span className="text-sm truncate">{item.label}</span>}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* Bottom Actions */}
-                <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-2 shrink-0">
-                    <Link href="/">
-                        <button
-                            className={`
-                                w-full flex items-center gap-3 px-4 py-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 transition-all duration-200 text-gray-700 font-medium shadow-sm
-                                ${sidebarCollapsed ? 'justify-center' : ''}
-                            `}
-                            title={sidebarCollapsed ? "View Website" : ''}
-                        >
-                            <span className="text-lg">🌐</span>
-                            {!sidebarCollapsed && <span className="text-sm">View Website</span>}
-                        </button>
-                    </Link>
-                    <button
-                        onClick={() => signOut()}
-                        className={`
-                            w-full flex items-center gap-3 px-4 py-2 rounded-xl bg-red-50 border border-red-100 hover:bg-red-100 transition-all duration-200 text-red-600 font-medium shadow-sm
-                            ${sidebarCollapsed ? 'justify-center' : ''}
-                        `}
-                        title={sidebarCollapsed ? "Logout" : ''}
-                    >
-                        <span className="text-lg">🚪</span>
-                        {!sidebarCollapsed && <span className="text-sm">Logout</span>}
-                    </button>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <div
-                style={{
-                    paddingLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 ? (sidebarCollapsed ? '80px' : '256px') : '0px',
-                    transition: 'padding-left 0.3s ease-in-out'
-                }}
-                className="min-h-screen"
-            >
-                <main className="min-h-screen">
-                    <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-                        <div className="px-6 lg:px-8 py-5">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                                    {subtitle && <p className="text-gray-600 text-sm mt-1">{subtitle}</p>}
-                                </div>
-
-                                <button
-                                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                                    className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                        } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                                    title={sidebarCollapsed ? item.label : ''}
                                 >
-                                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                                    </svg>
-                                </button>
+                                    <span className={`flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold ${isActive ? 'bg-white/20' : 'bg-gray-100 text-gray-600'}`}>
+                                        {item.icon}
+                                    </span>
+                                    {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                                </Link>
+                            );
+                        })}
+                    </nav>
+
+                    <div className="shrink-0 space-y-2 border-t border-gray-200 bg-gray-50 p-4">
+                        <Link href="/" className="block">
+                            <button
+                                className={`flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 ${sidebarCollapsed ? 'justify-center' : ''}`}
+                                title={sidebarCollapsed ? 'View Website' : ''}
+                            >
+                                <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-gray-100 text-[10px] font-bold">WB</span>
+                                {!sidebarCollapsed && <span>View Website</span>}
+                            </button>
+                        </Link>
+                        <button
+                            onClick={() => signOut()}
+                            className={`flex w-full items-center gap-3 rounded-xl border border-red-100 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 shadow-sm transition-all duration-200 hover:bg-red-100 ${sidebarCollapsed ? 'justify-center' : ''}`}
+                            title={sidebarCollapsed ? 'Logout' : ''}
+                        >
+                            <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-red-100 text-[10px] font-bold">LO</span>
+                            {!sidebarCollapsed && <span>Logout</span>}
+                        </button>
+                    </div>
+                </aside>
+
+                <div className="min-h-screen flex-1">
+                    <main className="min-h-screen min-w-0">
+                        <div className="sticky top-0 z-30 border-b border-gray-200 bg-white shadow-sm">
+                            <div className="px-4 py-4 sm:px-6 lg:px-8">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <h1 className="truncate text-xl font-bold text-gray-900 sm:text-2xl">{title}</h1>
+                                        {subtitle && <p className="mt-1 text-sm text-gray-600">{subtitle}</p>}
+                                    </div>
+                                    <button
+                                        onClick={() => setSidebarOpen((value) => !value)}
+                                        className="rounded-lg p-2 transition-colors hover:bg-gray-100 lg:hidden"
+                                        aria-label="Open sidebar"
+                                    >
+                                        <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="p-6 lg:p-10 animate-fade-in">
-                        {children}
-                    </div>
-                </main>
+                        <div className="animate-fade-in p-4 sm:p-6 lg:p-10">{children}</div>
+                    </main>
+                </div>
             </div>
 
             <style jsx>{`
                 @keyframes fade-in {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
+                    from {
+                        opacity: 0;
+                        transform: translateY(8px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
                 }
                 .animate-fade-in {
-                    animation: fade-in 0.4s ease-out;
+                    animation: fade-in 0.35s ease-out;
                 }
             `}</style>
         </div>

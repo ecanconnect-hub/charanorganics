@@ -1,57 +1,110 @@
 /**
  * Admin Session Security Hook
- * Enforces 3-hour session timeout and activity logging
+ * Enforces 24-hour session timeout and activity logging.
  */
 
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 
-const SESSION_TIMEOUT = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
-const ACTIVITY_CHECK_INTERVAL = 60 * 1000; // Check every minute
-const WARNING_TIME = 5 * 60 * 1000; // Warn 5 minutes before timeout
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const SESSION_CHECK_INTERVAL = 60 * 1000; // Check every minute
+const WARNING_TIME = 30 * 60 * 1000; // Warn 30 minutes before timeout
+const ADMIN_SESSION_START_KEY = 'admin_session_started_at';
+
+type LegacyClient = {
+    from: (table: string) => {
+        insert: (values: Record<string, unknown>) => Promise<unknown>;
+    };
+    rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: boolean | null }>;
+};
+
+const legacyClient = supabase as unknown as LegacyClient;
 
 export function useAdminSecurity(setVerifying?: (verified: boolean) => void) {
     const router = useRouter();
-    const lastActivityRef = useRef<number>(Date.now());
-    const warningShownRef = useRef<boolean>(false);
+    const warningShownRef = useRef(false);
+
+    const handleSessionExpired = useCallback(async () => {
+        toast.error('Your admin session expired. Please login again.', {
+            duration: 5000,
+        });
+
+        try {
+            localStorage.removeItem(ADMIN_SESSION_START_KEY);
+        } catch {
+            // ignore localStorage failures
+        }
+
+        await logAdminActivity('session_expired', null, null, {
+            reason: 'timeout',
+            duration_hours: 24
+        });
+
+        await supabase.auth.signOut();
+        router.push('/login?reason=session_expired');
+    }, [router]);
 
     useEffect(() => {
-        // 1. Immediate Admin Verification
         const checkAccess = async () => {
-            const isAllowed = await verifyAdminAccess();
-            if (!isAllowed) {
-                router.push('/');
-                return;
+            let isAllowed = await verifyAdminAccess();
+            // Retry to avoid transient false negatives on refresh.
+            for (let i = 0; i < 2 && !isAllowed; i += 1) {
+                await new Promise((resolve) => setTimeout(resolve, 600));
+                isAllowed = await verifyAdminAccess();
             }
+
             if (setVerifying) {
                 setVerifying(false);
             }
+
+            if (!isAllowed) {
+                // Middleware handles auth protection. Skip client-side hard redirect to avoid
+                // false logout on quick refresh/network blips.
+                return;
+            }
+
+            // Intelligent Session Recovery
+            // If the user is authenticated (isAllowed === true), we should trust the Supabase session.
+            // If the localStorage timer says "expired" but Supabase says "active", it means
+            // the user likely logged in again (or just refreshed) and we should reset the timer.
+            try {
+                const stored = localStorage.getItem(ADMIN_SESSION_START_KEY);
+                const parsed = stored ? Number(stored) : NaN;
+                const now = Date.now();
+
+                // Reset timer if:
+                // 1. Missing or invalid
+                // 2. Expired (older than 24h) - Assume this is a fresh login since isAllowed is true
+                if (Number.isNaN(parsed) || parsed <= 0 || (now - parsed > SESSION_TIMEOUT)) {
+                    localStorage.setItem(ADMIN_SESSION_START_KEY, String(now));
+                }
+            } catch {
+                // ignore localStorage failures
+            }
         };
-        // Only run check on mount
-        checkAccess();
+        void checkAccess();
 
-        // 2. Update last activity on user interaction
-        const updateActivity = () => {
-            lastActivityRef.current = Date.now();
-            warningShownRef.current = false;
-        };
+        const checkTimeout = window.setInterval(() => {
+            let startedAt = 0;
+            try {
+                const stored = localStorage.getItem(ADMIN_SESSION_START_KEY);
+                const parsed = stored ? Number(stored) : NaN;
+                if (!Number.isNaN(parsed) && parsed > 0) {
+                    startedAt = parsed;
+                }
+            } catch {
+                // ignore
+            }
 
-        // Listen to user activity
-        const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-        events.forEach(event => {
-            window.addEventListener(event, updateActivity);
-        });
+            if (!startedAt) return;
 
-        // Check session timeout periodically
-        const checkTimeout = setInterval(() => {
-            const timeSinceActivity = Date.now() - lastActivityRef.current;
-            const timeRemaining = SESSION_TIMEOUT - timeSinceActivity;
+            const elapsed = Date.now() - startedAt;
+            const timeRemaining = SESSION_TIMEOUT - elapsed;
 
-            // Show warning 5 minutes before timeout
             if (timeRemaining <= WARNING_TIME && timeRemaining > 0 && !warningShownRef.current) {
                 warningShownRef.current = true;
                 const minutesLeft = Math.ceil(timeRemaining / 60000);
@@ -60,37 +113,16 @@ export function useAdminSecurity(setVerifying?: (verified: boolean) => void) {
                 });
             }
 
-            // Session expired - force logout
-            if (timeSinceActivity >= SESSION_TIMEOUT) {
-                // Remove listener before logout
+            if (elapsed >= SESSION_TIMEOUT) {
                 clearInterval(checkTimeout);
-                handleSessionExpired();
+                void handleSessionExpired();
             }
-        }, ACTIVITY_CHECK_INTERVAL);
+        }, SESSION_CHECK_INTERVAL);
 
         return () => {
-            events.forEach(event => {
-                window.removeEventListener(event, updateActivity);
-            });
             clearInterval(checkTimeout);
         };
-    }, []);
-
-    const handleSessionExpired = async () => {
-        toast.error('Your session has expired for security reasons. Please login again.', {
-            duration: 5000,
-        });
-
-        // Log the session expiry
-        await logAdminActivity('session_expired', null, null, {
-            reason: 'timeout',
-            duration_hours: 3
-        });
-
-        // Sign out
-        await supabase.auth.signOut();
-        router.push('/login?reason=session_expired');
-    };
+    }, [handleSessionExpired, setVerifying]);
 
     return {
         logActivity: logAdminActivity,
@@ -104,13 +136,13 @@ export async function logAdminActivity(
     action: string,
     resourceType: string | null = null,
     resourceId: string | null = null,
-    details: Record<string, any> | null = null
+    details: Record<string, unknown> | null = null
 ) {
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        await (supabase.from('admin_activity_log') as any).insert({
+        await legacyClient.from('admin_activity_log').insert({
             admin_id: user.id,
             action,
             resource_type: resourceType,
@@ -130,13 +162,13 @@ export async function verifyAdminAccess(): Promise<boolean> {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return false;
 
-        const { data: profile } = await (supabase as any)
+        const { data: profile } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();
 
-        if (profile?.role !== 'admin') {
+        if ((profile as any)?.role !== 'admin') {
             await logAdminActivity('unauthorized_access_attempt', 'admin_panel', null, {
                 user_id: user.id,
                 email: user.email
@@ -158,14 +190,14 @@ export async function verifyAdminAccess(): Promise<boolean> {
  */
 export async function trackSecurityEvent(email: string, eventType: 'failed_login' | 'blocked') {
     try {
-        await (supabase.from('login_security_events') as any).insert({
+        await legacyClient.from('login_security_events').insert({
             email,
             event_type: eventType,
             created_at: new Date().toISOString(),
         });
 
         if (eventType === 'failed_login') {
-            const { data: isBlocked } = await (supabase as any).rpc('check_brute_force', { p_email: email });
+            const { data: isBlocked } = await legacyClient.rpc('check_brute_force', { p_email: email });
             if (isBlocked) {
                 toast.error('Too many failed attempts. Access restricted for 15 minutes.');
                 return true;
