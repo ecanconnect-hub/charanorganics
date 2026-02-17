@@ -122,7 +122,7 @@ export default function HomePage() {
               >
                 <Link href="/shop">
                   <div className="inline-flex items-center gap-7 bg-white/80 backdrop-blur-md border border-green-200 px-4 py-2 rounded-full mb-6 shadow-sm relative cursor-pointer hover:bg-white hover:shadow-md transition-all group">
-                    <span className="flex h-2 w-2 relative -translate-y-4 -ml-8 md:-translate-y-2.5 md:-ml-1">
+                    <span className="flex h-2 w-2 relative -translate-y-4 -ml-8 -translate-x-3 md:translate-x-0 md:-translate-y-2.5 md:-ml-1">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-70"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600"></span>
                     </span>
