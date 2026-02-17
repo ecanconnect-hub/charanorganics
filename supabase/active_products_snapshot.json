@@ -1,0 +1,882 @@
+[
+  {
+    "id": "a978afed-b58a-49e8-91ea-8c79108a748c",
+    "product_id": "810",
+    "title_en": "Skin whitening soaps",
+    "is_active": true,
+    "unit_value": null,
+    "unit_type": null,
+    "current_price": 150,
+    "image_url": "https://res.cloudinary.com/dwnpt7fdp/image/upload/v1768993461/image_1_thyih4.jpg"
+  },
+  {
+    "id": "c3813543-06c9-4be0-a7f9-944cdbff9b13",
+    "product_id": "811",
+    "title_en": "Kids Special Softening ",
+    "is_active": true,
+    "unit_value": null,
+    "unit_type": null,
+    "current_price": 150,
+    "image_url": "https://res.cloudinary.com/dwnpt7fdp/image/upload/v1769070827/image_4_m4m4k9.jpg"
+  },
+  {
+    "id": "f9fe6f57-e647-4c3b-8578-da175613f30d",
+    "product_id": "BC001",
+    "title_en": "Marula Oil",
+    "is_active": true,
+    "unit_value": 10,
+    "unit_type": "ml",
+    "current_price": 100,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330379/marulaoel-kaltgepresst-heess-247x296_btdods.webp"
+  },
+  {
+    "id": "8d8e08b4-42f3-4229-8385-daf285c351d7",
+    "product_id": "BC002",
+    "title_en": "Olive Oil",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "ml",
+    "current_price": 150,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330380/oliveoil_1200x1200_tkz0x9.webp"
+  },
+  {
+    "id": "e19020e4-2215-4def-ae7e-8dd0353962ea",
+    "product_id": "BC003",
+    "title_en": "Iscaguard PEG",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "ml",
+    "current_price": 150,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330365/Iscaguard_PEG_n5x94y.webp"
+  },
+  {
+    "id": "fc644e00-681a-453c-8d90-ce8ebd905299",
+    "product_id": "BC004",
+    "title_en": "Xanthan Gum",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": null
+  },
+  {
+    "id": "01606e35-10d3-4b87-b6da-177c0d21df17",
+    "product_id": "BC005",
+    "title_en": "Jojoba Oil",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "ml",
+    "current_price": 180,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330378/Jojoba_Oil_j6vhih.webp"
+  },
+  {
+    "id": "2587dd24-2921-44e6-b24a-ef62b9f65ee6",
+    "product_id": "BC006",
+    "title_en": "Sweet Almond Oil",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330378/Sweet_Almond_Oill-500x500-1-247x296_phqgmu.webp"
+  },
+  {
+    "id": "fbcfe364-9bc3-46d0-b682-99e162c67cd2",
+    "product_id": "BC007",
+    "title_en": "Cocoa Butter",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 75,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330362/Cocoa_Butter_j7zgzo.webp"
+  },
+  {
+    "id": "ee99f68d-524d-45e7-9687-2735a2c8dc9e",
+    "product_id": "BC008",
+    "title_en": "Avocado Butter",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 75,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330362/Avocado_Butter_mtl8nj.webp"
+  },
+  {
+    "id": "0f41257f-1f1a-49c5-88c5-3e719dd2204a",
+    "product_id": "BC009",
+    "title_en": "Cetyl Alcohol",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": null
+  },
+  {
+    "id": "f18fd4d1-701f-4ffe-ae2b-04b7bb81f604",
+    "product_id": "BC010",
+    "title_en": "E-Wax",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330361/Emulsifying_Wax_E-Wax_zadp1u.jpg"
+  },
+  {
+    "id": "42cf6119-e7d4-4f56-bd4a-6276458e9140",
+    "product_id": "BC011",
+    "title_en": "Sorbitol",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 100,
+    "image_url": null
+  },
+  {
+    "id": "24abda5e-b59d-4c02-972e-4f151d3985c0",
+    "product_id": "BC012",
+    "title_en": "Grapeseed Oil",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 100,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330370/Grapeseed_Oil_uzou5w.webp"
+  },
+  {
+    "id": "8b6e7771-29bc-430e-9eb8-5aacc88f7eee",
+    "product_id": "BC013",
+    "title_en": "Coco Glucoside",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "gm",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330366/Coco_Glucoside_x5jwv5.webp"
+  },
+  {
+    "id": "e9f2c4b8-b800-48a3-9f02-8b07b85b3bb0",
+    "product_id": "BC014",
+    "title_en": "Essential Oil (Lavender)",
+    "is_active": true,
+    "unit_value": null,
+    "unit_type": null,
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330338/Lavender_Essential_Oil_o2wsgy.jpg"
+  },
+  {
+    "id": "114fb993-96e4-46ed-8b43-126acc67b790",
+    "product_id": "BC015",
+    "title_en": "Ratnajot",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": null
+  },
+  {
+    "id": "a666ce4d-bde6-4497-8289-33f8c97c53ad",
+    "product_id": "BC016",
+    "title_en": "Ashwagandha",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": null
+  },
+  {
+    "id": "34e64fbc-e4cd-4607-92ad-421b76f68b61",
+    "product_id": "BC017",
+    "title_en": "Aloe Vera Gel",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "gm",
+    "current_price": 90,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330363/Aloe_Vera_Gel_uikihn.webp"
+  },
+  {
+    "id": "0c6212e7-c1ae-4a16-b391-f54f8dc49768",
+    "product_id": "BC018",
+    "title_en": "Dalchini Chekka",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 40,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330356/Cinnamon_Powder_gpzvdf.jpg"
+  },
+  {
+    "id": "81a2b8da-c38c-4905-abd4-69393f934ac4",
+    "product_id": "BC019",
+    "title_en": "Bhringraj Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 50,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330343/Bhringraj_Powder_qtr6sw.jpg"
+  },
+  {
+    "id": "730e0766-f587-4a43-b67e-2bad0e0ee950",
+    "product_id": "BC020",
+    "title_en": "Corn Starch",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 40,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330359/Corn_Starch_oyyrzt.jpg"
+  },
+  {
+    "id": "ea95a9b5-5aac-4fcd-9924-fc97510bae8e",
+    "product_id": "BC021",
+    "title_en": "Coco Betaine",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "ml",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330366/Coco_Betaine_k1kxwv.webp"
+  },
+  {
+    "id": "c8b41f8c-7eec-48a2-baa8-2814a8bf520c",
+    "product_id": "BC022",
+    "title_en": "Beeswax",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330361/Beeswax_me4tva.webp"
+  },
+  {
+    "id": "2fff6c74-915e-4944-98df-8143414f1c65",
+    "product_id": "BC023",
+    "title_en": "Calendula Oil",
+    "is_active": true,
+    "unit_value": 20,
+    "unit_type": "ml",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330370/Calendula-Oil-247x296_jmejmk.webp"
+  },
+  {
+    "id": "7ee894a7-471c-4280-a70a-14ba0bdbbdb7",
+    "product_id": "BC024",
+    "title_en": "Witch Hazel",
+    "is_active": true,
+    "unit_value": 20,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330370/witchhazel-247x296_w8y0p4.webp"
+  },
+  {
+    "id": "3c90002f-e0d5-41ad-8140-2b8998dd14e5",
+    "product_id": "BC025",
+    "title_en": "Soap Base",
+    "is_active": true,
+    "unit_value": 1,
+    "unit_type": "kg",
+    "current_price": 330,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330367/Soap_Base_Melt_Pour_tz3ggv.webp"
+  },
+  {
+    "id": "2fcfed80-c84c-4f50-a554-bf2075738c20",
+    "product_id": "BC026",
+    "title_en": "Arrowroot Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 40,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330358/Arrowroot_Powder_vt394q.webp"
+  },
+  {
+    "id": "e9e60198-94e2-4130-a67a-7b633b5d5562",
+    "product_id": "BC027",
+    "title_en": "Potato Starch",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 40,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330358/Potato_Starch_hl6zmv.jpg"
+  },
+  {
+    "id": "e7635587-33f5-4137-b559-7f763fee97bb",
+    "product_id": "BC028",
+    "title_en": "Rice Starch",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 40,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330358/Rice_Starch_c05vov.jpg"
+  },
+  {
+    "id": "f18eb6d1-46bd-4cee-a927-40108a38cd5a",
+    "product_id": "BC029",
+    "title_en": "Decyl Glucoside",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "gm",
+    "current_price": 120,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330366/Decyl_Glucoside_waaq8n.webp"
+  },
+  {
+    "id": "e60e05c0-1e9f-42db-a147-1e26539ee6f0",
+    "product_id": "BC030",
+    "title_en": "Steam Distilled Rose Water",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "ml",
+    "current_price": 90,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330371/Steam_Distilled_rose_water_uxipwo.webp"
+  },
+  {
+    "id": "c7dfa671-5f15-4e61-9770-ecda3f485939",
+    "product_id": "BC031",
+    "title_en": "Vegetable Glycerin",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "ml",
+    "current_price": 100,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330364/Vegetable_Glycerin_vhzkyd.webp"
+  },
+  {
+    "id": "5fc97644-bc9c-4a54-9a63-65ddb8e23859",
+    "product_id": "BC032",
+    "title_en": "Coconut Oil",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "ml",
+    "current_price": 150,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330371/Coconut_Oil_lnj84f.webp"
+  },
+  {
+    "id": "89737733-3725-426f-b07b-b601717bf041",
+    "product_id": "BC033",
+    "title_en": "Castor Oil",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "ml",
+    "current_price": 150,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330371/Castor_Oil_saoxa7.webp"
+  },
+  {
+    "id": "bb7e2e36-97ab-4e06-88f5-b83047676bca",
+    "product_id": "BC034",
+    "title_en": "Black Sesame Oil",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "ml",
+    "current_price": 150,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771338936/Black_Sesame_Oil_qv9dvu.jpg"
+  },
+  {
+    "id": "1faad35d-d9de-46c9-ab44-a5cd341a4d4d",
+    "product_id": "BC035",
+    "title_en": "Pearly Shampoo Base",
+    "is_active": true,
+    "unit_value": 1,
+    "unit_type": "kg",
+    "current_price": 300,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330366/Pearly_Shampoo_Base_svhqxv.webp"
+  },
+  {
+    "id": "0b523638-ac69-4f9e-bd36-379a7a026d37",
+    "product_id": "BC036",
+    "title_en": "De-Mineralized Water",
+    "is_active": true,
+    "unit_value": 1,
+    "unit_type": "l",
+    "current_price": 50,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330370/De-Mineralized_Water_narng3.png"
+  },
+  {
+    "id": "a208193c-a8bf-450f-8cb1-84f5053c7629",
+    "product_id": "BC037",
+    "title_en": "Henna Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330346/Henna_Powder_ld7hd8.jpg"
+  },
+  {
+    "id": "8972d061-715e-4748-91c7-a1e495e0c878",
+    "product_id": "BC038",
+    "title_en": "Amla Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330344/Amla_Powder_vmrnvw.jpg"
+  },
+  {
+    "id": "e2d3f144-fe98-4de6-8601-0b459d2cc3dc",
+    "product_id": "BC039",
+    "title_en": "Hibiscus Flower Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330347/Hibiscus_Flower_Powder_ztwvuq.jpg"
+  },
+  {
+    "id": "8e989ab6-018c-4475-b629-27f1fe123971",
+    "product_id": "BC040",
+    "title_en": "Shikakai Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330339/Shikakai_Powder_oednji.jpg"
+  },
+  {
+    "id": "79d080be-80ee-4f77-8ecd-e717c6edf6fc",
+    "product_id": "BC041",
+    "title_en": "Reetha Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330339/Reetha_Soapnut_Powder_wbijkc.jpg"
+  },
+  {
+    "id": "33730d4c-4290-41de-a286-40bda7b9d161",
+    "product_id": "BC042",
+    "title_en": "Brahmi Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330342/Brahmi_Powder_twhuf0.jpg"
+  },
+  {
+    "id": "bb766286-0640-414c-8d8b-83316b9830c6",
+    "product_id": "BC043",
+    "title_en": "Fenugreek Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330342/Fenugreek_Powder_mhuru0.jpg"
+  },
+  {
+    "id": "14aeb960-5708-4da7-a8a4-78a23c75ed73",
+    "product_id": "BC044",
+    "title_en": "Triphala Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330338/Triphala_Powder_hn9hlh.jpg"
+  },
+  {
+    "id": "7fd0fc95-bf91-4dac-af8d-37e86dbcd930",
+    "product_id": "BC045",
+    "title_en": "Neem Leaves Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330352/Neem_Leaves_Powder_v5kit9.webp"
+  },
+  {
+    "id": "96e0bd61-c096-4b6c-a0b7-3595705c3364",
+    "product_id": "BC046",
+    "title_en": "Custard Apple Seeds Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330339/Custard_Apple_Seeds_Powder_s66fsk.jpg"
+  },
+  {
+    "id": "73e90dd4-da3c-444c-8c62-aa779c94a418",
+    "product_id": "BC047",
+    "title_en": "Multani Mitti",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330357/Multani_Mitti_xlkqhu.webp"
+  },
+  {
+    "id": "caa5ccaa-b5a5-4e48-8ca4-d3ef2c89b879",
+    "product_id": "BC048",
+    "title_en": "Kaolin Clay",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330357/Kaolin_Clay_ldjyo0.webp"
+  },
+  {
+    "id": "1df15b36-3b27-40b4-96e0-cbc12c064f54",
+    "product_id": "BC049",
+    "title_en": "Rose Clay",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330357/Rose_Clay_w1u91p.webp"
+  },
+  {
+    "id": "f9324ab1-34ac-45d9-b8a1-2fa4640cde96",
+    "product_id": "BC050",
+    "title_en": "Coffee Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 50,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330356/Coffee_Powder_xkott9.jpg"
+  },
+  {
+    "id": "e6da9241-cb6d-4638-9789-705c1bddb8c9",
+    "product_id": "BC051",
+    "title_en": "Honey",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "gm",
+    "current_price": 100,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330362/Honey_wyatjj.webp"
+  },
+  {
+    "id": "a79adc6e-2449-48a3-a2b7-e04dbb9f01a1",
+    "product_id": "BC052",
+    "title_en": "Vitamin E Capsules",
+    "is_active": true,
+    "unit_value": 10,
+    "unit_type": "pcs",
+    "current_price": 100,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330363/Vitamin_E_Capsules_g7lo3w.jpg"
+  },
+  {
+    "id": "8726b12c-716f-4c47-b450-d05e8c9f8e98",
+    "product_id": "BC054",
+    "title_en": "Cinnamon Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330356/Cinnamon_Powder_gpzvdf.jpg"
+  },
+  {
+    "id": "df4e4bc4-7337-4eb2-ad41-4a77f7786d50",
+    "product_id": "BC055",
+    "title_en": "Manjistha Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330354/Manjistha_Powder_ae1an3.webp"
+  },
+  {
+    "id": "462856e9-5ed5-4f78-93a0-61d1487c973f",
+    "product_id": "BC056",
+    "title_en": "Licorice Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330354/Licorice_Powder_wfayvn.webp"
+  },
+  {
+    "id": "86f76863-3cfd-4e01-bbb7-3fca32e805db",
+    "product_id": "BC057",
+    "title_en": "Sandalwood Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330354/Sandalwood_Powder_i5zykt.jpg"
+  },
+  {
+    "id": "0c46a9c3-79e8-44e8-9f3d-325a2995b484",
+    "product_id": "BC058",
+    "title_en": "Red Sandalwood Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330350/Red_Sandal_Powder_rwi78s.jpg"
+  },
+  {
+    "id": "fc52dce0-de62-461b-a28c-b2f7e25e2862",
+    "product_id": "BC059",
+    "title_en": "Kasthuri Turmeric",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330353/Kasthuri_Pasupu_ylo2cp.jpg"
+  },
+  {
+    "id": "312199f0-c3ff-48aa-a1d4-1929d3278b3e",
+    "product_id": "BC060",
+    "title_en": "Tulasi Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330353/Tulasi_Powder_wsc5ni.jpg"
+  },
+  {
+    "id": "05fa7426-ec53-4d8e-93f3-e19d2d63f9b2",
+    "product_id": "BC061",
+    "title_en": "Beetroot Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330350/Beetroot_Powder_txfoqc.webp"
+  },
+  {
+    "id": "71cce18c-8946-4644-a2d7-5649c2196a62",
+    "product_id": "BC063",
+    "title_en": "Lemon Peel Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330347/Lemon_Peel_Powder_mwnb6x.webp"
+  },
+  {
+    "id": "89840903-5bd0-4d3b-b23c-6597490d48e6",
+    "product_id": "BC064",
+    "title_en": "Lavender Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330338/Lavender_Essential_Oil_o2wsgy.jpg"
+  },
+  {
+    "id": "2b0b9949-128e-4aaf-81ef-26d50203481a",
+    "product_id": "BC070",
+    "title_en": "Wintergreen Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330338/Wintergreen_Essential_Oil_gts5ic.webp"
+  },
+  {
+    "id": "5cb292cb-7b1b-4416-a968-56342062d914",
+    "product_id": "BC071",
+    "title_en": "Lemon Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330338/Lemon_Essential_Oil_sgcebz.webp"
+  },
+  {
+    "id": "9cb11532-7f15-40b7-a0e3-70bcf7e9a7f7",
+    "product_id": "BC072",
+    "title_en": "Peppermint Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330337/Peppermint_Essential_Oil_wh1fby.jpg"
+  },
+  {
+    "id": "02a1f035-9d5b-48a0-ba4d-0de200f51e7f",
+    "product_id": "BC073",
+    "title_en": "Arjuna Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330353/Arjuna_Powder_my7y4z.webp"
+  },
+  {
+    "id": "ef4bb496-bee1-4284-af78-46cda9511881",
+    "product_id": "BC074",
+    "title_en": "Kuppintaaku Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330350/Kuppintaaku_Powder_e0o0cx.jpg"
+  },
+  {
+    "id": "5033b091-732a-463f-a339-caacaa6e8eb0",
+    "product_id": "BC075",
+    "title_en": "Pomegranate Seeds Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330350/Pomegranate_Seeds_Powder_w9yjc7.jpg"
+  },
+  {
+    "id": "570c1ac6-96f6-447c-92d5-c127bc981a97",
+    "product_id": "BC076",
+    "title_en": "Red Toor Dal Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 50,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330347/Red_Toor_Dal_wq44kw.jpg"
+  },
+  {
+    "id": "3210cea8-01ab-4246-9a98-fa1089e1b387",
+    "product_id": "BC077",
+    "title_en": "Gond Katira",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330360/Gond_Katira_grhwtr.jpg"
+  },
+  {
+    "id": "beb08469-8f83-4e76-a689-7774920ae4ef",
+    "product_id": "BC078",
+    "title_en": "Rosemary Leaves",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330343/Rosemary_Leaves_ytsay3.jpg"
+  },
+  {
+    "id": "c93a07db-5283-4a77-bb2f-34250e8e54cc",
+    "product_id": "BC079",
+    "title_en": "Vetiver Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330343/Vetiver_Vattiveru_Powder_ua3ky0.jpg"
+  },
+  {
+    "id": "0aef4a3d-6828-49cd-afac-1867de97e2f9",
+    "product_id": "BC080",
+    "title_en": "Jatamansi Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330343/Jatamansi_Powder_e71rv7.jpg"
+  },
+  {
+    "id": "971efe85-2cd7-4e2d-a1fb-467efc0fb96b",
+    "product_id": "BC081",
+    "title_en": "Gaddi Chamanthi Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330340/Gaddi_Chamanthi_Powder_xuwxft.jpg"
+  },
+  {
+    "id": "f0d679ad-338e-4d8a-9c0f-41e897e68200",
+    "product_id": "BC082",
+    "title_en": "Tangedu Aakula Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330340/Tangedu_Aakula_Powder_ahkwoo.jpg"
+  },
+  {
+    "id": "992ec0f4-9439-45e0-8c7c-4bf3ecbe6cbe",
+    "product_id": "BC083",
+    "title_en": "Sambar Onions",
+    "is_active": true,
+    "unit_value": 100,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330347/Sambar_Onions_lcvvl1.jpg"
+  },
+  {
+    "id": "68149c7b-30f2-454f-99b8-6e3bb0320c13",
+    "product_id": "BC084",
+    "title_en": "Flax Seeds Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330339/Flax_Seeds_Powder_sqrx4i.jpg"
+  },
+  {
+    "id": "f7528514-e008-4f5c-b0e9-1bf1e3b4a91c",
+    "product_id": "BC085",
+    "title_en": "Maredu Gujju Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 70,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330339/Maredu_Gujju_Powder_zqnwdr.jpg"
+  },
+  {
+    "id": "f925cf6c-013b-419f-9d76-da3470b0535d",
+    "product_id": "EO001",
+    "title_en": "Rose Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330337/Rose_Essential_Oil_wfvqhp.jpg"
+  },
+  {
+    "id": "c570415b-ffec-48a5-be74-18f370c5fa79",
+    "product_id": "EO002",
+    "title_en": "Jasmine Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330338/Jasmine_Essential_Oil_hnlntp.jpg"
+  },
+  {
+    "id": "4ca5ff3c-7e75-4404-8383-10f6ff42f28b",
+    "product_id": "EO003",
+    "title_en": "Tea Tree Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330339/Tea_Tree_Essential_Oil_nalemt.webp"
+  },
+  {
+    "id": "69a5224e-20e0-41a9-9758-b6d9e18f2185",
+    "product_id": "EO004",
+    "title_en": "Ylang Ylang Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330337/Ylang_Ylang_Essential_Oil_o68e8t.jpg"
+  },
+  {
+    "id": "2e65754b-7232-41d7-847b-d6b3266e568b",
+    "product_id": "EO005",
+    "title_en": "Cedarwood Essential Oil",
+    "is_active": true,
+    "unit_value": 15,
+    "unit_type": "ml",
+    "current_price": 200,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330338/Cedarwood_Essential_Oil_fjcokp.webp"
+  },
+  {
+    "id": "62046f3a-f68f-427e-b9b9-d40d42f3c3ed",
+    "product_id": "HP001",
+    "title_en": "Banana Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 100,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330355/Banana_Powder_gy53jh.jpg"
+  },
+  {
+    "id": "96433e41-52fe-46cc-8711-d93e9caec40a",
+    "product_id": "HP002",
+    "title_en": "Orange Peel Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330349/Orange_Peel_Powder_we45ce.webp"
+  },
+  {
+    "id": "75e81752-b1f6-4791-bd9a-f8d0f2e09ce8",
+    "product_id": "HP003",
+    "title_en": "Neem Powder",
+    "is_active": true,
+    "unit_value": 50,
+    "unit_type": "gm",
+    "current_price": 60,
+    "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771330350/Neem_Powder_v4tan0.jpg"
+  }
+]

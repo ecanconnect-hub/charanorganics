@@ -28,6 +28,7 @@ export function ProductGrid() {
     const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
+    const [visibleCount, setVisibleCount] = useState(50);
 
     const fetchRecommendedProducts = useCallback(async () => {
         const { data } = await supabase
@@ -132,8 +133,8 @@ export function ProductGrid() {
                     query = query.order('created_at', { ascending: false });
             }
 
-            // Limit results to 20 as requested
-            query = query.limit(20);
+            // Limit results based on visibleCount
+            query = query.limit(visibleCount);
 
             const { data, count, error } = await query;
 
@@ -161,7 +162,7 @@ export function ProductGrid() {
                 setLoading(false);
             }
         }
-    }, [fetchRecommendedProducts, searchParams]);
+    }, [fetchRecommendedProducts, searchParams, visibleCount]);
 
     useEffect(() => {
         let isCancelled = false;
@@ -308,6 +309,18 @@ export function ProductGrid() {
                             </motion.div>
                         ))}
                     </div>
+                </div>
+            )}
+            {/* Load More Button */}
+            {products.length < totalCount && (
+                <div className="flex justify-center mt-8 pb-8">
+                    <button
+                        onClick={() => setVisibleCount((prev) => prev + 20)}
+                        className="px-6 py-2 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                        disabled={loading}
+                    >
+                        {loading ? 'Loading...' : `Load More (${totalCount - products.length} remaining)`}
+                    </button>
                 </div>
             )}
         </div>

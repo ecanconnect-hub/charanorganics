@@ -3,6 +3,21 @@
  * 
  * Company information and story
  */
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'About Us',
+    description: 'Learn about Charan Organics, our natural wellness philosophy, and how we craft organic and ayurvedic products.',
+    alternates: {
+        canonical: '/about',
+    },
+    openGraph: {
+        title: 'About Charan Organics',
+        description: 'Our story, values, and approach to handcrafted organic and ayurvedic products.',
+        url: '/about',
+        type: 'website',
+    },
+};
 
 export default function AboutPage() {
     return (
@@ -30,13 +45,13 @@ export default function AboutPage() {
                             <li><strong>Pure & Natural:</strong> We use only pure, natural ingredients with no harmful chemicals</li>
                             <li><strong>Handmade:</strong> Each product is carefully handcrafted in small batches</li>
                             <li><strong>Cruelty-Free:</strong> We never test on animals and use only ethical ingredients</li>
-                            <li><strong>Sustainable:</strong> We're committed to eco-friendly practices and packaging</li>
+                            <li><strong>Sustainable:</strong> We are committed to eco-friendly practices and packaging</li>
                             <li><strong>Authentic:</strong> Traditional ayurvedic formulations passed down through generations</li>
                         </ul>
 
                         <h2>Our Promise</h2>
                         <p>
-                            When you choose Charan Organics, you're choosing products that are:
+                            When you choose Charan Organics, you are choosing products that are:
                         </p>
                         <ul>
                             <li>Free from harmful chemicals and synthetic additives</li>
@@ -48,7 +63,7 @@ export default function AboutPage() {
 
                         <h2>Contact Us</h2>
                         <p>
-                            We'd love to hear from you! Whether you have questions about our products or just want to say hello,
+                            We would love to hear from you! Whether you have questions about our products or just want to say hello,
                             feel free to reach out.
                         </p>
                         <p>

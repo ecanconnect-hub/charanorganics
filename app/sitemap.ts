@@ -1,37 +1,36 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/lib/supabase/database.types';
+import type { MetadataRoute } from 'next';
 
-export default async function sitemap() { // Corrected export for next.js
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
-    const baseUrl = 'https://charanorganics.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://charanorganics.com';
 
-    // 1. Static Routes
+    const now = new Date();
     const routes = [
         '',
         '/shop',
         '/about',
         '/contact',
-        '/login',
-        '/signup',
         '/track-order',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
-        lastModified: new Date(),
+        lastModified: now,
         changeFrequency: 'daily' as const,
         priority: route === '' ? 1 : 0.8,
     }));
 
-    // 2. Dynamic Product Routes
     const { data: products } = await supabase
         .from('products')
-        .select('id, updated_at') as { data: { id: string; updated_at: string | null }[] | null };
+        .select('product_id, updated_at')
+        .eq('is_active', true) as { data: { product_id: string; updated_at: string | null }[] | null };
 
     const productRoutes = (products || []).map((product) => ({
-        url: `${baseUrl}/product/${product.id}`,
-        lastModified: product.updated_at ? new Date(product.updated_at) : new Date(),
+        url: `${baseUrl}/product/${product.product_id}`,
+        lastModified: product.updated_at ? new Date(product.updated_at) : now,
         changeFrequency: 'weekly' as const,
         priority: 0.9,
     }));

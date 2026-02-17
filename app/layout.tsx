@@ -21,15 +21,57 @@ const instrument = Instrument_Serif({
   display: 'swap',
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://charanorganics.com';
+const siteName = 'Charan Organics';
+
 export const metadata: Metadata = {
-  title: "Charan Organics - Pure Organic & Ayurvedic Products",
-  description: "Handcrafted organic and ayurvedic products made with love. Natural, cruelty-free, and delivered with care.",
-  keywords: ["organic", "ayurvedic", "natural products", "handmade", "cruelty-free"],
-  authors: [{ name: "Charan Organics" }],
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: `${siteName} | Organic & Ayurvedic Products`,
+    template: `%s | ${siteName}`,
+  },
+  description: "Shop handcrafted organic and ayurvedic products by Charan Organics. Natural, cruelty-free, and thoughtfully made for daily wellness.",
+  keywords: ["organic products", "ayurvedic products", "natural skincare", "herbal wellness", "cruelty-free", "handmade"],
+  applicationName: siteName,
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  referrer: 'origin-when-cross-origin',
   openGraph: {
-    title: "Charan Organics - Pure Organic & Ayurvedic Products",
-    description: "Handcrafted organic and ayurvedic products made with love",
+    title: `${siteName} | Organic & Ayurvedic Products`,
+    description: "Handcrafted organic and ayurvedic products made with care for natural daily wellness.",
     type: "website",
+    url: siteUrl,
+    siteName,
+    locale: 'en_IN',
+    images: [
+      {
+        url: '/charan-logo.png',
+        width: 1200,
+        height: 630,
+        alt: `${siteName} logo`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${siteName} | Organic & Ayurvedic Products`,
+    description: "Natural and handcrafted wellness products from Charan Organics.",
+    images: ['/charan-logo.png'],
   },
 };
 
@@ -40,9 +82,53 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${siteUrl}#organization`,
+        name: siteName,
+        url: siteUrl,
+        logo: `${siteUrl}/charan-logo.png`,
+        contactPoint: [{
+          '@type': 'ContactPoint',
+          telephone: '+91-8247838125',
+          contactType: 'customer support',
+          areaServed: 'IN',
+          availableLanguage: ['en', 'te'],
+        }],
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}#website`,
+        url: siteUrl,
+        name: siteName,
+        publisher: {
+          '@id': `${siteUrl}#organization`,
+        },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${siteUrl}/shop?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@type': 'OnlineStore',
+        '@id': `${siteUrl}#store`,
+        name: siteName,
+        url: siteUrl,
+      },
+    ],
+  };
+
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script
