@@ -12,10 +12,12 @@ import { motion } from 'framer-motion';
 import { ProductCard } from '@/components/product/ProductCard';
 import { useTranslations } from '@/lib/i18n/context';
 
+type SliderProduct = React.ComponentProps<typeof ProductCard>['product'];
+
 interface ProductSliderProps {
     title: string;
     subtitle?: string;
-    products: any[];
+    products: SliderProduct[];
     viewAllLink?: string;
 }
 
@@ -61,6 +63,8 @@ export function ProductSlider({ title, subtitle, products, viewAllLink }: Produc
             {/* Slider Controls */}
             <div className="absolute top-1/2 -left-4 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
                 <button
+                    type="button"
+                    aria-label="Scroll products left"
                     onClick={() => scroll('left')}
                     className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 text-gray-800 transition-all border border-gray-100"
                 >
@@ -71,6 +75,8 @@ export function ProductSlider({ title, subtitle, products, viewAllLink }: Produc
             </div>
             <div className="absolute top-1/2 -right-4 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
                 <button
+                    type="button"
+                    aria-label="Scroll products right"
                     onClick={() => scroll('right')}
                     className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 text-gray-800 transition-all border border-gray-100"
                 >

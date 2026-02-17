@@ -6,56 +6,62 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { useLocale } from '@/lib/i18n/context';
 import { Button } from '@/components/ui/Button';
+import type { Database } from '@/lib/supabase/database.types';
+
+type Section = Database['public']['Tables']['sections']['Row'];
+type Product = Database['public']['Tables']['products']['Row'];
 
 export function ShopFilters() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const locale = useLocale();
 
-    const [sections, setSections] = useState<any[]>([]);
+    const [sections, setSections] = useState<Section[]>([]);
     const [loading, setLoading] = useState(true);
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
     const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
 
-    useEffect(() => {
-        fetchSections();
-        fetchPriceRange();
-    }, []);
-
-    const fetchSections = async () => {
+    const fetchSections = useCallback(async () => {
         setLoading(true);
-        const { data } = await (supabase
-            .from('sections' as any) as any)
+        const { data } = await supabase
+            .from('sections')
             .select('*')
             .eq('is_enabled', true)
             .order('display_order');
 
         if (data) {
-            setSections(data);
+            setSections(data as Section[]);
         }
         setLoading(false);
-    };
+    }, []);
 
-    const fetchPriceRange = async () => {
-        const { data } = await (supabase
-            .from('products' as any) as any)
+    const fetchPriceRange = useCallback(async () => {
+        const { data } = await supabase
+            .from('products')
             .select('current_price')
             .eq('is_active', true);
 
         if (data && data.length > 0) {
-            const prices = data.map((p: { current_price: number }) => p.current_price);
+            const prices = (data as Pick<Product, 'current_price'>[]).map((p) => p.current_price);
             setPriceRange({
                 min: Math.floor(Math.min(...prices)),
                 max: Math.ceil(Math.max(...prices))
             });
         }
-    };
+    }, []);
+
+    /* eslint-disable react-hooks/set-state-in-effect */
+    useEffect(() => {
+        void fetchSections();
+        void fetchPriceRange();
+    }, [fetchPriceRange, fetchSections]);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     const handleSectionFilter = (sectionId: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -202,7 +208,7 @@ export function ShopFilters() {
                                 type="number"
                                 value={minPrice}
                                 onChange={(e) => setMinPrice(e.target.value)}
-                                placeholder={`₹${priceRange.min}`}
+                                placeholder={`Rs.${priceRange.min}`}
                                 className="w-full px-2 py-1.5 border border-gray-200 rounded-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             />
                         </div>
@@ -212,7 +218,7 @@ export function ShopFilters() {
                                 type="number"
                                 value={maxPrice}
                                 onChange={(e) => setMaxPrice(e.target.value)}
-                                placeholder={`₹${priceRange.max}`}
+                                placeholder={`Rs.${priceRange.max}`}
                                 className="w-full px-2 py-1.5 border border-gray-200 rounded-md text-xs font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             />
                         </div>

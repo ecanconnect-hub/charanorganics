@@ -16,6 +16,11 @@ import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
+type ProductViewRow = ProductRow & {
+    is_best_seller?: boolean | null;
+    is_new?: boolean | null;
+};
+type ProfileRoleRow = Pick<Database['public']['Tables']['profiles']['Row'], 'role'>;
 type ViewMode = 'grid' | 'list';
 
 const formatCurrency = (value: number) => `Rs. ${Number(value || 0).toFixed(2)}`;
@@ -23,7 +28,7 @@ const formatCurrency = (value: number) => `Rs. ${Number(value || 0).toFixed(2)}`
 export default function AdminProductsPage() {
     const router = useRouter();
     const { user } = useAuth();
-    const [products, setProducts] = useState<ProductRow[]>([]);
+    const [products, setProducts] = useState<ProductViewRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [mobileGridCols, setMobileGridCols] = useState<1 | 2>(2);
@@ -39,11 +44,13 @@ export default function AdminProductsPage() {
             return;
         }
 
-        const { data: profileData } = await supabase
+        const { data } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();
+
+        const profileData = data as ProfileRoleRow | null;
 
         if (profileData?.role !== 'admin') {
             router.push('/');
@@ -60,7 +67,7 @@ export default function AdminProductsPage() {
             .select('*')
             .order('created_at', { ascending: false });
 
-        setProducts((data || []) as ProductRow[]);
+        setProducts((data || []) as ProductViewRow[]);
         setLoading(false);
     };
 
@@ -84,7 +91,7 @@ export default function AdminProductsPage() {
     const toggleActive = async (id: string, currentStatus: boolean) => {
         const { error } = await supabase
             .from('products')
-            .update({ is_active: !currentStatus })
+            .update({ is_active: !currentStatus } as never)
             .eq('id', id);
 
         if (error) {
@@ -99,11 +106,11 @@ export default function AdminProductsPage() {
     const handleToggleFlag = async (
         id: string,
         field: 'is_best_seller' | 'is_new',
-        currentValue: boolean | null
+        currentValue: boolean | null | undefined
     ) => {
         const { error } = await supabase
             .from('products')
-            .update({ [field]: !currentValue })
+            .update({ [field]: !currentValue } as never)
             .eq('id', id);
 
         if (error) {

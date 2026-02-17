@@ -16,15 +16,26 @@ import { useTranslations, useLocale } from '@/lib/i18n/context';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
 import { ProductSlider } from '@/components/ui/ProductSlider';
 import { motion } from 'framer-motion';
+import type { Database } from '@/lib/supabase/database.types';
+
+type Product = Database['public']['Tables']['products']['Row'] & {
+  is_best_seller?: boolean;
+  is_new?: boolean;
+};
+type Section = Database['public']['Tables']['sections']['Row'] & {
+  image_url: string | null;
+};
+type ProductSection = Database['public']['Tables']['product_sections']['Row'];
+type SectionWithProducts = Section & { products: Product[] };
 
 export default function HomePage() {
   const t = useTranslations();
   const locale = useLocale();
-  const [bestSellers, setBestSellers] = useState<any[]>([]);
-  const [newArrivals, setNewArrivals] = useState<any[]>([]);
-  const [sections, setSections] = useState<any[]>([]);
-  const [sectionsWithProducts, setSectionsWithProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [sectionsWithProducts, setSectionsWithProducts] = useState<SectionWithProducts[]>([]);
+  const MAX_PRODUCTS_PER_SLIDER = 10;
 
   useEffect(() => {
     fetchData();
@@ -32,77 +43,90 @@ export default function HomePage() {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-
-      // 1. Fetch Categories (Sections)
-      const { data: categorySections, error: sectionError } = await supabase
-        .from('sections')
-        .select('*')
-        .eq('is_enabled', true)
-        .order('display_order');
-
-      if (sectionError) throw sectionError;
-      setSections(categorySections || []);
-
-      // 2. Fetch products for each section
-      const sectionsWithProducts = await Promise.all(
-        (categorySections || []).map(async (section: any) => {
-          // Get products in this section
-          const { data: sectionProducts } = await supabase
-            .from('product_sections')
-            .select('product_id')
-            .eq('section_id', section.id);
-
-          if (sectionProducts && sectionProducts.length > 0) {
-            const productIds = sectionProducts.map((sp: any) => sp.product_id);
-            const { data: products } = await supabase
-              .from('products')
-              .select('*')
-              .in('id', productIds)
-              .eq('is_active', true)
-              .limit(10);
-
-            return {
-              ...(section as object),
-              products: products || []
-            };
-          }
-          return { ...(section as object), products: [] };
-        })
-      );
-
-      // Filter sections that actually have products to show
-      const activeSections = sectionsWithProducts.filter((s: any) => s.products.length > 0);
-      setSectionsWithProducts(activeSections);
-
-      // 3. Keep Best Sellers & New Arrivals as separate slices if needed
-      const [bsProducts, newProducts] = await Promise.all([
+      const [sectionsRes, productSectionsRes, activeProductsRes, bsProducts, newProducts] = await Promise.all([
+        supabase
+          .from('sections')
+          .select('*')
+          .eq('is_enabled', true)
+          .order('display_order'),
+        supabase
+          .from('product_sections')
+          .select('section_id, product_id, display_order')
+          .order('display_order'),
         supabase
           .from('products')
           .select('*')
           .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .limit(10),
+          .order('created_at', { ascending: false }),
         supabase
           .from('products')
           .select('*')
           .eq('is_active', true)
+          .eq('is_best_seller', true)
+          .order('updated_at', { ascending: false })
+          .limit(MAX_PRODUCTS_PER_SLIDER),
+        supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .eq('is_new', true)
           .order('created_at', { ascending: false })
-          .limit(10)
+          .limit(MAX_PRODUCTS_PER_SLIDER)
       ]);
 
-      setBestSellers(bsProducts.data || []);
-      setNewArrivals(newProducts.data || []);
+      if (sectionsRes.error) throw sectionsRes.error;
+      if (productSectionsRes.error) throw productSectionsRes.error;
+      if (activeProductsRes.error) throw activeProductsRes.error;
+
+      const categorySections = (sectionsRes.data || []) as Section[];
+      const productSections = (productSectionsRes.data || []) as ProductSection[];
+      const allActiveProducts = (activeProductsRes.data || []) as Product[];
+
+      setSections(categorySections);
+
+      const productById = new Map(allActiveProducts.map((product) => [product.id, product]));
+      const sectionProductIds = new Map<string, string[]>();
+
+      productSections.forEach((mapping) => {
+        const current = sectionProductIds.get(mapping.section_id) || [];
+        current.push(mapping.product_id);
+        sectionProductIds.set(mapping.section_id, current);
+      });
+
+      const activeSections = categorySections
+        .map((section) => {
+          const ids = sectionProductIds.get(section.id) || [];
+          const sectionProducts = ids
+            .map((id) => productById.get(id))
+            .filter((product): product is Product => Boolean(product))
+            .slice(0, MAX_PRODUCTS_PER_SLIDER);
+
+          return {
+            ...section,
+            products: sectionProducts
+          };
+        })
+        .filter((section) => section.products.length > 0);
+      setSectionsWithProducts(activeSections);
+
+      const bestSellerProducts = bsProducts.data?.length
+        ? (bsProducts.data as Product[])
+        : allActiveProducts.slice(0, MAX_PRODUCTS_PER_SLIDER);
+      setBestSellers(bestSellerProducts);
+
+      const bestSellerIds = new Set(bestSellerProducts.map((p) => p.id));
+      const newArrivalProducts = newProducts.data?.length
+        ? (newProducts.data as Product[]).filter((p) => !bestSellerIds.has(p.id))
+        : allActiveProducts.filter((p) => !bestSellerIds.has(p.id)).slice(0, MAX_PRODUCTS_PER_SLIDER);
+      setNewArrivals(newArrivalProducts.slice(0, MAX_PRODUCTS_PER_SLIDER));
 
     } catch (error) {
       console.error('Error fetching homepage data:', error);
       if (typeof error === 'object' && error !== null) {
         console.error('Error details:', JSON.stringify(error, null, 2));
-        if ('message' in error) console.error('Error message:', (error as any).message);
-        if ('hint' in error) console.error('Error hint:', (error as any).hint);
+        if ('message' in error) console.error('Error message:', (error as { message?: string }).message);
+        if ('hint' in error) console.error('Error hint:', (error as { hint?: string }).hint);
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -171,9 +195,12 @@ export default function HomePage() {
                 className="relative group"
               >
                 <div className="relative z-10 rounded-none overflow-hidden shadow-[0_20px_50px_-15px_rgba(0,0,0,0.12)] border-8 border-white aspect-square transition-all duration-700">
-                  <img
+                  <Image
                     src="https://res.cloudinary.com/dur6fkyoz/image/upload/v1770219742/image_6_iklsgn.jpg"
                     alt="Organic Ayurvedic Products"
+                    width={800}
+                    height={800}
+                    sizes="(max-width: 1024px) 90vw, 35vw"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                   />
                 </div>
@@ -214,7 +241,7 @@ export default function HomePage() {
                 {t('home.viewAllCategories')}
               </span>
               <span className="w-8 h-[1px] bg-gray-300 group-hover:w-12 group-hover:bg-green-600 transition-all" />
-              <span className="text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all">→</span>
+              <span className="text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all">-&gt;</span>
             </Link>
           </div>
         </div>
@@ -248,7 +275,7 @@ export default function HomePage() {
         >
           <ProductSlider
             title={locale === 'te' ? section.title_te : section.title_en}
-            subtitle={locale === 'te' ? section.subtitle_te : section.subtitle_en}
+            subtitle={(locale === 'te' ? section.subtitle_te : section.subtitle_en) ?? undefined}
             products={section.products}
             viewAllLink={`/shop?section=${section.section_id}`}
           />

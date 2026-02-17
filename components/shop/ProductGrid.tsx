@@ -11,15 +11,34 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase/client';
 import { ProductCard } from '@/components/product/ProductCard';
+import type { Database } from '@/lib/supabase/database.types';
+
+type Product = Database['public']['Tables']['products']['Row'] & {
+    is_best_seller?: boolean;
+    is_new?: boolean;
+};
+type Section = Database['public']['Tables']['sections']['Row'];
+type ProductSection = Database['public']['Tables']['product_sections']['Row'];
 
 export function ProductGrid() {
     const searchParams = useSearchParams();
     const requestRef = useRef(0); // Track request ID to handle race conditions
 
-    const [products, setProducts] = useState<any[]>([]);
-    const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
+
+    const fetchRecommendedProducts = useCallback(async () => {
+        const { data } = await supabase
+            .from('products')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(6);
+
+        setRecommendedProducts((data || []) as Product[]);
+    }, []);
 
     const fetchProducts = useCallback(async () => {
         const requestId = ++requestRef.current;
@@ -35,27 +54,27 @@ export function ProductGrid() {
             const search = searchParams.get('q');
 
             // Build query
-            let query = (supabase
-                .from('products' as any) as any)
+            let query = supabase
+                .from('products')
                 .select('*', { count: 'exact' })
                 .eq('is_active', true);
 
             // Apply section filter - UPDATED: Now handles multiple sections
             if (sections.length > 0) {
                 // Get all section UUIDs from section_ids
-                const { data: sectionData, error: sectionError } = await (supabase
-                    .from('sections' as any) as any)
+                const { data: sectionData, error: sectionError } = await supabase
+                    .from('sections')
                     .select('id, section_id')
                     .in('section_id', sections);
 
                 if (sectionError) throw sectionError;
 
                 if (sectionData && sectionData.length > 0) {
-                    const sectionUUIDs = sectionData.map((s: any) => s.id);
+                    const sectionUUIDs = (sectionData as Pick<Section, 'id' | 'section_id'>[]).map((s) => s.id);
 
                     // Get all products that belong to ANY of the selected sections
-                    const { data: sectionProducts, error: mappingError } = await (supabase
-                        .from('product_sections' as any) as any)
+                    const { data: sectionProducts, error: mappingError } = await supabase
+                        .from('product_sections')
                         .select('product_id')
                         .in('section_id', sectionUUIDs);
 
@@ -63,7 +82,7 @@ export function ProductGrid() {
 
                     if (sectionProducts && sectionProducts.length > 0) {
                         // Get unique product IDs
-                        const productIds = [...new Set(sectionProducts.map((sp: any) => sp.product_id))];
+                        const productIds = [...new Set((sectionProducts as Pick<ProductSection, 'product_id'>[]).map((sp) => sp.product_id))];
                         query = query.in('id', productIds);
                     } else {
                         // No products in these sections
@@ -122,15 +141,18 @@ export function ProductGrid() {
 
             if (error) throw error;
 
-            setProducts(data || []);
+            setProducts((data || []) as Product[]);
             setTotalCount(count || 0);
 
             // Fetch recommended products if no results
             if (!data || data.length === 0) {
                 await fetchRecommendedProducts();
             }
-        } catch (error: any) {
-            console.error('Error fetching products:', error?.message || error);
+        } catch (error) {
+            const message = typeof error === 'object' && error !== null && 'message' in error
+                ? (error as { message?: string }).message
+                : String(error);
+            console.error('Error fetching products:', message);
             if (requestRef.current === requestId) {
                 setProducts([]);
             }
@@ -139,18 +161,7 @@ export function ProductGrid() {
                 setLoading(false);
             }
         }
-    }, [searchParams]);
-
-    const fetchRecommendedProducts = async () => {
-        const { data } = await (supabase
-            .from('products' as any) as any)
-            .select('*')
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-            .limit(6);
-
-        setRecommendedProducts(data || []);
-    };
+    }, [fetchRecommendedProducts, searchParams]);
 
     useEffect(() => {
         let isCancelled = false;
@@ -204,7 +215,7 @@ export function ProductGrid() {
                     </div>
                     <h3 className="text-lg font-black text-gray-900 mb-2">No Products Found</h3>
                     <p className="text-gray-600 mb-5 text-center max-w-md text-sm">
-                        We couldn't find any products matching your filters. Try adjusting your search or browse our recommended products below.
+                        We could not find any products matching your filters. Try adjusting your search or browse our recommended products below.
                     </p>
                     <button
                         onClick={() => window.location.href = '/shop'}

@@ -16,12 +16,14 @@ import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 
 type SectionRow = Database['public']['Tables']['sections']['Row'];
+type SectionViewRow = SectionRow & { image_url?: string | null };
+type ProfileRoleRow = Pick<Database['public']['Tables']['profiles']['Row'], 'role'>;
 type ViewMode = 'grid' | 'list';
 
 export default function AdminCategoriesPage() {
     const router = useRouter();
     const { user } = useAuth();
-    const [sections, setSections] = useState<SectionRow[]>([]);
+    const [sections, setSections] = useState<SectionViewRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [mobileGridCols, setMobileGridCols] = useState<1 | 2>(2);
@@ -37,11 +39,13 @@ export default function AdminCategoriesPage() {
             return;
         }
 
-        const { data: profileData } = await supabase
+        const { data } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();
+
+        const profileData = data as ProfileRoleRow | null;
 
         if (profileData?.role !== 'admin') {
             router.push('/');
@@ -58,7 +62,7 @@ export default function AdminCategoriesPage() {
             .select('*')
             .order('created_at', { ascending: false });
 
-        setSections((data || []) as SectionRow[]);
+        setSections((data || []) as SectionViewRow[]);
         setLoading(false);
     };
 

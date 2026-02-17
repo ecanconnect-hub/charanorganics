@@ -16,6 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 import toast from 'react-hot-toast';
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+type ProfileRoleRow = Pick<ProfileRow, 'role'>;
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
 type PaymentRow = Database['public']['Tables']['payments']['Row'];
@@ -57,11 +58,13 @@ export default function AdminPaymentsPage() {
             return;
         }
 
-        const { data: profileData } = await supabase
+        const { data } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();
+
+        const profileData = data as ProfileRoleRow | null;
 
         if (profileData?.role !== 'admin') {
             router.push('/');
@@ -158,7 +161,7 @@ export default function AdminPaymentsPage() {
                 status: 'verified',
                 verified_at: new Date().toISOString(),
                 verified_by: user.id
-            })
+            } as never)
             .eq('id', paymentId);
 
         if (paymentError) {
@@ -168,7 +171,7 @@ export default function AdminPaymentsPage() {
 
         const { error: orderError } = await supabase
             .from('orders')
-            .update({ status: 'confirmed' })
+            .update({ status: 'confirmed' } as never)
             .eq('id', orderId);
 
         if (orderError) {
@@ -192,7 +195,7 @@ export default function AdminPaymentsPage() {
                 rejection_reason: reason,
                 verified_at: new Date().toISOString(),
                 verified_by: user?.id || null
-            })
+            } as never)
             .eq('id', paymentId);
 
         if (error) {

@@ -75,6 +75,7 @@ function ShopContent() {
                     <div className="flex flex-col sm:flex-row gap-2.5">
                         {/* Mobile Filter Toggle */}
                         <button
+                            type="button"
                             onClick={() => setShowFilters(!showFilters)}
                             className="lg:hidden flex items-center justify-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-xs font-bold hover:bg-gray-50 transition-colors bg-white"
                         >

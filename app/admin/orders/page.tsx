@@ -16,6 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 import toast from 'react-hot-toast';
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+type ProfileRoleRow = Pick<ProfileRow, 'role'>;
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
 type PaymentRow = Database['public']['Tables']['payments']['Row'];
@@ -84,11 +85,13 @@ export default function AdminOrdersPage() {
             return;
         }
 
-        const { data: profileData } = await supabase
+        const { data } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();
+
+        const profileData = data as ProfileRoleRow | null;
 
         if (profileData?.role !== 'admin') {
             router.push('/');
@@ -169,7 +172,7 @@ export default function AdminOrdersPage() {
 
         const { error } = await supabase
             .from('orders')
-            .update({ status: newStatus })
+            .update({ status: newStatus } as never)
             .eq('id', orderId);
 
         if (error) {
@@ -180,7 +183,7 @@ export default function AdminOrdersPage() {
         if (newStatus === 'pending_payment' || newStatus === 'payment_verification') {
             const { error: paymentError } = await supabase
                 .from('payments')
-                .update({ status: 'pending' })
+                .update({ status: 'pending' } as never)
                 .eq('order_id', orderId);
 
             if (paymentError) {
