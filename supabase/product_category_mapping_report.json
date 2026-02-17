@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-02-17T15:34:02.496Z",
+  "active_products": 97,
+  "target_sections_upserted": 9,
+  "catalog_mappings_attempted": 109,
+  "catalog_mappings_inserted_unique": 109,
+  "missing_catalog_products": [],
+  "miscellaneous_assigned": 0
+}

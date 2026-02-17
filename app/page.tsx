@@ -196,7 +196,7 @@ export default function HomePage() {
               >
                 <div className="relative z-10 rounded-none overflow-hidden shadow-[0_20px_50px_-15px_rgba(0,0,0,0.12)] border-8 border-white aspect-square transition-all duration-700">
                   <Image
-                    src="https://res.cloudinary.com/dur6fkyoz/image/upload/v1770219742/image_6_iklsgn.jpg"
+                    src="https://res.cloudinary.com/dur6fkyoz/image/upload/v1771342802/image_6_hcooa4.jpg"
                     alt="Organic Ayurvedic Products"
                     width={800}
                     height={800}
