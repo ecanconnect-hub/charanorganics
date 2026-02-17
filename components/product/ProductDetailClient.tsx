@@ -301,6 +301,31 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                             )}
                         </div>
 
+                        {/* Unit / Net Quantity Display - UPDATED */}
+                        {(() => {
+                            // Helper to extract unit from title if explicit fields are missing
+                            const extractUnit = (text: string) => {
+                                const match = text.match(/\b\d+\s*(?:g|kg|gm|ml|l|ltr|pcs|pack)\b/i);
+                                return match ? match[0] : null;
+                            };
+
+                            const unitLabel = selectedVariant
+                                ? selectedVariant.label
+                                : (product.unit_value && product.unit_type
+                                    ? `${product.unit_value} ${product.unit_type}`
+                                    : extractUnit(title));
+
+                            if (!unitLabel) return null;
+
+                            return (
+                                <div className="mb-6 flex items-center gap-2">
+                                    <span className="text-sm font-bold text-gray-900 uppercase tracking-wider bg-gray-100 px-3 py-1 rounded-md">
+                                        Net Qty: {unitLabel}
+                                    </span>
+                                </div>
+                            );
+                        })()}
+
                         {/* 4. Short Description */}
                         <div className="mb-6">
                             <p className={`text-base text-gray-600 leading-relaxed ${!showFullDesc ? 'line-clamp-3' : ''}`}>

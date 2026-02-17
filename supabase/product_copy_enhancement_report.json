@@ -1,0 +1,106 @@
+{
+  "timestamp": "2026-02-17T16:14:44.829Z",
+  "active_products_updated": 102,
+  "sample": [
+    {
+      "product_id": "BC069",
+      "title_en": "Cedarwood Essential Oil",
+      "category": "essential_oil"
+    },
+    {
+      "product_id": "BC002",
+      "title_en": "Olive Oil",
+      "category": "carrier_oil"
+    },
+    {
+      "product_id": "BC006",
+      "title_en": "Sweet Almond Oil",
+      "category": "carrier_oil"
+    },
+    {
+      "product_id": "BC005",
+      "title_en": "Jojoba Oil",
+      "category": "carrier_oil"
+    },
+    {
+      "product_id": "BC068",
+      "title_en": "Tea Tree Essential Oil",
+      "category": "essential_oil"
+    },
+    {
+      "product_id": "BC066",
+      "title_en": "Jasmine Essential Oil",
+      "category": "essential_oil"
+    },
+    {
+      "product_id": "BC033",
+      "title_en": "Castor Oil",
+      "category": "carrier_oil"
+    },
+    {
+      "product_id": "BC012",
+      "title_en": "Grapeseed Oil",
+      "category": "carrier_oil"
+    },
+    {
+      "product_id": "BC030",
+      "title_en": "Steam Distilled Rose Water",
+      "category": "liquid"
+    },
+    {
+      "product_id": "BC036",
+      "title_en": "De-Mineralized Water",
+      "category": "liquid"
+    },
+    {
+      "product_id": "BC032",
+      "title_en": "Coconut Oil",
+      "category": "carrier_oil"
+    },
+    {
+      "product_id": "BC035",
+      "title_en": "Pearly Shampoo Base",
+      "category": "base"
+    },
+    {
+      "product_id": "BC025",
+      "title_en": "Soap Base (Melt & Pour)",
+      "category": "soap"
+    },
+    {
+      "product_id": "BC013",
+      "title_en": "Coco Glucoside",
+      "category": "surfactant"
+    },
+    {
+      "product_id": "BC021",
+      "title_en": "Coco Betaine",
+      "category": "surfactant"
+    },
+    {
+      "product_id": "BC029",
+      "title_en": "Decyl Glucoside",
+      "category": "surfactant"
+    },
+    {
+      "product_id": "BC089",
+      "title_en": "Avocado Oil",
+      "category": "carrier_oil"
+    },
+    {
+      "product_id": "BC003",
+      "title_en": "Iscaguard PEG",
+      "category": "surfactant"
+    },
+    {
+      "product_id": "BC054",
+      "title_en": "Cinnamon Powder",
+      "category": "herbal"
+    },
+    {
+      "product_id": "BC031",
+      "title_en": "Vegetable Glycerin",
+      "category": "active_humectant"
+    }
+  ]
+}

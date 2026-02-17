@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-02-17T16:07:11.030Z",
+  "enabled_sections": 13,
+  "mapped_rows": 106,
+  "section_counts": [
+    {
+      "section_id": "soaps-body-bars",
+      "count": 2
+    },
+    {
+      "section_id": "carrier-oils",
+      "count": 10
+    },
+    {
+      "section_id": "butters-lipids",
+      "count": 2
+    },
+    {
+      "section_id": "waxes-emulsifiers",
+      "count": 3
+    },
+    {
+      "section_id": "surfactants-cleansers",
+      "count": 4
+    },
+    {
+      "section_id": "humectants-actives",
+      "count": 7
+    },
+    {
+      "section_id": "hydrosols-waters-liquids",
+      "count": 4
+    },
+    {
+      "section_id": "bases-ready-mixes",
+      "count": 2
+    },
+    {
+      "section_id": "essential-oils",
+      "count": 14
+    },
+    {
+      "section_id": "starches-flours",
+      "count": 5
+    },
+    {
+      "section_id": "clays-minerals",
+      "count": 3
+    },
+    {
+      "section_id": "herbal-powders-skin",
+      "count": 25
+    },
+    {
+      "section_id": "herbal-powders-hair",
+      "count": 25
+    }
+  ]
+}

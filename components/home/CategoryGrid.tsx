@@ -65,8 +65,12 @@ export function CategoryGrid({ sections, limitMobile = false }: CategoryGridProp
 
     if (!sections || sections.length === 0) return null;
 
-    // Always show all sections (Mobile Limit Removed)
-    const displaySections = sections;
+    // Sort sections by product count (descending)
+    const displaySections = [...sections].sort((a, b) => {
+        const countA = counts[a.id] || 0;
+        const countB = counts[b.id] || 0;
+        return countB - countA; // Descending order
+    });
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
@@ -84,7 +88,7 @@ export function CategoryGrid({ sections, limitMobile = false }: CategoryGridProp
                         className="block"
                     >
                         <Link
-                            href={`/shop?category=${section.section_id}`}
+                            href={`/shop?section=${section.section_id}`}
                             className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 bg-gray-100 border border-gray-100"
                         >
                             {/* image */}
