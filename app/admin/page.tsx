@@ -336,7 +336,47 @@ export default function AdminDashboard() {
                             </button>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                            {/* Mobile Card View */}
+                            <div className="md:hidden space-y-4 p-4">
+                                {recentOrders.slice(0, 5).map((order) => (
+                                    <div key={order.id} className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 shadow-sm">
+                                        <div className="flex justify-between items-start mb-3 border-b border-gray-200 pb-2">
+                                            <div>
+                                                <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block mb-1">Order ID</span>
+                                                <span className="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                                                    {order.order_id}
+                                                </span>
+                                            </div>
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                                order.status === 'shipped' ? 'bg-indigo-100 text-indigo-800' :
+                                                    order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                                                        'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                {order.status}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-gray-500">Customer</span>
+                                                <span className="text-sm font-bold text-gray-900">{order.profile?.full_name || 'N/A'}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-gray-500">Amount</span>
+                                                <span className="text-sm font-bold text-gray-900">₹{order.total_amount.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-gray-500">Date</span>
+                                                <span className="text-xs font-medium text-gray-600">
+                                                    {new Date(order.created_at).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Desktop Table View */}
+                            <table className="w-full hidden md:table">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Order ID</th>

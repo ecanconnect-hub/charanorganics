@@ -190,15 +190,7 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
                                         <h1 className="truncate text-xl font-bold text-gray-900 sm:text-2xl">{title}</h1>
                                         {subtitle && <p className="mt-1 text-sm text-gray-600">{subtitle}</p>}
                                     </div>
-                                    <button
-                                        onClick={() => setSidebarOpen((value) => !value)}
-                                        className="rounded-lg p-2 transition-colors hover:bg-gray-100 lg:hidden"
-                                        aria-label="Open sidebar"
-                                    >
-                                        <svg className="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                                        </svg>
-                                    </button>
+
                                 </div>
                             </div>
                         </div>

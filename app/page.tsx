@@ -106,7 +106,12 @@ export default function HomePage() {
             products: sectionProducts
           };
         })
-        .filter((section) => section.products.length > 0);
+        .filter((section) => section.products.length > 0)
+        .sort((a, b) => {
+          const countA = sectionProductIds.get(a.id)?.length || 0;
+          const countB = sectionProductIds.get(b.id)?.length || 0;
+          return countB - countA;
+        });
       setSectionsWithProducts(activeSections);
 
       const bestSellerProducts = bsProducts.data?.length
