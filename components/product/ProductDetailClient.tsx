@@ -340,21 +340,27 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                         {/* 5. Quantity + CTA (Grouped Block) */}
                         <div className="flex flex-col sm:flex-row gap-4 mb-8">
                             {/* Quantity Selector - Inline & Compact */}
-                            <div className="flex items-center h-12 border border-gray-300 rounded-lg bg-white w-fit shrink-0 shadow-sm">
+                            <div className="flex items-center h-12 border border-gray-300 rounded-lg bg-white w-fit shrink-0 shadow-sm !p-0">
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="w-10 h-full flex items-center justify-center text-gray-900 hover:bg-gray-100 rounded-l-lg transition-colors"
+                                    className="w-10 h-full flex items-center justify-center text-black hover:bg-gray-100 rounded-l-lg transition-colors !p-0 !min-h-0"
+                                    aria-label="Decrease quantity"
                                 >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M20 12H4" /></svg>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" />
+                                    </svg>
                                 </button>
-                                <div className="w-12 h-full flex items-center justify-center font-bold text-gray-900 text-base bg-white border-x border-gray-200">
+                                <div className="w-12 h-full flex items-center justify-center font-bold text-black text-lg bg-white border-x border-gray-200 !p-0">
                                     {quantity}
                                 </div>
                                 <button
                                     onClick={() => setQuantity(Math.min(selectedVariant?.stock_quantity ?? product.stock_quantity, quantity + 1))}
-                                    className="w-10 h-full flex items-center justify-center text-gray-900 hover:bg-gray-100 rounded-r-lg transition-colors"
+                                    className="w-10 h-full flex items-center justify-center text-black hover:bg-gray-100 rounded-r-lg transition-colors !p-0 !min-h-0"
+                                    aria-label="Increase quantity"
                                 >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                                    </svg>
                                 </button>
                             </div>
 

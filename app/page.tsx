@@ -96,6 +96,11 @@ export default function HomePage() {
 
     } catch (error) {
       console.error('Error fetching homepage data:', error);
+      if (typeof error === 'object' && error !== null) {
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        if ('message' in error) console.error('Error message:', (error as any).message);
+        if ('hint' in error) console.error('Error hint:', (error as any).hint);
+      }
     } finally {
       setLoading(false);
     }
