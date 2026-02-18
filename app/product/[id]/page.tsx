@@ -45,6 +45,7 @@ export async function generateMetadata({
     const title = product.title_en;
     const description = product.description_en?.slice(0, 155) || `Buy ${title} from Charan Organics.`;
     const canonical = `/product/${id}`;
+    const absoluteUrl = `${siteUrl}/product/${id}`;
 
     return {
         title,
@@ -56,7 +57,7 @@ export async function generateMetadata({
             title,
             description,
             type: 'website',
-            url: canonical,
+            url: absoluteUrl,
             images: product.image_url ? [{ url: product.image_url }] : undefined,
         },
         twitter: {

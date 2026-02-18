@@ -25,6 +25,7 @@ export interface Database {
                     full_name: string | null
                     phone: string | null
                     role: 'customer' | 'admin'
+                    privacy_policy_accepted: boolean | null
                     created_at: string
                     updated_at: string
                     last_login: string | null
@@ -35,6 +36,7 @@ export interface Database {
                     full_name?: string | null
                     phone?: string | null
                     role?: 'customer' | 'admin'
+                    privacy_policy_accepted?: boolean | null
                     created_at?: string
                     updated_at?: string
                     last_login?: string | null
@@ -45,6 +47,7 @@ export interface Database {
                     full_name?: string | null
                     phone?: string | null
                     role?: 'customer' | 'admin'
+                    privacy_policy_accepted?: boolean | null
                     created_at?: string
                     updated_at?: string
                     last_login?: string | null

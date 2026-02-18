@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
@@ -10,11 +9,33 @@ import { supabase } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 
 export default function SecurityPage() {
-    const router = useRouter();
     const { user, loading } = useAuth();
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [updating, setUpdating] = useState(false);
+    const [policyAccepted, setPolicyAccepted] = useState(true);
+    const [policyLoading, setPolicyLoading] = useState(true);
+    const [savingPolicy, setSavingPolicy] = useState(false);
+
+    useEffect(() => {
+        const loadPolicyPreference = async () => {
+            if (!user) return;
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('privacy_policy_accepted')
+                    .eq('id', user.id)
+                    .single();
+                if (error) throw error;
+                setPolicyAccepted((data?.privacy_policy_accepted ?? true) as boolean);
+            } catch (error) {
+                console.error('Failed to load policy preference:', error);
+            } finally {
+                setPolicyLoading(false);
+            }
+        };
+        void loadPolicyPreference();
+    }, [user]);
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,14 +59,36 @@ export default function SecurityPage() {
             toast.success('Password updated successfully!');
             setNewPassword('');
             setConfirmPassword('');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to update password');
+        } catch (error: unknown) {
+            const message = typeof error === 'object' && error !== null && 'message' in error
+                ? String((error as { message?: string }).message)
+                : 'Failed to update password';
+            toast.error(message);
         } finally {
             setUpdating(false);
         }
     };
 
     if (loading || !user) return null;
+
+    const handleSavePolicyPreference = async () => {
+        setSavingPolicy(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ privacy_policy_accepted: policyAccepted })
+                .eq('id', user.id);
+            if (error) throw error;
+            toast.success('Policy preference updated');
+        } catch (error: unknown) {
+            const message = typeof error === 'object' && error !== null && 'message' in error
+                ? String((error as { message?: string }).message)
+                : 'Failed to update policy preference';
+            toast.error(message);
+        } finally {
+            setSavingPolicy(false);
+        }
+    };
 
     return (
         <main className="section-padding bg-gray-50/50 min-h-screen">
@@ -130,13 +173,50 @@ export default function SecurityPage() {
                     >
                         <div>
                             <h3 className="font-bold text-gray-900 mb-1">Forgot your password?</h3>
-                            <p className="text-gray-500 text-sm">We'll send a password reset link to <span className="font-bold text-gray-700">{user.email}</span></p>
+                            <p className="text-gray-500 text-sm">We&apos;ll send a password reset link to <span className="font-bold text-gray-700">{user.email}</span></p>
                         </div>
                         <Link href="/forgot-password">
                             <Button variant="outline" className="rounded-full font-bold whitespace-nowrap">
                                 Request Reset Link
                             </Button>
                         </Link>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className="bg-white rounded-3xl p-8 shadow-md border border-gray-100"
+                    >
+                        <h3 className="font-bold text-gray-900 mb-2">Policy Acceptance</h3>
+                        <p className="text-gray-500 text-sm mb-5">
+                            Keep this enabled to continue placing orders. If disabled, checkout will ask you to enable it here.
+                        </p>
+
+                        <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={policyAccepted}
+                                onChange={(e) => setPolicyAccepted(e.target.checked)}
+                                disabled={policyLoading || savingPolicy}
+                                className="mt-1 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                            />
+                            <span className="text-sm text-gray-700 font-semibold">
+                                I accept the store policy and want to continue placing orders
+                            </span>
+                        </label>
+
+                        <div className="mt-5">
+                            <Button
+                                variant="primary"
+                                onClick={handleSavePolicyPreference}
+                                isLoading={savingPolicy}
+                                disabled={policyLoading}
+                                className="rounded-xl font-bold"
+                            >
+                                Save Policy Preference
+                            </Button>
+                        </div>
                     </motion.div>
                 </div>
             </div>

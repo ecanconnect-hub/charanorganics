@@ -73,6 +73,12 @@ export const metadata: Metadata = {
     description: "Natural and handcrafted wellness products from Charan Organics.",
     images: ['/charan-logo.png'],
   },
+  other: {
+    'geo.region': 'IN-TG',
+    'geo.placename': 'Hyderabad',
+    'geo.position': '17.3850;78.4867',
+    ICBM: '17.3850, 78.4867',
+  },
 };
 
 import Script from 'next/script';
@@ -96,7 +102,7 @@ export default function RootLayout({
           telephone: '+91-8247838125',
           contactType: 'customer support',
           areaServed: 'IN',
-          availableLanguage: ['en', 'te'],
+          availableLanguage: ['en'],
         }],
       },
       {
@@ -118,6 +124,24 @@ export default function RootLayout({
         '@id': `${siteUrl}#store`,
         name: siteName,
         url: siteUrl,
+      },
+      {
+        '@type': 'LocalBusiness',
+        '@id': `${siteUrl}#localbusiness`,
+        name: siteName,
+        image: `${siteUrl}/charan-logo.png`,
+        url: siteUrl,
+        telephone: '+91-8247838125',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: 'Hyderabad',
+          addressRegion: 'Telangana',
+          addressCountry: 'IN',
+        },
+        areaServed: {
+          '@type': 'Country',
+          name: 'India',
+        },
       },
     ],
   };

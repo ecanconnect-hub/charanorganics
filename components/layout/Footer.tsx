@@ -80,9 +80,9 @@ export function Footer() {
                         <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-6">Shop</h4>
                         <ul className="space-y-3">
                             <li><Link href="/shop" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">All Products</Link></li>
-                            <li><Link href="/shop?section=skincare" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Skincare</Link></li>
-                            <li><Link href="/shop?section=haircare" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Haircare</Link></li>
-                            <li><Link href="/shop?section=homecare" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Homecare</Link></li>
+                            <li><Link href="/shop?section=herbal-powders-skin-soap" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Skin Care</Link></li>
+                            <li><Link href="/shop?section=herbal-powders-hair-shampoo" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Hair Care</Link></li>
+                            <li><Link href="/shop?section=essential-oils" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Essential Oils</Link></li>
                         </ul>
                     </div>
 

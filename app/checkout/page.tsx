@@ -20,6 +20,8 @@ export default function CheckoutPage() {
     const { user, loading: authLoading } = useAuth();
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [policyBlocked, setPolicyBlocked] = useState(false);
+    const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
 
     // Address fields
     const [fullName, setFullName] = useState('');
@@ -34,6 +36,7 @@ export default function CheckoutPage() {
         const initialization = async () => {
             if (user) {
                 await fetchCart();
+                await fetchSavedAddresses();
                 await loadSavedAddress();
             } else if (!authLoading) {
                 await fetchGuestCart();
@@ -108,6 +111,28 @@ export default function CheckoutPage() {
         }
     };
 
+    const applyAddressToForm = (addr: any) => {
+        if (!addr) return;
+        setFullName(addr.full_name || addr.name || '');
+        setPhone(addr.phone || '');
+        setAddressLine1(addr.address_line1 || addr.address_line || '');
+        setAddressLine2(addr.address_line2 || '');
+        setCity(addr.city || '');
+        setState(addr.state || '');
+        setPincode(addr.pincode || '');
+    };
+
+    const fetchSavedAddresses = async () => {
+        if (!user) return;
+        const { data } = await supabase
+            .from('addresses' as any)
+            .select('*')
+            .eq('user_id', user.id)
+            .order('is_default', { ascending: false });
+
+        setSavedAddresses((data as any[]) || []);
+    };
+
     const loadSavedAddress = async () => {
         if (!user) return;
         const { data } = await supabase
@@ -118,19 +143,33 @@ export default function CheckoutPage() {
             .single();
 
         if (data) {
-            const addr = data as any;
-            setFullName(addr.full_name || addr.name || '');
-            setPhone(addr.phone || '');
-            setAddressLine1(addr.address_line1 || addr.address_line || '');
-            setAddressLine2(addr.address_line2 || '');
-            setCity(addr.city || '');
-            setState(addr.state || '');
-            setPincode(addr.pincode || '');
+            applyAddressToForm(data as any);
         }
     };
 
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
+        setPolicyBlocked(false);
+
+        if (user) {
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('privacy_policy_accepted')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) {
+                toast.error('Unable to verify policy acceptance. Please try again.');
+                return;
+            }
+
+            if (profileData?.privacy_policy_accepted === false) {
+                setPolicyBlocked(true);
+                toast.error('Please accept policy in Account > Security to confirm your order.');
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {
@@ -235,6 +274,41 @@ export default function CheckoutPage() {
                             <div className="lg:col-span-2">
                                 <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
                                     <h2 className="text-2xl font-black text-gray-900 mb-8 tracking-tight uppercase italic">Shipping Address</h2>
+
+                                    {user && savedAddresses.length > 0 && (
+                                        <div className="mb-6">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider">Saved Addresses</h3>
+                                                <Link href="/account/addresses" className="text-xs font-bold text-green-700 hover:text-green-600">
+                                                    Manage Addresses
+                                                </Link>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                {savedAddresses.slice(0, 3).map((addr, idx) => (
+                                                    <div key={addr.id || idx} className="rounded-xl border border-gray-200 bg-gray-50 p-3 flex items-start justify-between gap-4">
+                                                        <div className="text-xs text-gray-700 leading-relaxed">
+                                                            <p className="font-bold text-gray-900">
+                                                                {addr.name}
+                                                                {addr.is_default ? <span className="ml-2 text-[10px] text-green-700 font-black uppercase">Default</span> : null}
+                                                            </p>
+                                                            <p>{addr.phone}</p>
+                                                            <p>{addr.address_line}</p>
+                                                            <p>{addr.city}, {addr.state} - {addr.pincode}</p>
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            className="rounded-lg text-xs font-bold whitespace-nowrap"
+                                                            onClick={() => applyAddressToForm(addr)}
+                                                        >
+                                                            Use This
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <Input
@@ -380,6 +454,23 @@ export default function CheckoutPage() {
                                     >
                                         Confirm Order
                                     </Button>
+
+                                    {policyBlocked && (
+                                        <div className="mt-4 rounded-xl bg-amber-100/90 border border-amber-300 px-4 py-3">
+                                            <p className="text-xs font-bold text-amber-900 mb-2">
+                                                Please accept policy in Account Security to continue.
+                                            </p>
+                                            <Link href="/account/security" className="inline-block">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="rounded-lg text-xs font-bold"
+                                                >
+                                                    Go to Account Security
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
