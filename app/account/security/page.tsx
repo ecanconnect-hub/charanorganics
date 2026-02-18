@@ -6,7 +6,10 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
+import type { Database } from '@/lib/supabase/database.types';
 import toast from 'react-hot-toast';
+
+type ProfilePolicyRow = Pick<Database['public']['Tables']['profiles']['Row'], 'privacy_policy_accepted'>;
 
 export default function SecurityPage() {
     const { user, loading } = useAuth();
@@ -27,7 +30,8 @@ export default function SecurityPage() {
                     .eq('id', user.id)
                     .single();
                 if (error) throw error;
-                setPolicyAccepted((data?.privacy_policy_accepted ?? true) as boolean);
+                const profilePolicy = data as ProfilePolicyRow | null;
+                setPolicyAccepted(profilePolicy?.privacy_policy_accepted ?? true);
             } catch (error) {
                 console.error('Failed to load policy preference:', error);
             } finally {
@@ -76,7 +80,7 @@ export default function SecurityPage() {
         try {
             const { error } = await supabase
                 .from('profiles')
-                .update({ privacy_policy_accepted: policyAccepted })
+                .update({ privacy_policy_accepted: policyAccepted } as never)
                 .eq('id', user.id);
             if (error) throw error;
             toast.success('Policy preference updated');

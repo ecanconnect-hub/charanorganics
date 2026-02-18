@@ -13,7 +13,10 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
+import type { Database } from '@/lib/supabase/database.types';
 import toast from 'react-hot-toast';
+
+type ProfilePolicyRow = Pick<Database['public']['Tables']['profiles']['Row'], 'privacy_policy_accepted'>;
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -163,7 +166,8 @@ export default function CheckoutPage() {
                 return;
             }
 
-            if (profileData?.privacy_policy_accepted === false) {
+            const profilePolicy = profileData as ProfilePolicyRow | null;
+            if (profilePolicy?.privacy_policy_accepted === false) {
                 setPolicyBlocked(true);
                 toast.error('Please accept policy in Account > Security to confirm your order.');
                 return;
