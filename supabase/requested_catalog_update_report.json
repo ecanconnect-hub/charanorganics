@@ -1,0 +1,209 @@
+{
+  "timestamp": "2026-02-18T09:21:29.562Z",
+  "added_products": [
+    {
+      "id": "225b0148-7f53-42e7-8f6a-4cc99c334c19",
+      "product_id": "BC098",
+      "title_en": "SCI Powder"
+    },
+    {
+      "id": "1f58fa07-6d4e-431b-8121-182a4579007d",
+      "product_id": "BC099",
+      "title_en": "CAPB"
+    },
+    {
+      "id": "958bdd4f-d8d2-4aaf-973e-516f096d1513",
+      "product_id": "BC100",
+      "title_en": "Rosemary Essential Oil"
+    }
+  ],
+  "removed_products": [
+    {
+      "product_id": "BC050",
+      "title_en": "Coffee Powder"
+    }
+  ],
+  "dedupe_actions": [
+    {
+      "kept": {
+        "product_id": "EO001",
+        "title_en": "Rose Essential Oil"
+      },
+      "removed": [
+        {
+          "product_id": "BC065",
+          "title_en": "Rose Essential Oil"
+        }
+      ]
+    }
+  ],
+  "price_updates": [
+    {
+      "rule": "Any Essential Oil 15ml",
+      "updated_count": 15,
+      "current_price": 200
+    },
+    {
+      "rule": "Banana 50g",
+      "updated_count": 2,
+      "current_price": 100
+    },
+    {
+      "rule": "Pomegranate Seeds Powder 50g",
+      "updated_count": 1,
+      "current_price": 150
+    },
+    {
+      "rule": "Red Sandal 50g",
+      "updated_count": 1,
+      "current_price": 150
+    },
+    {
+      "rule": "Red Wine 50ml",
+      "updated_count": 1,
+      "current_price": 100,
+      "unit_value": 50,
+      "unit_type": "ml"
+    }
+  ],
+  "naming_updates": [
+    {
+      "product_id": "BC012",
+      "field": "title_en",
+      "from": "Grapeseed Oil",
+      "to": "Grape Seed Oil"
+    },
+    {
+      "product_id": "BC083",
+      "field": "title_en",
+      "from": "Sambar Onions",
+      "to": "Sambar Onion Powder"
+    }
+  ],
+  "unresolved_duplicate_titles": [
+    [
+      {
+        "product_id": "HP001",
+        "title_en": "Banana Powder",
+        "is_active": true
+      },
+      {
+        "product_id": "BC053",
+        "title_en": "Banana Powder",
+        "is_active": false
+      }
+    ],
+    [
+      {
+        "product_id": "BC069",
+        "title_en": "Cedarwood Essential Oil",
+        "is_active": true
+      },
+      {
+        "product_id": "EO005",
+        "title_en": "Cedarwood Essential Oil",
+        "is_active": true
+      }
+    ],
+    [
+      {
+        "product_id": "BC086",
+        "title_en": "Custard Apple Seeds Powder",
+        "is_active": true
+      },
+      {
+        "product_id": "BC046",
+        "title_en": "Custard Apple Seeds Powder",
+        "is_active": true
+      }
+    ],
+    [
+      {
+        "product_id": "EO002",
+        "title_en": "Jasmine Essential Oil",
+        "is_active": true
+      },
+      {
+        "product_id": "BC066",
+        "title_en": "Jasmine Essential Oil",
+        "is_active": true
+      }
+    ],
+    [
+      {
+        "product_id": "HP002",
+        "title_en": "Orange Peel Powder",
+        "is_active": true
+      },
+      {
+        "product_id": "BC062",
+        "title_en": "Orange Peel Powder",
+        "is_active": true
+      }
+    ],
+    [
+      {
+        "product_id": "BC040",
+        "title_en": "Shikakai Powder",
+        "is_active": true
+      },
+      {
+        "product_id": "BC088",
+        "title_en": "Shikakai Powder",
+        "is_active": false
+      }
+    ],
+    [
+      {
+        "product_id": "EO003",
+        "title_en": "Tea Tree Essential Oil",
+        "is_active": true
+      },
+      {
+        "product_id": "BC068",
+        "title_en": "Tea Tree Essential Oil",
+        "is_active": true
+      }
+    ],
+    [
+      {
+        "product_id": "EO004",
+        "title_en": "Ylang Ylang Essential Oil",
+        "is_active": true
+      },
+      {
+        "product_id": "BC067",
+        "title_en": "Ylang Ylang Essential Oil",
+        "is_active": true
+      }
+    ]
+  ],
+  "products_without_images": [
+    {
+      "product_id": "BC099",
+      "title_en": "CAPB",
+      "is_active": true
+    },
+    {
+      "product_id": "BC100",
+      "title_en": "Rosemary Essential Oil",
+      "is_active": true
+    },
+    {
+      "product_id": "BC098",
+      "title_en": "SCI Powder",
+      "is_active": true
+    },
+    {
+      "product_id": "BC011",
+      "title_en": "Sorbitol",
+      "is_active": false
+    },
+    {
+      "product_id": "BC004",
+      "title_en": "Xanthan Gum",
+      "is_active": false
+    }
+  ],
+  "total_products_after": 108
+}
