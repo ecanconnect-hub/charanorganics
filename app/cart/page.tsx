@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
 import { useLocale } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 import toast from 'react-hot-toast';
 
 import { useCart } from '@/lib/cart-context';
@@ -59,7 +60,9 @@ export default function CartPage() {
                         <div className="lg:col-span-8 space-y-4">
                             {cartItems.map((item, idx) => {
                                 const product = item.product;
-                                const title = locale === 'en' ? product?.title_en : product?.title_te;
+                                const title = locale === 'en'
+                                    ? product?.title_en
+                                    : resolveLocalizedText(product?.title_en, product?.title_te);
                                 const itemKey = item.id || `${item.product_id}-${item.variant_id || 'none'}`;
 
                                 return (

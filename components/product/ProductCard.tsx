@@ -10,6 +10,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { useCart } from '@/lib/cart-context';
@@ -35,7 +36,9 @@ export function ProductCard({ product }: ProductCardProps) {
     const [isAdding, setIsAdding] = useState(false);
     const [imageError, setImageError] = useState(false);
 
-    const title = locale === 'en' ? product.title_en : product.title_te;
+    const title = locale === 'en'
+        ? product.title_en
+        : resolveLocalizedText(product.title_en, product.title_te);
     const discount = Math.round(((product.mrp - product.current_price) / product.mrp) * 100);
 
     const handleAddToCart = async (e: React.MouseEvent) => {

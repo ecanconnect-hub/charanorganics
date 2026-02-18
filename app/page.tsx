@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { useTranslations, useLocale } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
 import { ProductSlider } from '@/components/ui/ProductSlider';
 import { motion } from 'framer-motion';
@@ -279,8 +280,12 @@ export default function HomePage() {
           className={`py-24 overflow-hidden ${index % 2 === 0 ? 'bg-white' : 'bg-muted/10'}`}
         >
           <ProductSlider
-            title={locale === 'te' ? section.title_te : section.title_en}
-            subtitle={(locale === 'te' ? section.subtitle_te : section.subtitle_en) ?? undefined}
+            title={locale === 'te'
+              ? resolveLocalizedText(section.title_en, section.title_te)
+              : section.title_en}
+            subtitle={(locale === 'te'
+              ? resolveLocalizedText(section.subtitle_en, section.subtitle_te)
+              : section.subtitle_en) ?? undefined}
             products={section.products}
             viewAllLink={`/shop?section=${section.section_id}`}
           />

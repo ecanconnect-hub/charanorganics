@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth/context';
 import { useLocale } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 import toast from 'react-hot-toast';
 
 export default function WishlistPage() {
@@ -131,7 +132,9 @@ export default function WishlistPage() {
                                 const product = item.products;
                                 if (!product) return null;
 
-                                const title = locale === 'en' ? product.title_en : product.title_te;
+                                const title = locale === 'en'
+                                    ? product.title_en
+                                    : resolveLocalizedText(product.title_en, product.title_te);
 
                                 return (
                                     <motion.div

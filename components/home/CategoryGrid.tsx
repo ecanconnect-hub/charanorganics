@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale, useTranslations } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase/client';
 
@@ -75,7 +76,9 @@ export function CategoryGrid({ sections, limitMobile = false }: CategoryGridProp
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
             {displaySections.map((section, index) => {
-                const title = locale === 'en' ? section.title_en : section.title_te;
+                const title = locale === 'en'
+                    ? section.title_en
+                    : resolveLocalizedText(section.title_en, section.title_te);
                 const productCount = counts[section.id] || 0;
 
                 return (

@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { useLocale } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { Button } from '@/components/ui/Button';
 import type { Database } from '@/lib/supabase/database.types';
 
@@ -165,7 +166,9 @@ export function ShopFilters() {
                                     : 'text-gray-600 hover:bg-gray-50'
                                     }`}
                             >
-                                {locale === 'te' ? section.title_te : section.title_en}
+                                {locale === 'te'
+                                    ? resolveLocalizedText(section.title_en, section.title_te)
+                                    : section.title_en}
                             </button>
                         );
                     })}

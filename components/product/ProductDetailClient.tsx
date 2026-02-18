@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale, useTranslations } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/context';
 import { useCart } from '@/lib/cart-context';
@@ -47,7 +48,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     const [wishlistLoading, setWishlistLoading] = useState(false);
     const [hasPurchased, setHasPurchased] = useState(false);
 
-    const title = locale === 'en' ? product.title_en : product.title_te;
+    const title = locale === 'en'
+        ? product.title_en
+        : resolveLocalizedText(product.title_en, product.title_te);
     const description = locale === 'en' ? product.description_en : product.description_te;
     const additionalInfo = locale === 'en' ? product.additional_info_en : product.additional_info_te;
     const specifications = locale === 'en' ? product.specifications_en : product.specifications_te;

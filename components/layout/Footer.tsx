@@ -8,10 +8,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useTranslations } from '@/lib/i18n/context';
+import { useLocale, useTranslations } from '@/lib/i18n/context';
 
 export function Footer() {
     const t = useTranslations();
+    const locale = useLocale();
     const currentYear = new Date().getFullYear();
 
     const footerLinks = [
@@ -31,6 +32,25 @@ export function Footer() {
                 </svg>
             ),
         }
+    ];
+
+    const categoryLinks = [
+        {
+            href: '/shop',
+            label: locale === 'te' ? 'అన్ని ఉత్పత్తులు' : 'All Products'
+        },
+        {
+            href: '/shop?section=herbal-powders-skin-soap',
+            label: locale === 'te' ? 'చర్మ సంరక్షణ' : 'Skin Care'
+        },
+        {
+            href: '/shop?section=herbal-powders-hair-shampoo',
+            label: locale === 'te' ? 'జుట్టు సంరక్షణ' : 'Hair Care'
+        },
+        {
+            href: '/shop?section=essential-oils',
+            label: locale === 'te' ? 'ఎసెన్షియల్ ఆయిల్స్' : 'Essential Oils'
+        },
     ];
 
     return (
@@ -77,12 +97,15 @@ export function Footer() {
 
                     {/* Column 2: Shop */}
                     <div>
-                        <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-6">Shop</h4>
+                        <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-6">{locale === 'te' ? 'షాప్' : 'Shop'}</h4>
                         <ul className="space-y-3">
-                            <li><Link href="/shop" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">All Products</Link></li>
-                            <li><Link href="/shop?section=herbal-powders-skin-soap" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Skin Care</Link></li>
-                            <li><Link href="/shop?section=herbal-powders-hair-shampoo" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Hair Care</Link></li>
-                            <li><Link href="/shop?section=essential-oils" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Essential Oils</Link></li>
+                            {categoryLinks.map((item) => (
+                                <li key={item.href}>
+                                    <Link href={item.href} className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">
+                                        {item.label}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 

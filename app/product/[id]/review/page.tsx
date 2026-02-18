@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/context';
 import { useLocale } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 import toast from 'react-hot-toast';
 
 export default function SubmitReviewPage() {
@@ -81,7 +82,9 @@ export default function SubmitReviewPage() {
 
     if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
-    const title = locale === 'en' ? product?.title_en : product?.title_te;
+    const title = locale === 'en'
+        ? product?.title_en
+        : resolveLocalizedText(product?.title_en, product?.title_te);
 
     return (
         <div className="min-h-screen bg-gray-50">

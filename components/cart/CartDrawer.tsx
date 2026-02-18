@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale } from '@/lib/i18n/context';
+import { resolveLocalizedText } from '@/lib/i18n/localized';
 
 export function CartDrawer() {
     const { isOpen, closeCart, items, removeItem, updateQuantity } = useCart();
@@ -68,7 +69,9 @@ export function CartDrawer() {
                             ) : (
                                 items.map((item) => {
                                     if (!item.product) return null;
-                                    const title = locale === 'en' ? item.product.title_en : item.product.title_te;
+                                    const title = locale === 'en'
+                                        ? item.product.title_en
+                                        : resolveLocalizedText(item.product.title_en, item.product.title_te);
 
                                     return (
                                         <div key={item.product_id} className="flex gap-4">
