@@ -1,0 +1,582 @@
+{
+  "timestamp": "2026-02-21T17:48:10.657Z",
+  "scope": "extracts_and_essential_oils_only",
+  "inserted_count": 30,
+  "inserted_products": [
+    {
+      "product_id": "BC101",
+      "title_en": "Turmeric Extract"
+    },
+    {
+      "product_id": "BC102",
+      "title_en": "Rosemary Extract"
+    },
+    {
+      "product_id": "BC103",
+      "title_en": "Bhringraj Extract"
+    },
+    {
+      "product_id": "BC104",
+      "title_en": "Moringa Extract"
+    },
+    {
+      "product_id": "BC105",
+      "title_en": "Neem Extract"
+    },
+    {
+      "product_id": "BC106",
+      "title_en": "Tulasi Extract"
+    },
+    {
+      "product_id": "BC107",
+      "title_en": "Tea Tree Extract"
+    },
+    {
+      "product_id": "BC108",
+      "title_en": "Jasmine Extract"
+    },
+    {
+      "product_id": "BC109",
+      "title_en": "Green Tea Extract"
+    },
+    {
+      "product_id": "BC110",
+      "title_en": "Lotus Extract"
+    },
+    {
+      "product_id": "BC111",
+      "title_en": "Pomegranate Extract"
+    },
+    {
+      "product_id": "BC112",
+      "title_en": "Licorice Extract"
+    },
+    {
+      "product_id": "BC113",
+      "title_en": "Cucumber Extract"
+    },
+    {
+      "product_id": "BC114",
+      "title_en": "Rose Extract"
+    },
+    {
+      "product_id": "BC115",
+      "title_en": "Chamomile Extract"
+    },
+    {
+      "product_id": "BC116",
+      "title_en": "Ginger Extract"
+    },
+    {
+      "product_id": "BC117",
+      "title_en": "Sweet Marjoram Extract"
+    },
+    {
+      "product_id": "BC118",
+      "title_en": "Thamala Paulu Essential Oil"
+    },
+    {
+      "product_id": "BC119",
+      "title_en": "Frankincense Essential Oil"
+    },
+    {
+      "product_id": "BC120",
+      "title_en": "Lemongrass Essential Oil"
+    },
+    {
+      "product_id": "BC121",
+      "title_en": "Thyme Essential Oil"
+    },
+    {
+      "product_id": "BC122",
+      "title_en": "Camphor Essential Oil"
+    },
+    {
+      "product_id": "BC123",
+      "title_en": "Bergamot Essential Oil"
+    },
+    {
+      "product_id": "BC124",
+      "title_en": "Clary Sage Essential Oil"
+    },
+    {
+      "product_id": "BC125",
+      "title_en": "Patchouli Essential Oil"
+    },
+    {
+      "product_id": "BC126",
+      "title_en": "Geranium Essential Oil"
+    },
+    {
+      "product_id": "BC127",
+      "title_en": "Tangerine Essential Oil"
+    },
+    {
+      "product_id": "BC128",
+      "title_en": "Roman Chamomile Essential Oil"
+    },
+    {
+      "product_id": "BC129",
+      "title_en": "German Chamomile Essential Oil"
+    },
+    {
+      "product_id": "BC130",
+      "title_en": "Sandal Essential Oil"
+    }
+  ],
+  "updated_or_inserted_count": 36,
+  "renamed": [],
+  "dedupe_deactivated": [],
+  "essential_oils_config_ok": true,
+  "extracts_config_ok": true,
+  "invalid_essential_rows": [],
+  "invalid_extract_rows": [],
+  "requested_products_without_images": [
+    {
+      "product_id": "BC123",
+      "title_en": "Bergamot Essential Oil"
+    },
+    {
+      "product_id": "BC103",
+      "title_en": "Bhringraj Extract"
+    },
+    {
+      "product_id": "BC122",
+      "title_en": "Camphor Essential Oil"
+    },
+    {
+      "product_id": "BC115",
+      "title_en": "Chamomile Extract"
+    },
+    {
+      "product_id": "BC124",
+      "title_en": "Clary Sage Essential Oil"
+    },
+    {
+      "product_id": "BC113",
+      "title_en": "Cucumber Extract"
+    },
+    {
+      "product_id": "BC119",
+      "title_en": "Frankincense Essential Oil"
+    },
+    {
+      "product_id": "BC126",
+      "title_en": "Geranium Essential Oil"
+    },
+    {
+      "product_id": "BC129",
+      "title_en": "German Chamomile Essential Oil"
+    },
+    {
+      "product_id": "BC116",
+      "title_en": "Ginger Extract"
+    },
+    {
+      "product_id": "BC109",
+      "title_en": "Green Tea Extract"
+    },
+    {
+      "product_id": "BC108",
+      "title_en": "Jasmine Extract"
+    },
+    {
+      "product_id": "BC120",
+      "title_en": "Lemongrass Essential Oil"
+    },
+    {
+      "product_id": "BC112",
+      "title_en": "Licorice Extract"
+    },
+    {
+      "product_id": "BC110",
+      "title_en": "Lotus Extract"
+    },
+    {
+      "product_id": "BC104",
+      "title_en": "Moringa Extract"
+    },
+    {
+      "product_id": "BC105",
+      "title_en": "Neem Extract"
+    },
+    {
+      "product_id": "BC125",
+      "title_en": "Patchouli Essential Oil"
+    },
+    {
+      "product_id": "BC111",
+      "title_en": "Pomegranate Extract"
+    },
+    {
+      "product_id": "BC128",
+      "title_en": "Roman Chamomile Essential Oil"
+    },
+    {
+      "product_id": "BC114",
+      "title_en": "Rose Extract"
+    },
+    {
+      "product_id": "BC102",
+      "title_en": "Rosemary Extract"
+    },
+    {
+      "product_id": "BC130",
+      "title_en": "Sandal Essential Oil"
+    },
+    {
+      "product_id": "BC117",
+      "title_en": "Sweet Marjoram Extract"
+    },
+    {
+      "product_id": "BC127",
+      "title_en": "Tangerine Essential Oil"
+    },
+    {
+      "product_id": "BC107",
+      "title_en": "Tea Tree Extract"
+    },
+    {
+      "product_id": "BC118",
+      "title_en": "Thamala Paulu Essential Oil"
+    },
+    {
+      "product_id": "BC121",
+      "title_en": "Thyme Essential Oil"
+    },
+    {
+      "product_id": "BC106",
+      "title_en": "Tulasi Extract"
+    },
+    {
+      "product_id": "BC101",
+      "title_en": "Turmeric Extract"
+    }
+  ],
+  "requested_products": [
+    {
+      "product_id": "BC123",
+      "title_en": "Bergamot Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC103",
+      "title_en": "Bhringraj Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC122",
+      "title_en": "Camphor Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC115",
+      "title_en": "Chamomile Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC124",
+      "title_en": "Clary Sage Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC113",
+      "title_en": "Cucumber Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC119",
+      "title_en": "Frankincense Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC126",
+      "title_en": "Geranium Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC129",
+      "title_en": "German Chamomile Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC116",
+      "title_en": "Ginger Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC109",
+      "title_en": "Green Tea Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "EO002",
+      "title_en": "Jasmine Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330338/Jasmine_Essential_Oil_hnlntp.jpg"
+    },
+    {
+      "product_id": "BC108",
+      "title_en": "Jasmine Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC064",
+      "title_en": "Lavender Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330338/Lavender_Essential_Oil_o2wsgy.jpg"
+    },
+    {
+      "product_id": "BC120",
+      "title_en": "Lemongrass Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC112",
+      "title_en": "Licorice Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC110",
+      "title_en": "Lotus Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC104",
+      "title_en": "Moringa Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC105",
+      "title_en": "Neem Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC125",
+      "title_en": "Patchouli Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC072",
+      "title_en": "Peppermint Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330337/Peppermint_Essential_Oil_wh1fby.jpg"
+    },
+    {
+      "product_id": "BC111",
+      "title_en": "Pomegranate Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC128",
+      "title_en": "Roman Chamomile Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "EO001",
+      "title_en": "Rose Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330337/Rose_Essential_Oil_wfvqhp.jpg"
+    },
+    {
+      "product_id": "BC114",
+      "title_en": "Rose Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC100",
+      "title_en": "Rosemary Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/v1771406962/Rosemary_Essential_Oil_lm0bfs.webp"
+    },
+    {
+      "product_id": "BC102",
+      "title_en": "Rosemary Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC130",
+      "title_en": "Sandal Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC117",
+      "title_en": "Sweet Marjoram Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC127",
+      "title_en": "Tangerine Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC107",
+      "title_en": "Tea Tree Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC118",
+      "title_en": "Thamala Paulu Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC121",
+      "title_en": "Thyme Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC106",
+      "title_en": "Tulasi Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "BC101",
+      "title_en": "Turmeric Extract",
+      "current_price": 300,
+      "unit_value": 100,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": null
+    },
+    {
+      "product_id": "EO004",
+      "title_en": "Ylang Ylang Essential Oil",
+      "current_price": 200,
+      "unit_value": 15,
+      "unit_type": "ml",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771330337/Ylang_Ylang_Essential_Oil_o68e8t.jpg"
+    }
+  ]
+}

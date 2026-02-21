@@ -1,0 +1,101 @@
+{
+  "timestamp": "2026-02-21T17:56:05.503Z",
+  "section": {
+    "id": "93b20997-bd1d-4356-bff2-f933f464f3a9",
+    "section_id": "extracts",
+    "title_en": "Extracts"
+  },
+  "extracted_products_found": 17,
+  "mapped_to_extracts": 17,
+  "removed_from_humectants_actives": 17,
+  "extracts_section_total_mappings": 17,
+  "product_codes": [
+    "BC103",
+    "BC115",
+    "BC113",
+    "BC116",
+    "BC109",
+    "BC108",
+    "BC112",
+    "BC110",
+    "BC104",
+    "BC105",
+    "BC111",
+    "BC114",
+    "BC102",
+    "BC117",
+    "BC107",
+    "BC106",
+    "BC101"
+  ],
+  "products_without_images": [
+    {
+      "product_id": "BC103",
+      "title_en": "Bhringraj Extract"
+    },
+    {
+      "product_id": "BC115",
+      "title_en": "Chamomile Extract"
+    },
+    {
+      "product_id": "BC113",
+      "title_en": "Cucumber Extract"
+    },
+    {
+      "product_id": "BC116",
+      "title_en": "Ginger Extract"
+    },
+    {
+      "product_id": "BC109",
+      "title_en": "Green Tea Extract"
+    },
+    {
+      "product_id": "BC108",
+      "title_en": "Jasmine Extract"
+    },
+    {
+      "product_id": "BC112",
+      "title_en": "Licorice Extract"
+    },
+    {
+      "product_id": "BC110",
+      "title_en": "Lotus Extract"
+    },
+    {
+      "product_id": "BC104",
+      "title_en": "Moringa Extract"
+    },
+    {
+      "product_id": "BC105",
+      "title_en": "Neem Extract"
+    },
+    {
+      "product_id": "BC111",
+      "title_en": "Pomegranate Extract"
+    },
+    {
+      "product_id": "BC114",
+      "title_en": "Rose Extract"
+    },
+    {
+      "product_id": "BC102",
+      "title_en": "Rosemary Extract"
+    },
+    {
+      "product_id": "BC117",
+      "title_en": "Sweet Marjoram Extract"
+    },
+    {
+      "product_id": "BC107",
+      "title_en": "Tea Tree Extract"
+    },
+    {
+      "product_id": "BC106",
+      "title_en": "Tulasi Extract"
+    },
+    {
+      "product_id": "BC101",
+      "title_en": "Turmeric Extract"
+    }
+  ]
+}

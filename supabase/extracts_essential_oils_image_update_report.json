@@ -1,0 +1,192 @@
+{
+  "timestamp": "2026-02-21T19:10:55.252Z",
+  "requested_count": 30,
+  "updated_count": 30,
+  "missing_count": 0,
+  "multiple_match_count": 0,
+  "updated": [
+    {
+      "product_id": "BC119",
+      "title_en": "Frankincense Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700813/Frankincense_Essential_Oil_azc06e.webp"
+    },
+    {
+      "product_id": "BC122",
+      "title_en": "Camphor Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700813/Camphor_Essential_Oil_wrrm0j.png"
+    },
+    {
+      "product_id": "BC123",
+      "title_en": "Bergamot Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700812/Bergamot_Essential_Oil_bavrgp.webp"
+    },
+    {
+      "product_id": "BC103",
+      "title_en": "Bhringraj Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700807/Pure_form_of_Bhringraj_Extract_B_jhwhg4.jpg"
+    },
+    {
+      "product_id": "BC124",
+      "title_en": "Clary Sage Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700807/Clary_Sage_Essential_Oil_cpeldl.jpg"
+    },
+    {
+      "product_id": "BC126",
+      "title_en": "Geranium Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700806/Geranium_Essential_Oil_nqr55m.jpg"
+    },
+    {
+      "product_id": "BC125",
+      "title_en": "Patchouli Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700806/Patchouli_Essential_Oil_wdavnu.jpg"
+    },
+    {
+      "product_id": "BC129",
+      "title_en": "German Chamomile Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700806/German_Chamomile_Essential_Oil_eqjnat.webp"
+    },
+    {
+      "product_id": "BC130",
+      "title_en": "Sandal Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700806/Sandal_Essential_Oil_aoc9jv.jpg"
+    },
+    {
+      "product_id": "BC115",
+      "title_en": "Chamomile Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700805/Chamomile_Extract_cs6hvh.png"
+    },
+    {
+      "product_id": "BC120",
+      "title_en": "Lemongrass Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700805/Lemongrass_Essential_Oil_wj4gzi.jpg"
+    },
+    {
+      "product_id": "BC128",
+      "title_en": "Roman Chamomile Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700803/Roman_Chamomile_Essential_Oil_ffa1rd.avif"
+    },
+    {
+      "product_id": "BC118",
+      "title_en": "Thamala Paulu Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700801/Thamala_Paulu_Essential_Oil_fjotbg.jpg"
+    },
+    {
+      "product_id": "BC127",
+      "title_en": "Tangerine Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700801/Tangerine_Essential_Oil_kpddwn.webp"
+    },
+    {
+      "product_id": "BC121",
+      "title_en": "Thyme Essential Oil",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700800/Thyme_Essential_Oil_vtbrzu.jpg"
+    },
+    {
+      "product_id": "BC113",
+      "title_en": "Cucumber Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700797/Cucumber_Extract_p8btsq.jpg"
+    },
+    {
+      "product_id": "BC116",
+      "title_en": "Ginger Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700794/Ginger_Extract_gvtzwv.jpg"
+    },
+    {
+      "product_id": "BC109",
+      "title_en": "Green Tea Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700794/Green_Tea_Extract_nqt9zy.jpg"
+    },
+    {
+      "product_id": "BC108",
+      "title_en": "Jasmine Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700793/Jasmine_Extract_zgzluj.webp"
+    },
+    {
+      "product_id": "BC110",
+      "title_en": "Lotus Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700793/Lotus_Extract_wzrrdc.png"
+    },
+    {
+      "product_id": "BC112",
+      "title_en": "Licorice Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700792/Licorice_Extract_ob56dc.webp"
+    },
+    {
+      "product_id": "BC104",
+      "title_en": "Moringa Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700791/Moringa_Extract_luphyg.jpg"
+    },
+    {
+      "product_id": "BC105",
+      "title_en": "Neem Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700789/Neem_Extract_apgupd.jpg"
+    },
+    {
+      "product_id": "BC111",
+      "title_en": "Pomegranate Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700788/Pomegranate_Extract_j2icyw.webp"
+    },
+    {
+      "product_id": "BC114",
+      "title_en": "Rose Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700788/Rose_Extract_kgnqka.jpg"
+    },
+    {
+      "product_id": "BC102",
+      "title_en": "Rosemary Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700788/Rosemary_Extract_delfdp.jpg"
+    },
+    {
+      "product_id": "BC117",
+      "title_en": "Sweet Marjoram Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700788/Sweet_Marjoram_Extract_hacsst.webp"
+    },
+    {
+      "product_id": "BC101",
+      "title_en": "Turmeric Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700788/Turmeric_Extract_noyfaz.webp"
+    },
+    {
+      "product_id": "BC107",
+      "title_en": "Tea Tree Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700787/Tea_Tree_Extract_puddju.avif"
+    },
+    {
+      "product_id": "BC106",
+      "title_en": "Tulasi Extract",
+      "is_active": true,
+      "image_url": "https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1771700786/Tulasi_Extract_orlndj.jpg"
+    }
+  ],
+  "missing": [],
+  "multiple_matches": [],
+  "still_without_image_after_update": []
+}
