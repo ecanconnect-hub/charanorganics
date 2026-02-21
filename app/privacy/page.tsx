@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
                         <p>
                             Charan Organics operates this website and related services for browsing products, placing orders,
                             and customer support. If you have any privacy questions, contact us at
-                            {' '}<a href="mailto:info@charanorganics.com" className="text-green-700 underline">info@charanorganics.com</a>{' '}
+                            {' '}<a href="mailto:ecanconnect@gmail.com" className="text-green-700 underline">ecanconnect@gmail.com</a>{' '}
                             or +91 8247838125.
                         </p>
                     </div>
@@ -87,7 +87,7 @@ export default function PrivacyPolicyPage() {
                         <h2 className="text-xl font-bold text-gray-900 mb-2">8. Your Choices</h2>
                         <p>
                             You may request access, correction, or deletion of your personal data by contacting us at
-                            {' '}<a href="mailto:info@charanorganics.com" className="text-green-700 underline">info@charanorganics.com</a>.
+                            {' '}<a href="mailto:ecanconnect@gmail.com" className="text-green-700 underline">ecanconnect@gmail.com</a>.
                             We will review and respond as per applicable law and operational requirements.
                         </p>
                     </div>
@@ -104,3 +104,4 @@ export default function PrivacyPolicyPage() {
         </main>
     );
 }
+

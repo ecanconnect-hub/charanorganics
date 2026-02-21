@@ -112,7 +112,7 @@ export default function TrackOrderPage() {
                                         </div>
                                         <div>
                                             <p className="text-xs font-black uppercase tracking-wide text-gray-900 mb-1">Email Us</p>
-                                            <p className="text-xs text-gray-600 font-medium">info@charanorganics.com</p>
+                                            <p className="text-xs text-gray-600 font-medium">ecanconnect@gmail.com</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl">
@@ -133,3 +133,4 @@ export default function TrackOrderPage() {
         </main>
     );
 }
+
