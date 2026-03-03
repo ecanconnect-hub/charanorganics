@@ -8,14 +8,20 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
 import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { Button } from '@/components/ui/Button';
 import type { Database } from '@/lib/supabase/database.types';
 
 type Section = Database['public']['Tables']['sections']['Row'];
-type Product = Database['public']['Tables']['products']['Row'];
+type ShopFiltersResponse = {
+    sections: Section[];
+    priceRange: {
+        min: number;
+        max: number;
+    };
+    error?: string;
+};
 
 export function ShopFilters() {
     const router = useRouter();
@@ -28,41 +34,33 @@ export function ShopFilters() {
     const [maxPrice, setMaxPrice] = useState('');
     const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
 
-    const fetchSections = useCallback(async () => {
+    const fetchFilters = useCallback(async () => {
         setLoading(true);
-        const { data } = await supabase
-            .from('sections')
-            .select('*')
-            .eq('is_enabled', true)
-            .order('display_order');
-
-        if (data) {
-            setSections(data as Section[]);
-        }
-        setLoading(false);
-    }, []);
-
-    const fetchPriceRange = useCallback(async () => {
-        const { data } = await supabase
-            .from('products')
-            .select('current_price')
-            .eq('is_active', true);
-
-        if (data && data.length > 0) {
-            const prices = (data as Pick<Product, 'current_price'>[]).map((p) => p.current_price);
-            setPriceRange({
-                min: Math.floor(Math.min(...prices)),
-                max: Math.ceil(Math.max(...prices))
+        try {
+            const response = await fetch('/api/shop/filters', {
+                method: 'GET',
+                cache: 'no-store',
             });
+
+            const payload = await response.json() as ShopFiltersResponse;
+            if (!response.ok) {
+                throw new Error(payload.error || `Request failed (${response.status})`);
+            }
+
+            setSections(payload.sections || []);
+            setPriceRange(payload.priceRange || { min: 0, max: 10000 });
+        } catch (error) {
+            console.error('Failed to load shop filters:', error);
+            setSections([]);
+            setPriceRange({ min: 0, max: 10000 });
+        } finally {
+            setLoading(false);
         }
     }, []);
 
-    /* eslint-disable react-hooks/set-state-in-effect */
     useEffect(() => {
-        void fetchSections();
-        void fetchPriceRange();
-    }, [fetchPriceRange, fetchSections]);
-    /* eslint-enable react-hooks/set-state-in-effect */
+        void fetchFilters();
+    }, [fetchFilters]);
 
     const handleSectionFilter = (sectionId: string) => {
         const params = new URLSearchParams(searchParams.toString());

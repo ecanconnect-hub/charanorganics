@@ -1,0 +1,230 @@
+{
+  "timestamp": "2026-03-03T13:38:24.446Z",
+  "section": "powders",
+  "mapped_count": 55,
+  "stored_count": 55,
+  "missing_count": 0,
+  "missing": [],
+  "products": [
+    {
+      "product_id": "BC044",
+      "title_en": "Triphala Powder"
+    },
+    {
+      "product_id": "BC056",
+      "title_en": "Licorice Powder"
+    },
+    {
+      "product_id": "BC073",
+      "title_en": "Arjuna Powder"
+    },
+    {
+      "product_id": "BC055",
+      "title_en": "Manjistha Powder"
+    },
+    {
+      "product_id": "BC138",
+      "title_en": "Karakkaya Powder"
+    },
+    {
+      "product_id": "BC057",
+      "title_en": "Sandal Powder"
+    },
+    {
+      "product_id": "BC058",
+      "title_en": "Red Sandal Powder"
+    },
+    {
+      "product_id": "BC039",
+      "title_en": "Hibiscus Powder"
+    },
+    {
+      "product_id": "BC147",
+      "title_en": "Walnut Shell Powder"
+    },
+    {
+      "product_id": "BC043",
+      "title_en": "Fenugreek Powder"
+    },
+    {
+      "product_id": "BC093",
+      "title_en": "Rose Petal Powder"
+    },
+    {
+      "product_id": "BC019",
+      "title_en": "Bhringraj Powder"
+    },
+    {
+      "product_id": "BC063",
+      "title_en": "Lemon Peel Powder"
+    },
+    {
+      "product_id": "HP002",
+      "title_en": "Orange Peel Powder"
+    },
+    {
+      "product_id": "BC041",
+      "title_en": "Reetha Powder"
+    },
+    {
+      "product_id": "BC016",
+      "title_en": "Ashwagandha Powder"
+    },
+    {
+      "product_id": "BC091",
+      "title_en": "Aloe Vera Powder"
+    },
+    {
+      "product_id": "BC042",
+      "title_en": "Brahmi Powder"
+    },
+    {
+      "product_id": "HP003",
+      "title_en": "Neem Powder"
+    },
+    {
+      "product_id": "BC040",
+      "title_en": "Shikakai Powder"
+    },
+    {
+      "product_id": "BC137",
+      "title_en": "Indigo Powder"
+    },
+    {
+      "product_id": "BC060",
+      "title_en": "Tulasi Powder"
+    },
+    {
+      "product_id": "BC059",
+      "title_en": "Kasturi Pasupu"
+    },
+    {
+      "product_id": "BC061",
+      "title_en": "Beetroot Powder"
+    },
+    {
+      "product_id": "BC145",
+      "title_en": "Tomato Powder"
+    },
+    {
+      "product_id": "BC146",
+      "title_en": "Ubtan Powder"
+    },
+    {
+      "product_id": "BC142",
+      "title_en": "Moringa Powder"
+    },
+    {
+      "product_id": "BC037",
+      "title_en": "Henna Powder"
+    },
+    {
+      "product_id": "BC080",
+      "title_en": "Jatamansi Powder"
+    },
+    {
+      "product_id": "BC026",
+      "title_en": "Arrowroot Powder"
+    },
+    {
+      "product_id": "BC143",
+      "title_en": "Papaya Powder"
+    },
+    {
+      "product_id": "HP001",
+      "title_en": "Banana Powder"
+    },
+    {
+      "product_id": "BC141",
+      "title_en": "Lotus Powder"
+    },
+    {
+      "product_id": "BC038",
+      "title_en": "Amla Powder"
+    },
+    {
+      "product_id": "BC133",
+      "title_en": "Charcoal Powder"
+    },
+    {
+      "product_id": "BC047",
+      "title_en": "Multani Mitti"
+    },
+    {
+      "product_id": "BC048",
+      "title_en": "Kaolin Clay"
+    },
+    {
+      "product_id": "BC049",
+      "title_en": "Rose Clay"
+    },
+    {
+      "product_id": "BC132",
+      "title_en": "Bentonite Clay"
+    },
+    {
+      "product_id": "BC134",
+      "title_en": "Dead Sea Mud"
+    },
+    {
+      "product_id": "BC135",
+      "title_en": "Green Clay"
+    },
+    {
+      "product_id": "BC139",
+      "title_en": "Kuppipakku Powder"
+    },
+    {
+      "product_id": "BC079",
+      "title_en": "Vattiveru Powder"
+    },
+    {
+      "product_id": "BC054",
+      "title_en": "Cinnamon Powder"
+    },
+    {
+      "product_id": "BC096",
+      "title_en": "Avarampoo"
+    },
+    {
+      "product_id": "BC028",
+      "title_en": "Rice Starch"
+    },
+    {
+      "product_id": "BC027",
+      "title_en": "Potato Starch"
+    },
+    {
+      "product_id": "BC020",
+      "title_en": "Corn Starch"
+    },
+    {
+      "product_id": "BC081",
+      "title_en": "Gaddi Chamanthi Powder"
+    },
+    {
+      "product_id": "BC078",
+      "title_en": "Rosemary Leaves"
+    },
+    {
+      "product_id": "BC015",
+      "title_en": "Ratanjot"
+    },
+    {
+      "product_id": "BC131",
+      "title_en": "Badam Charcoal"
+    },
+    {
+      "product_id": "BC136",
+      "title_en": "Hartal Works Powder"
+    },
+    {
+      "product_id": "BC140",
+      "title_en": "Limestone"
+    },
+    {
+      "product_id": "BC144",
+      "title_en": "Shankapushpi"
+    }
+  ]
+}
