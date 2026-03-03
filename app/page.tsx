@@ -10,7 +10,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { useTranslations, useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
@@ -25,9 +24,16 @@ type Product = Database['public']['Tables']['products']['Row'] & {
 };
 type Section = Database['public']['Tables']['sections']['Row'] & {
   image_url: string | null;
+  product_count?: number;
 };
-type ProductSection = Database['public']['Tables']['product_sections']['Row'];
 type SectionWithProducts = Section & { products: Product[] };
+type HomeApiResponse = {
+  sections: Section[];
+  sectionsWithProducts: SectionWithProducts[];
+  bestSellers: Product[];
+  newArrivals: Product[];
+  error?: string;
+};
 
 export default function HomePage() {
   const t = useTranslations();
@@ -36,7 +42,6 @@ export default function HomePage() {
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [sectionsWithProducts, setSectionsWithProducts] = useState<SectionWithProducts[]>([]);
-  const MAX_PRODUCTS_PER_SLIDER = 10;
 
   useEffect(() => {
     fetchData();
@@ -44,87 +49,19 @@ export default function HomePage() {
 
   const fetchData = async () => {
     try {
-      const [sectionsRes, productSectionsRes, activeProductsRes, bsProducts, newProducts] = await Promise.all([
-        supabase
-          .from('sections')
-          .select('*')
-          .eq('is_enabled', true)
-          .order('display_order'),
-        supabase
-          .from('product_sections')
-          .select('section_id, product_id, display_order')
-          .order('display_order'),
-        supabase
-          .from('products')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('products')
-          .select('*')
-          .eq('is_active', true)
-          .eq('is_best_seller', true)
-          .order('updated_at', { ascending: false })
-          .limit(MAX_PRODUCTS_PER_SLIDER),
-        supabase
-          .from('products')
-          .select('*')
-          .eq('is_active', true)
-          .eq('is_new', true)
-          .order('created_at', { ascending: false })
-          .limit(MAX_PRODUCTS_PER_SLIDER)
-      ]);
-
-      if (sectionsRes.error) throw sectionsRes.error;
-      if (productSectionsRes.error) throw productSectionsRes.error;
-      if (activeProductsRes.error) throw activeProductsRes.error;
-
-      const categorySections = (sectionsRes.data || []) as Section[];
-      const productSections = (productSectionsRes.data || []) as ProductSection[];
-      const allActiveProducts = (activeProductsRes.data || []) as Product[];
-
-      setSections(categorySections);
-
-      const productById = new Map(allActiveProducts.map((product) => [product.id, product]));
-      const sectionProductIds = new Map<string, string[]>();
-
-      productSections.forEach((mapping) => {
-        const current = sectionProductIds.get(mapping.section_id) || [];
-        current.push(mapping.product_id);
-        sectionProductIds.set(mapping.section_id, current);
+      const response = await fetch('/api/home', {
+        method: 'GET',
+        cache: 'no-store',
       });
+      const payload = await response.json() as HomeApiResponse;
+      if (!response.ok) {
+        throw new Error(payload.error || `Request failed (${response.status})`);
+      }
 
-      const activeSections = categorySections
-        .map((section) => {
-          const ids = sectionProductIds.get(section.id) || [];
-          const sectionProducts = ids
-            .map((id) => productById.get(id))
-            .filter((product): product is Product => Boolean(product))
-            .slice(0, MAX_PRODUCTS_PER_SLIDER);
-
-          return {
-            ...section,
-            products: sectionProducts
-          };
-        })
-        .filter((section) => section.products.length > 0)
-        .sort((a, b) => {
-          const countA = sectionProductIds.get(a.id)?.length || 0;
-          const countB = sectionProductIds.get(b.id)?.length || 0;
-          return countB - countA;
-        });
-      setSectionsWithProducts(activeSections);
-
-      const bestSellerProducts = bsProducts.data?.length
-        ? (bsProducts.data as Product[])
-        : allActiveProducts.slice(0, MAX_PRODUCTS_PER_SLIDER);
-      setBestSellers(bestSellerProducts);
-
-      const bestSellerIds = new Set(bestSellerProducts.map((p) => p.id));
-      const newArrivalProducts = newProducts.data?.length
-        ? (newProducts.data as Product[]).filter((p) => !bestSellerIds.has(p.id))
-        : allActiveProducts.filter((p) => !bestSellerIds.has(p.id)).slice(0, MAX_PRODUCTS_PER_SLIDER);
-      setNewArrivals(newArrivalProducts.slice(0, MAX_PRODUCTS_PER_SLIDER));
+      setSections(payload.sections || []);
+      setSectionsWithProducts(payload.sectionsWithProducts || []);
+      setBestSellers(payload.bestSellers || []);
+      setNewArrivals(payload.newArrivals || []);
 
     } catch (error) {
       console.error('Error fetching homepage data:', error);

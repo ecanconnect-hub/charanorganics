@@ -25,6 +25,37 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    if (typeof error === 'string') {
+        return error;
+    }
+
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        const maybeMessage = (error as { message?: unknown }).message;
+        if (typeof maybeMessage === 'string') {
+            return maybeMessage;
+        }
+    }
+
+    return 'Unknown error';
+}
+
+function isNetworkAuthError(message: string): boolean {
+    const normalized = message.toLowerCase();
+    return (
+        normalized.includes('fetch failed') ||
+        normalized.includes('failed to fetch') ||
+        normalized.includes('network') ||
+        normalized.includes('timeout') ||
+        normalized.includes('connect timeout') ||
+        normalized.includes('und_err_connect_timeout')
+    );
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
@@ -32,30 +63,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
+        let isMounted = true;
+
+        const initializeSession = async () => {
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                if (error) {
+                    throw error;
+                }
+
+                if (!isMounted) return;
+                setSession(data.session);
+                setUser(data.session?.user ?? null);
+            } catch (error) {
+                const message = getErrorMessage(error);
+                console.warn('Failed to initialize auth session:', message);
+
+                // When network routing to Supabase fails, stale local auth state can trigger repeated refresh attempts.
+                // Clear local session only (no server call) so the app can continue for public browsing.
+                if (isNetworkAuthError(message)) {
+                    try {
+                        await supabase.auth.signOut({ scope: 'local' });
+                    } catch (signOutError) {
+                        console.warn('Failed to clear local auth session after network error:', signOutError);
+                    }
+                }
+
+                if (!isMounted) return;
+                setSession(null);
+                setUser(null);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        void initializeSession();
 
         // Listen for auth changes
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (!isMounted) return;
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            isMounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     const signIn = async (email: string, password: string) => {
         try {
             // Brute-force check (best effort; continue gracefully if function isn't deployed)
             try {
-                const { data: isBlocked } = await (supabase as any).rpc('check_brute_force', { p_email: email });
+                const { data: isBlocked } = await supabase.rpc(
+                    'check_brute_force' as never,
+                    { p_email: email } as never
+                );
                 if (isBlocked) {
                     toast.error('Too many failed attempts. Account temporarily locked.');
                     throw new Error('__ACCOUNT_BLOCKED__');
@@ -67,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 console.warn('Brute-force check unavailable:', rateLimitCheckError);
             }
 
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
@@ -75,10 +144,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (error) {
                 // Log failure for security monitoring (optional)
                 try {
-                    await (supabase.from('login_security_events') as any).insert({
-                        email,
-                        event_type: 'failed_login'
-                    });
+                    await supabase
+                        .from('login_security_events' as never)
+                        .insert({
+                            email,
+                            event_type: 'failed_login'
+                        } as never);
                 } catch (logError) {
                     // Silently fail if table doesn't exist yet
                     console.warn('Security event logging failed:', logError);
@@ -88,15 +159,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             toast.success('Welcome back!');
             router.refresh();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to sign in');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error) || 'Failed to sign in');
             throw error;
         }
     };
 
     const signUp = async (email: string, password: string, fullName: string) => {
         try {
-            const { data, error } = await supabase.auth.signUp({
+            const { error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -118,8 +189,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // No manual insert needed here anymore
 
             toast.success('Account created! Please check your email to verify.');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to sign up');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error) || 'Failed to sign up');
             throw error;
         }
     };
@@ -143,8 +214,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             if (error) throw error;
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to sign in with Google');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error) || 'Failed to sign in with Google');
             throw error;
         }
     };
@@ -157,8 +228,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             toast.success('Signed out successfully');
             router.push('/');
             router.refresh();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to sign out');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error) || 'Failed to sign out');
             throw error;
         }
     };
@@ -172,8 +243,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (error) throw error;
 
             toast.success('Password reset email sent! Check your inbox.');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to send reset email');
+        } catch (error: unknown) {
+            toast.error(getErrorMessage(error) || 'Failed to send reset email');
             throw error;
         }
     };

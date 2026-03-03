@@ -6,13 +6,11 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useLocale, useTranslations } from '@/lib/i18n/context';
+import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabase/client';
 
 interface Section {
     id: string;
@@ -31,45 +29,14 @@ interface CategoryGridProps {
 
 export function CategoryGrid({ sections, limitMobile = false }: CategoryGridProps) {
     const locale = useLocale();
-    const t = useTranslations('home');
-    const [counts, setCounts] = useState<Record<string, number>>({});
-
-    useEffect(() => {
-        fetchCounts();
-    }, [sections]);
-
-    const fetchCounts = async () => {
-        if (!sections.length) return;
-
-        try {
-            // Fetch product counts for each section from the mapping table
-            const { data, error } = await (supabase
-                .from('product_sections' as any) as any)
-                .select('section_id');
-
-            if (error) {
-                console.error('Error fetching category counts:', error);
-                return;
-            }
-
-            if (data) {
-                const countMap: Record<string, number> = {};
-                data.forEach((item: any) => {
-                    countMap[item.section_id] = (countMap[item.section_id] || 0) + 1;
-                });
-                setCounts(countMap);
-            }
-        } catch (error) {
-            console.error('Error fetching category counts:', error);
-        }
-    };
+    void limitMobile;
 
     if (!sections || sections.length === 0) return null;
 
     // Sort sections by product count (descending)
     const displaySections = [...sections].sort((a, b) => {
-        const countA = counts[a.id] || 0;
-        const countB = counts[b.id] || 0;
+        const countA = a.product_count || 0;
+        const countB = b.product_count || 0;
         return countB - countA; // Descending order
     });
 
@@ -79,7 +46,7 @@ export function CategoryGrid({ sections, limitMobile = false }: CategoryGridProp
                 const title = locale === 'en'
                     ? section.title_en
                     : resolveLocalizedText(section.title_en, section.title_te);
-                const productCount = counts[section.id] || 0;
+                const productCount = section.product_count || 0;
 
                 return (
                     <motion.div
