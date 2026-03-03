@@ -1,0 +1,630 @@
+{
+  "requested": 55,
+  "matched": 55,
+  "added_now_estimate": 0,
+  "added_now_products": [],
+  "no_image_count": 17,
+  "no_image_products": [
+    {
+      "product_id": "BC138",
+      "title_en": "Karakkaya Powder"
+    },
+    {
+      "product_id": "BC147",
+      "title_en": "Walnut Shell Powder"
+    },
+    {
+      "product_id": "BC137",
+      "title_en": "Indigo Powder"
+    },
+    {
+      "product_id": "BC145",
+      "title_en": "Tomato Powder"
+    },
+    {
+      "product_id": "BC146",
+      "title_en": "Ubtan Powder"
+    },
+    {
+      "product_id": "BC142",
+      "title_en": "Moringa Powder"
+    },
+    {
+      "product_id": "BC143",
+      "title_en": "Papaya Powder"
+    },
+    {
+      "product_id": "BC141",
+      "title_en": "Lotus Powder"
+    },
+    {
+      "product_id": "BC133",
+      "title_en": "Charcoal Powder"
+    },
+    {
+      "product_id": "BC132",
+      "title_en": "Bentonite Clay"
+    },
+    {
+      "product_id": "BC134",
+      "title_en": "Dead Sea Mud"
+    },
+    {
+      "product_id": "BC135",
+      "title_en": "Green Clay"
+    },
+    {
+      "product_id": "BC139",
+      "title_en": "Kuppipakku Powder"
+    },
+    {
+      "product_id": "BC131",
+      "title_en": "Badam Charcoal"
+    },
+    {
+      "product_id": "BC136",
+      "title_en": "Hartal Works Powder"
+    },
+    {
+      "product_id": "BC140",
+      "title_en": "Limestone"
+    },
+    {
+      "product_id": "BC144",
+      "title_en": "Shankapushpi"
+    }
+  ],
+  "variant_issue_count": 55,
+  "variant_issues": [
+    {
+      "product_id": "BC044",
+      "title_en": "Triphala Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC056",
+      "title_en": "Licorice Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC073",
+      "title_en": "Arjuna Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC055",
+      "title_en": "Manjistha Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC138",
+      "title_en": "Karakkaya Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC057",
+      "title_en": "Sandal Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC058",
+      "title_en": "Red Sandal Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC039",
+      "title_en": "Hibiscus Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC147",
+      "title_en": "Walnut Shell Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC043",
+      "title_en": "Fenugreek Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC093",
+      "title_en": "Rose Petal Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC019",
+      "title_en": "Bhringraj Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC063",
+      "title_en": "Lemon Peel Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "HP002",
+      "title_en": "Orange Peel Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC041",
+      "title_en": "Reetha Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC016",
+      "title_en": "Ashwagandha Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC091",
+      "title_en": "Aloe Vera Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC042",
+      "title_en": "Brahmi Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "HP003",
+      "title_en": "Neem Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC040",
+      "title_en": "Shikakai Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC137",
+      "title_en": "Indigo Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC060",
+      "title_en": "Tulasi Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC059",
+      "title_en": "Kasturi Pasupu",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC061",
+      "title_en": "Beetroot Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC145",
+      "title_en": "Tomato Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC146",
+      "title_en": "Ubtan Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC142",
+      "title_en": "Moringa Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC037",
+      "title_en": "Henna Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC080",
+      "title_en": "Jatamansi Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC026",
+      "title_en": "Arrowroot Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC143",
+      "title_en": "Papaya Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "HP001",
+      "title_en": "Banana Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC141",
+      "title_en": "Lotus Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC038",
+      "title_en": "Amla Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC133",
+      "title_en": "Charcoal Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC047",
+      "title_en": "Multani Mitti",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC048",
+      "title_en": "Kaolin Clay",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC049",
+      "title_en": "Rose Clay",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC132",
+      "title_en": "Bentonite Clay",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC134",
+      "title_en": "Dead Sea Mud",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC135",
+      "title_en": "Green Clay",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC139",
+      "title_en": "Kuppipakku Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC079",
+      "title_en": "Vattiveru Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC054",
+      "title_en": "Cinnamon Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC096",
+      "title_en": "Avarampoo",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC028",
+      "title_en": "Rice Starch",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC027",
+      "title_en": "Potato Starch",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC020",
+      "title_en": "Corn Starch",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC081",
+      "title_en": "Gaddi Chamanthi Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC078",
+      "title_en": "Rosemary Leaves",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC015",
+      "title_en": "Ratanjot",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC131",
+      "title_en": "Badam Charcoal",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC136",
+      "title_en": "Hartal Works Powder",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC140",
+      "title_en": "Limestone",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    },
+    {
+      "product_id": "BC144",
+      "title_en": "Shankapushpi",
+      "missing_labels": [
+        "50 g",
+        "100 g",
+        "250 g",
+        "500 g"
+      ]
+    }
+  ]
+}

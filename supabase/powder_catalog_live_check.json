@@ -1,0 +1,145 @@
+{
+  "requested_count": 55,
+  "found_count": 55,
+  "missing_count": 0,
+  "missing": [],
+  "variant_issue_count": 0,
+  "variant_issues": [],
+  "sample_found": [
+    {
+      "requested": "Triphala Powder",
+      "match_title": "Triphala Powder",
+      "product_id": "BC044",
+      "id": "14aeb960-5708-4da7-a8a4-78a23c75ed73",
+      "is_active": true,
+      "current_price": 60,
+      "mrp": 350
+    },
+    {
+      "requested": "Licorice Powder",
+      "match_title": "Licorice Powder",
+      "product_id": "BC056",
+      "id": "462856e9-5ed5-4f78-93a0-61d1487c973f",
+      "is_active": true,
+      "current_price": 60,
+      "mrp": 350
+    },
+    {
+      "requested": "Arjuna Powder",
+      "match_title": "Arjuna Powder",
+      "product_id": "BC073",
+      "id": "02a1f035-9d5b-48a0-ba4d-0de200f51e7f",
+      "is_active": true,
+      "current_price": 60,
+      "mrp": 350
+    },
+    {
+      "requested": "Manjistha Powder",
+      "match_title": "Manjistha Powder",
+      "product_id": "BC055",
+      "id": "df4e4bc4-7337-4eb2-ad41-4a77f7786d50",
+      "is_active": true,
+      "current_price": 60,
+      "mrp": 350
+    },
+    {
+      "requested": "Karakkaya Powder",
+      "match_title": "Karakkaya Powder",
+      "product_id": "BC138",
+      "id": "00cb99da-7f8b-4a8e-bd00-dafea23045d3",
+      "is_active": true,
+      "current_price": 60,
+      "mrp": 350
+    },
+    {
+      "requested": "Sandal Powder",
+      "match_title": "Sandal Powder",
+      "product_id": "BC057",
+      "id": "86f76863-3cfd-4e01-bbb7-3fca32e805db",
+      "is_active": true,
+      "current_price": 75,
+      "mrp": 550
+    },
+    {
+      "requested": "Red Sandal Powder",
+      "match_title": "Red Sandal Powder",
+      "product_id": "BC058",
+      "id": "0c46a9c3-79e8-44e8-9f3d-325a2995b484",
+      "is_active": true,
+      "current_price": 150,
+      "mrp": 1000
+    },
+    {
+      "requested": "Hibiscus Powder",
+      "match_title": "Hibiscus Powder",
+      "product_id": "BC039",
+      "id": "e2d3f144-fe98-4de6-8601-0b459d2cc3dc",
+      "is_active": true,
+      "current_price": 80,
+      "mrp": 600
+    },
+    {
+      "requested": "Walnut Shell Powder",
+      "match_title": "Walnut Shell Powder",
+      "product_id": "BC147",
+      "id": "71f368de-ba39-45ed-b43f-bd167bc277b3",
+      "is_active": true,
+      "current_price": 40,
+      "mrp": 250
+    },
+    {
+      "requested": "Fenugreek Powder",
+      "match_title": "Fenugreek Powder",
+      "product_id": "BC043",
+      "id": "bb766286-0640-414c-8d8b-83316b9830c6",
+      "is_active": true,
+      "current_price": 40,
+      "mrp": 250
+    },
+    {
+      "requested": "Rose Petal Powder",
+      "match_title": "Rose Petal Powder",
+      "product_id": "BC093",
+      "id": "d1bab3c9-f631-45e2-a649-c37d573430d0",
+      "is_active": true,
+      "current_price": 80,
+      "mrp": 450
+    },
+    {
+      "requested": "Bhringraj Powder",
+      "match_title": "Bhringraj Powder",
+      "product_id": "BC019",
+      "id": "81a2b8da-c38c-4905-abd4-69393f934ac4",
+      "is_active": true,
+      "current_price": 60,
+      "mrp": 450
+    },
+    {
+      "requested": "Lemon Peel Powder",
+      "match_title": "Lemon Peel Powder",
+      "product_id": "BC063",
+      "id": "71cce18c-8946-4644-a2d7-5649c2196a62",
+      "is_active": true,
+      "current_price": 120,
+      "mrp": 450
+    },
+    {
+      "requested": "Orange Peel Powder",
+      "match_title": "Orange Peel Powder",
+      "product_id": "HP002",
+      "id": "96433e41-52fe-46cc-8711-d93e9caec40a",
+      "is_active": true,
+      "current_price": 40,
+      "mrp": 350
+    },
+    {
+      "requested": "Reetha Powder",
+      "match_title": "Reetha Powder",
+      "product_id": "BC041",
+      "id": "79d080be-80ee-4f77-8ecd-e717c6edf6fc",
+      "is_active": true,
+      "current_price": 50,
+      "mrp": 250
+    }
+  ]
+}

@@ -95,6 +95,36 @@ export function ProductGrid() {
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
     const [visibleCount, setVisibleCount] = useState(50);
+    const [serviceError, setServiceError] = useState<string | null>(null);
+
+    const isSupabaseUnavailableError = useCallback((message: string) => {
+        const normalized = message.toLowerCase();
+        return (
+            normalized.includes('fetch failed') ||
+            normalized.includes('failed to fetch') ||
+            normalized.includes('network') ||
+            normalized.includes('timeout') ||
+            normalized.includes('paused') ||
+            normalized.includes('temporarily unavailable') ||
+            normalized.includes('503') ||
+            normalized.includes('502') ||
+            normalized.includes('gateway')
+        );
+    }, []);
+
+    const getReadableServiceError = useCallback((message: string) => {
+        const normalized = message.toLowerCase();
+
+        if (normalized.includes('unable to connect') || normalized.includes('network') || normalized.includes('failed to fetch')) {
+            return 'Unable to reach Supabase. Please check your internet/VPN and retry.';
+        }
+
+        if (isSupabaseUnavailableError(message)) {
+            return 'Supabase service is temporarily unavailable. Please retry in 1-2 minutes.';
+        }
+
+        return 'Could not load products right now. Please retry.';
+    }, [isSupabaseUnavailableError]);
 
     const sortProducts = useCallback((items: Product[], sort: string) => {
         const sorted = [...items];
@@ -127,6 +157,7 @@ export function ProductGrid() {
     const fetchProducts = useCallback(async () => {
         const requestId = ++requestRef.current;
         setLoading(true);
+        setServiceError(null);
 
         try {
             // Get filter parameters
@@ -309,13 +340,15 @@ export function ProductGrid() {
             console.error('Error fetching products:', message);
             if (requestRef.current === requestId) {
                 setProducts([]);
+                setTotalCount(0);
+                setServiceError(getReadableServiceError(message || ''));
             }
         } finally {
             if (requestRef.current === requestId) {
                 setLoading(false);
             }
         }
-    }, [fetchRecommendedProducts, searchParams, sortProducts, visibleCount]);
+    }, [fetchRecommendedProducts, getReadableServiceError, searchParams, sortProducts, visibleCount]);
 
     useEffect(() => {
         let isCancelled = false;
@@ -348,6 +381,34 @@ export function ProductGrid() {
                         </div>
                     ))}
                 </div>
+            </div>
+        );
+    }
+
+    if (serviceError) {
+        return (
+            <div className="space-y-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col items-center justify-center py-12 px-4 bg-white rounded-lg border border-red-100"
+                >
+                    <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
+                        <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M4.93 19h14.14c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.2 16c-.77 1.33.19 3 1.73 3z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-lg font-black text-gray-900 mb-2">Service Unavailable</h3>
+                    <p className="text-gray-600 mb-5 text-center max-w-md text-sm">
+                        {serviceError}
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-5 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                        Retry
+                    </button>
+                </motion.div>
             </div>
         );
     }
