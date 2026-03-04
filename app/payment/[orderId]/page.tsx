@@ -279,6 +279,27 @@ export default function PaymentPage() {
 
                                 {isMobile ? (
                                     <div className="space-y-6">
+                                        <div className="text-center space-y-3">
+                                            <div className="inline-block p-4 bg-white border-4 border-gray-50 rounded-[1.5rem] shadow-inner">
+                                                {qrCode ? (
+                                                    <Image
+                                                        src={qrCode}
+                                                        alt="UPI QR Code"
+                                                        width={220}
+                                                        height={220}
+                                                        className="rounded-xl"
+                                                    />
+                                                ) : (
+                                                    <div className="w-[220px] h-[220px] bg-gray-50 rounded-xl flex items-center justify-center">
+                                                        <span className="animate-pulse text-gray-300">Generating QR...</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                Scan QR from another device if app launch fails
+                                            </p>
+                                        </div>
+
                                         <Button
                                             variant="primary"
                                             size="lg"
