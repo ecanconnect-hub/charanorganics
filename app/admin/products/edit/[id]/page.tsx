@@ -19,6 +19,12 @@ import toast from 'react-hot-toast';
 const PRODUCT_IMAGE_WIDTH = 1600;
 const PRODUCT_IMAGE_HEIGHT = 1200;
 
+const isMissingAdditionalInfoTeColumn = (error: unknown): boolean => {
+    if (!error || typeof error !== 'object') return false;
+    const candidate = error as { code?: string; message?: string };
+    return candidate.code === '42703' && (candidate.message || '').toLowerCase().includes('additional_info_te');
+};
+
 export default function EditProductPage() {
     const router = useRouter();
     const params = useParams();
@@ -159,24 +165,34 @@ export default function EditProductPage() {
             }
 
             // Update Product
-            const { error } = await (supabase
-                .from('products') as any)
-                .update({
-                    title_en: titleEn,
-                    title_te: titleTe || titleEn,
-                    description_en: descriptionEn,
-                    description_te: descriptionTe || descriptionEn,
-                    specifications_en: specificationsEn,
-                    usage_en: usageEn,
-                    additional_info_en: additionalInfoEn,
-                    additional_info_te: additionalInfoTe || additionalInfoEn,
-                    mrp: parseFloat(mrp),
-                    current_price: parseFloat(currentPrice),
-                    stock_quantity: parseInt(stockQuantity),
-                    shipping_charges: parseFloat(shippingCharges),
-                    image_url: imageUrl,
-                } as any)
+            const productPayload = {
+                title_en: titleEn,
+                title_te: titleTe || titleEn,
+                description_en: descriptionEn,
+                description_te: descriptionTe || descriptionEn,
+                specifications_en: specificationsEn,
+                usage_en: usageEn,
+                additional_info_en: additionalInfoEn,
+                additional_info_te: additionalInfoTe || additionalInfoEn,
+                mrp: parseFloat(mrp),
+                current_price: parseFloat(currentPrice),
+                stock_quantity: parseInt(stockQuantity),
+                shipping_charges: parseFloat(shippingCharges),
+                image_url: imageUrl,
+            };
+
+            let { error } = await (supabase.from('products') as any)
+                .update(productPayload as any)
                 .eq('id', productId);
+
+            if (error && isMissingAdditionalInfoTeColumn(error)) {
+                const fallbackPayload = { ...productPayload } as Record<string, unknown>;
+                delete fallbackPayload.additional_info_te;
+                const retry = await (supabase.from('products') as any)
+                    .update(fallbackPayload as any)
+                    .eq('id', productId);
+                error = retry.error;
+            }
 
             if (error) throw error;
 

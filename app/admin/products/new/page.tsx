@@ -19,6 +19,12 @@ import toast from 'react-hot-toast';
 const PRODUCT_IMAGE_WIDTH = 1600;
 const PRODUCT_IMAGE_HEIGHT = 1200;
 
+const isMissingAdditionalInfoTeColumn = (error: unknown): boolean => {
+    if (!error || typeof error !== 'object') return false;
+    const candidate = error as { code?: string; message?: string };
+    return candidate.code === '42703' && (candidate.message || '').toLowerCase().includes('additional_info_te');
+};
+
 export default function AddProductPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -107,7 +113,7 @@ export default function AddProductPage() {
                 }
             }
 
-            const { data: productData, error } = await supabase.from('products' as any).insert({
+            const productPayload = {
                 product_id: productId,
                 title_en: titleEn,
                 title_te: titleTe || titleEn,
@@ -125,7 +131,23 @@ export default function AddProductPage() {
                 shipping_charges: parseFloat(shippingCharges),
                 image_url: imageUrl,
                 is_active: true,
-            } as any).select();
+            };
+
+            let { data: productData, error } = await supabase
+                .from('products' as any)
+                .insert(productPayload as any)
+                .select();
+
+            if (error && isMissingAdditionalInfoTeColumn(error)) {
+                const fallbackPayload = { ...productPayload } as Record<string, unknown>;
+                delete fallbackPayload.additional_info_te;
+                const retry = await supabase
+                    .from('products' as any)
+                    .insert(fallbackPayload as any)
+                    .select();
+                productData = retry.data;
+                error = retry.error;
+            }
 
             if (error) throw error;
 
