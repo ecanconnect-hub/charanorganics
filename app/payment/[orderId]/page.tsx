@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
-import { generateUPILink, generateUPIQRCode, isMobileDevice, openUPIApp } from '@/lib/utils/upi';
+import { generateUPIQRCode, isMobileDevice, openUPIApp } from '@/lib/utils/upi';
 import toast from 'react-hot-toast';
 
 export default function PaymentPage() {
@@ -31,6 +31,8 @@ export default function PaymentPage() {
     const [phone, setPhone] = useState('');
     const [step, setStep] = useState(1); // 1 = Pay, 2 = Confirm (UTR/Screen)
     const [isMobile, setIsMobile] = useState(false);
+    const upiId = process.env.NEXT_PUBLIC_UPI_ID || '';
+    const upiName = process.env.NEXT_PUBLIC_UPI_NAME || 'Charan Organics';
 
     useEffect(() => {
         setIsMobile(isMobileDevice());
@@ -79,10 +81,11 @@ export default function PaymentPage() {
     };
 
     const generateQR = async () => {
-        const upiId = process.env.NEXT_PUBLIC_UPI_ID!;
-        const upiName = process.env.NEXT_PUBLIC_UPI_NAME!;
-
         if (!order) return;
+        if (!upiId) {
+            toast.error('UPI configuration missing');
+            return;
+        }
 
         const qr = await generateUPIQRCode({
             upiId,
@@ -95,8 +98,10 @@ export default function PaymentPage() {
     };
 
     const handlePayNow = () => {
-        const upiId = process.env.NEXT_PUBLIC_UPI_ID!;
-        const upiName = process.env.NEXT_PUBLIC_UPI_NAME!;
+        if (!upiId) {
+            toast.error('UPI configuration missing');
+            return;
+        }
         const amount = order?.total_amount || 0;
 
         // Don't auto-advance. Let user confirm they paid.
@@ -294,11 +299,15 @@ export default function PaymentPage() {
                                         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-between gap-3">
                                             <div className="flex-1">
                                                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">UPI ID</p>
-                                                <p className="text-sm font-black text-gray-900 tracking-tight">8247838125@ybl</p>
+                                                <p className="text-sm font-black text-gray-900 tracking-tight">{upiId || 'Not configured'}</p>
                                             </div>
                                             <button
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText('8247838125@ybl');
+                                                    if (!upiId) {
+                                                        toast.error('UPI ID not configured');
+                                                        return;
+                                                    }
+                                                    navigator.clipboard.writeText(upiId);
                                                     toast.success('UPI ID copied!', {
                                                         icon: '📋',
                                                         style: {
@@ -364,11 +373,15 @@ export default function PaymentPage() {
                                         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-between gap-3">
                                             <div className="flex-1">
                                                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">UPI ID</p>
-                                                <p className="text-sm font-black text-gray-900 tracking-tight">8247838125@ybl</p>
+                                                <p className="text-sm font-black text-gray-900 tracking-tight">{upiId || 'Not configured'}</p>
                                             </div>
                                             <button
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText('8247838125@ybl');
+                                                    if (!upiId) {
+                                                        toast.error('UPI ID not configured');
+                                                        return;
+                                                    }
+                                                    navigator.clipboard.writeText(upiId);
                                                     toast.success('UPI ID copied!', {
                                                         icon: '📋',
                                                         style: {
@@ -492,3 +505,4 @@ export default function PaymentPage() {
         </main>
     );
 }
+
