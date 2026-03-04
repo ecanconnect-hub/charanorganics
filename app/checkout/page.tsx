@@ -169,31 +169,32 @@ export default function CheckoutPage() {
 
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
-        setPolicyBlocked(false);
-
-        if (user) {
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('privacy_policy_accepted')
-                .eq('id', user.id)
-                .single();
-
-            if (profileError) {
-                toast.error('Unable to verify policy acceptance. Please try again.');
-                return;
-            }
-
-            const profilePolicy = profileData as ProfilePolicyRow | null;
-            if (profilePolicy?.privacy_policy_accepted === false) {
-                setPolicyBlocked(true);
-                toast.error('Please accept policy in Account > Security to confirm your order.');
-                return;
-            }
-        }
+        if (loading) return;
 
         setLoading(true);
+        setPolicyBlocked(false);
 
         try {
+            if (user) {
+                const { data: profileData, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('privacy_policy_accepted')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profileError) {
+                    toast.error('Unable to verify policy acceptance. Please try again.');
+                    return;
+                }
+
+                const profilePolicy = profileData as ProfilePolicyRow | null;
+                if (profilePolicy?.privacy_policy_accepted === false) {
+                    setPolicyBlocked(true);
+                    toast.error('Please accept policy in Account > Security to confirm your order.');
+                    return;
+                }
+            }
+
             const payload: any = {
                 fullName,
                 phone,

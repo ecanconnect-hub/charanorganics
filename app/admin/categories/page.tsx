@@ -27,6 +27,7 @@ export default function AdminCategoriesPage() {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [mobileGridCols, setMobileGridCols] = useState<1 | 2>(2);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         void checkAdmin();
@@ -87,6 +88,34 @@ export default function AdminCategoriesPage() {
         () => sections.filter((section) => Boolean(section.description_en?.trim())).length,
         [sections]
     );
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
+    const visibleSections = useMemo(() => {
+        const sortedSections = [...sections].sort((a, b) => {
+            const aKey = (a.title_en || a.title_te || a.section_id || '').toLowerCase();
+            const bKey = (b.title_en || b.title_te || b.section_id || '').toLowerCase();
+            return aKey.localeCompare(bKey, undefined, { sensitivity: 'base' });
+        });
+
+        if (!normalizedSearchQuery) {
+            return sortedSections;
+        }
+
+        return sortedSections.filter((section) => {
+            const searchableText = [
+                section.section_id,
+                section.title_en,
+                section.title_te,
+                section.description_en,
+                section.description_te,
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+
+            return searchableText.includes(normalizedSearchQuery);
+        });
+    }, [sections, normalizedSearchQuery]);
 
     if (loading) {
         return (
@@ -105,6 +134,7 @@ export default function AdminCategoriesPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                         <span className="rounded-lg bg-gray-100 px-3 py-1 font-semibold">Total: {sections.length}</span>
                         <span className="rounded-lg bg-indigo-100 px-3 py-1 font-semibold text-indigo-700">With description: {categoriesWithDescriptions}</span>
+                        <span className="rounded-lg bg-teal-100 px-3 py-1 font-semibold text-teal-700">Showing: {visibleSections.length}</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
@@ -142,11 +172,20 @@ export default function AdminCategoriesPage() {
                         </Link>
                     </div>
                 </div>
+                <div className="mt-4">
+                    <input
+                        type="search"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search categories by ID, English, Telugu, or description"
+                        className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    />
+                </div>
             </div>
 
             {viewMode === 'grid' ? (
                 <div className={`grid gap-3 md:grid-cols-2 md:gap-6 xl:grid-cols-3 ${mobileGridCols === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                    {sections.map((section) => (
+                    {visibleSections.map((section) => (
                         <div key={section.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg">
                             <div className="relative aspect-video bg-gradient-to-br from-indigo-100 to-purple-100">
                                 {section.image_url ? (
@@ -197,7 +236,7 @@ export default function AdminCategoriesPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {sections.map((section) => (
+                                {visibleSections.map((section) => (
                                     <tr key={section.id} className="hover:bg-gray-50">
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-3">
@@ -242,6 +281,12 @@ export default function AdminCategoriesPage() {
                     <Link href="/admin/categories/new">
                         <Button variant="primary" size="lg">Add Your First Category</Button>
                     </Link>
+                </div>
+            )}
+            {sections.length > 0 && visibleSections.length === 0 && (
+                <div className="rounded-2xl border border-gray-200 bg-white py-16 text-center">
+                    <p className="mb-2 text-xl font-bold text-gray-900">No matching categories</p>
+                    <p className="text-gray-600">Try a different search term.</p>
                 </div>
             )}
         </AdminLayout>

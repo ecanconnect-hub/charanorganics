@@ -4,6 +4,9 @@ import { z } from 'zod';
 import { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
 
+type OrderRow = Database['public']['Tables']['orders']['Row'];
+type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
+
 // Input Validation Schema
 const checkoutSchema = z.object({
     fullName: z.string().min(2).max(100),
@@ -24,6 +27,95 @@ const checkoutSchema = z.object({
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const adminDb = createClient<Database>(supabaseUrl, serviceRoleKey);
+
+type CheckoutRpcItem = {
+    product_id: string;
+    variant_id: string | null;
+    quantity: number;
+};
+
+type DuplicateOrderCandidate = Pick<OrderRow, 'id' | 'order_id' | 'user_id' | 'created_at' | 'status'>;
+type DuplicateOrderItemCandidate = Pick<OrderItemRow, 'order_id' | 'product_id' | 'variant_id' | 'quantity'>;
+type DuplicateOrderMatch = Pick<OrderRow, 'id' | 'order_id'>;
+
+const DUPLICATE_ORDER_WINDOW_MS = 2 * 60 * 1000;
+
+const buildItemsSignature = (items: CheckoutRpcItem[]): string =>
+    items
+        .map((item) => `${item.product_id}:${item.variant_id || 'no_variant'}:${item.quantity}`)
+        .sort()
+        .join('|');
+
+const findRecentDuplicateOrder = async ({
+    userId,
+    fullAddress,
+    phone,
+    pincode,
+    totalAmount,
+    items,
+}: {
+    userId: string | null;
+    fullAddress: string;
+    phone: string;
+    pincode: string;
+    totalAmount: number;
+    items: CheckoutRpcItem[];
+}) => {
+    const sinceIso = new Date(Date.now() - DUPLICATE_ORDER_WINDOW_MS).toISOString();
+    const incomingSignature = buildItemsSignature(items);
+
+    const baseOrderQuery = adminDb
+        .from('orders')
+        .select('id, order_id, user_id, created_at, status')
+        .gte('created_at', sinceIso)
+        .eq('shipping_phone', phone)
+        .eq('shipping_address', fullAddress)
+        .eq('shipping_pincode', pincode)
+        .eq('total_amount', totalAmount)
+        .in('status', ['pending_payment', 'payment_verification'])
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+    const orderQuery = userId ? baseOrderQuery.eq('user_id', userId) : baseOrderQuery.is('user_id', null);
+    const { data: candidateOrdersRaw, error: candidateOrdersError } = await orderQuery;
+    const candidateOrders = (candidateOrdersRaw ?? []) as DuplicateOrderCandidate[];
+
+    if (candidateOrdersError || candidateOrders.length === 0) {
+        return null;
+    }
+
+    const candidateOrderIds = candidateOrders.map((order) => order.id);
+    const { data: candidateItemsRaw, error: candidateItemsError } = await adminDb
+        .from('order_items')
+        .select('order_id, product_id, variant_id, quantity')
+        .in('order_id', candidateOrderIds);
+    const candidateItems = (candidateItemsRaw ?? []) as DuplicateOrderItemCandidate[];
+
+    if (candidateItemsError || candidateItems.length === 0) {
+        return null;
+    }
+
+    const itemsByOrderId: Record<string, CheckoutRpcItem[]> = {};
+    for (const row of candidateItems) {
+        if (!itemsByOrderId[row.order_id]) {
+            itemsByOrderId[row.order_id] = [];
+        }
+        itemsByOrderId[row.order_id].push({
+            product_id: row.product_id,
+            variant_id: row.variant_id ?? null,
+            quantity: row.quantity,
+        });
+    }
+
+    for (const candidate of candidateOrders) {
+        const candidateSignature = buildItemsSignature(itemsByOrderId[candidate.id] || []);
+        if (candidateSignature === incomingSignature) {
+            return candidate as DuplicateOrderMatch;
+        }
+    }
+
+    return null;
+};
 
 export async function POST(req: NextRequest) {
     // 1. Rate Limiting
@@ -137,18 +229,44 @@ export async function POST(req: NextRequest) {
 
         const shippingFee = subtotal >= 2000 ? 0 : maxShipping;
         const totalAmount = subtotal + shippingFee;
+        const shippingAddress = [addressLine1, addressLine2].filter(Boolean).join(', ');
 
         // 7. Secure Order Creation via RPC (Atomic & Stock-Aware)
         const rpcItems = cartToProcess.map(item => ({
             product_id: item.product_id,
             variant_id: item.variant_id || null,
             quantity: item.quantity
-        }));
+        })) as CheckoutRpcItem[];
+
+        const duplicateOrder = await findRecentDuplicateOrder({
+            userId: user?.id ?? null,
+            fullAddress: shippingAddress,
+            phone,
+            pincode,
+            totalAmount,
+            items: rpcItems,
+        });
+
+        if (duplicateOrder) {
+            return NextResponse.json(
+                {
+                    success: true,
+                    orderId: duplicateOrder.order_id,
+                    reusedExistingOrder: true,
+                },
+                {
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                    },
+                }
+            );
+        }
 
         const { data: rpcResult, error: rpcError } = await (adminDb.rpc as any)('place_secure_order', {
             p_full_name: fullName,
             p_phone: phone,
-            p_address: [addressLine1, addressLine2].filter(Boolean).join(', '),
+            p_address: shippingAddress,
             p_city: city,
             p_state: state,
             p_pincode: pincode,

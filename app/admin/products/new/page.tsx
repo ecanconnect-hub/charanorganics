@@ -150,11 +150,14 @@ export default function AddProductPage() {
             }
 
             if (error) throw error;
+            if (!productData || productData.length === 0) {
+                throw new Error('Product insert did not return a record');
+            }
 
             const dbProductId = (productData[0] as any).id;
 
             // Save Sections
-            if (productData && productData[0] && selectedSectionIds.length > 0) {
+            if (selectedSectionIds.length > 0) {
                 const sectionsToInsert = selectedSectionIds.map(sectionId => ({
                     product_id: dbProductId,
                     section_id: sectionId

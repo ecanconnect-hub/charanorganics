@@ -32,6 +32,7 @@ export default function AdminProductsPage() {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [mobileGridCols, setMobileGridCols] = useState<1 | 2>(2);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         void checkAdmin();
@@ -123,6 +124,36 @@ export default function AdminProductsPage() {
     };
 
     const totalActive = useMemo(() => products.filter((p) => p.is_active).length, [products]);
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
+    const visibleProducts = useMemo(() => {
+        const sortedProducts = [...products].sort((a, b) => {
+            const aKey = (a.title_en || a.title_te || a.product_id || '').toLowerCase();
+            const bKey = (b.title_en || b.title_te || b.product_id || '').toLowerCase();
+            return aKey.localeCompare(bKey, undefined, { sensitivity: 'base' });
+        });
+
+        if (!normalizedSearchQuery) {
+            return sortedProducts;
+        }
+
+        return sortedProducts.filter((product) => {
+            const searchableText = [
+                product.product_id,
+                product.title_en,
+                product.title_te,
+                product.description_en,
+                product.description_te,
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+
+            return searchableText.includes(normalizedSearchQuery);
+        });
+    }, [products, normalizedSearchQuery]);
+
+    const activeVisible = useMemo(() => visibleProducts.filter((p) => p.is_active).length, [visibleProducts]);
 
     if (loading) {
         return (
@@ -141,6 +172,10 @@ export default function AdminProductsPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                         <span className="rounded-lg bg-gray-100 px-3 py-1 font-semibold">Total: {products.length}</span>
                         <span className="rounded-lg bg-green-100 px-3 py-1 font-semibold text-green-700">Active: {totalActive}</span>
+                        <span className="rounded-lg bg-indigo-100 px-3 py-1 font-semibold text-indigo-700">Showing: {visibleProducts.length}</span>
+                        {searchQuery.trim() && (
+                            <span className="rounded-lg bg-teal-100 px-3 py-1 font-semibold text-teal-700">Active in view: {activeVisible}</span>
+                        )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
@@ -178,11 +213,20 @@ export default function AdminProductsPage() {
                         </Link>
                     </div>
                 </div>
+                <div className="mt-4">
+                    <input
+                        type="search"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search products by ID, English, Telugu, or description"
+                        className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    />
+                </div>
             </div>
 
             {viewMode === 'grid' ? (
                 <div className={`grid gap-3 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4 ${mobileGridCols === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                    {products.map((product) => (
+                    {visibleProducts.map((product) => (
                         <div key={product.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg">
                             <div className="relative aspect-square bg-gray-100">
                                 {product.image_url ? (
@@ -267,7 +311,7 @@ export default function AdminProductsPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {products.map((product) => (
+                                {visibleProducts.map((product) => (
                                     <tr key={product.id} className="hover:bg-gray-50">
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-3">
@@ -325,6 +369,12 @@ export default function AdminProductsPage() {
                     <Link href="/admin/products/new">
                         <Button variant="primary" size="lg">Add Your First Product</Button>
                     </Link>
+                </div>
+            )}
+            {products.length > 0 && visibleProducts.length === 0 && (
+                <div className="rounded-2xl border border-gray-200 bg-white py-16 text-center">
+                    <p className="mb-2 text-xl font-bold text-gray-900">No matching products</p>
+                    <p className="text-gray-600">Try a different search term.</p>
                 </div>
             )}
         </AdminLayout>
