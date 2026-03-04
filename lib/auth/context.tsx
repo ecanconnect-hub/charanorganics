@@ -24,6 +24,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const SUPABASE_AUTH_HEALTH_TIMEOUT_MS = 2500;
 
 function getErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) {
@@ -56,6 +57,69 @@ function isNetworkAuthError(message: string): boolean {
     );
 }
 
+function getSupabaseProjectRef(): string | null {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) return null;
+
+    try {
+        const hostname = new URL(supabaseUrl).hostname;
+        const projectRef = hostname.split('.')[0];
+        return projectRef || null;
+    } catch {
+        return null;
+    }
+}
+
+function clearLocalSupabaseSession(): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+        const projectRef = getSupabaseProjectRef();
+        if (!projectRef) return;
+
+        const storageKeysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i += 1) {
+            const key = localStorage.key(i);
+            if (!key) continue;
+            if (key.startsWith(`sb-${projectRef}-`)) {
+                storageKeysToRemove.push(key);
+            }
+        }
+
+        storageKeysToRemove.forEach((key) => localStorage.removeItem(key));
+    } catch (error) {
+        console.warn('Failed to clear local Supabase session keys:', error);
+    }
+}
+
+async function canReachSupabaseAuth(): Promise<boolean> {
+    if (typeof window === 'undefined') return true;
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseAnonKey) return false;
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), SUPABASE_AUTH_HEALTH_TIMEOUT_MS);
+
+    try {
+        await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/health`, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                apikey: supabaseAnonKey,
+            },
+            signal: controller.signal,
+        });
+        // The endpoint may return non-2xx in some environments; if fetch resolves, routing is healthy.
+        return true;
+    } catch {
+        return false;
+    } finally {
+        window.clearTimeout(timeout);
+    }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
@@ -64,8 +128,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         let isMounted = true;
+        let subscription: { unsubscribe: () => void } | null = null;
+
+        const subscribeToAuthChanges = () => {
+            const authSubscription = supabase.auth.onAuthStateChange((_event, session) => {
+                if (!isMounted) return;
+                setSession(session);
+                setUser(session?.user ?? null);
+                setLoading(false);
+            });
+
+            subscription = authSubscription.data.subscription;
+        };
 
         const initializeSession = async () => {
+            const reachable = await canReachSupabaseAuth();
+            if (!reachable) {
+                console.warn('Supabase auth endpoint is not reachable. Continuing in signed-out mode.');
+                clearLocalSupabaseSession();
+                if (!isMounted) return;
+                setSession(null);
+                setUser(null);
+                setLoading(false);
+                return;
+            }
+
             try {
                 const { data, error } = await supabase.auth.getSession();
                 if (error) {
@@ -82,11 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // When network routing to Supabase fails, stale local auth state can trigger repeated refresh attempts.
                 // Clear local session only (no server call) so the app can continue for public browsing.
                 if (isNetworkAuthError(message)) {
-                    try {
-                        await supabase.auth.signOut({ scope: 'local' });
-                    } catch (signOutError) {
-                        console.warn('Failed to clear local auth session after network error:', signOutError);
-                    }
+                    clearLocalSupabaseSession();
                 }
 
                 if (!isMounted) return;
@@ -97,23 +180,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setLoading(false);
                 }
             }
+
+            subscribeToAuthChanges();
         };
 
         void initializeSession();
 
-        // Listen for auth changes
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (!isMounted) return;
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
-
         return () => {
             isMounted = false;
-            subscription.unsubscribe();
+            subscription?.unsubscribe();
         };
     }, []);
 

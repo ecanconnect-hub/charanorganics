@@ -12,24 +12,23 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations, useLocale, useSetLocale } from '@/lib/i18n/context';
 import { useCart } from '@/lib/cart-context';
-import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/auth/context';
 import { Button } from '@/components/ui/Button';
 import logoImage from '@/public/charan-logo.png';
 
 export function Header() {
     const t = useTranslations('nav');
-    const ct = useTranslations('common');
     const pathname = usePathname();
     const router = useRouter();
     const locale = useLocale();
     const setLocale = useSetLocale();
     const { items } = useCart();
+    const { user } = useAuth();
 
     const [isScrolled, setIsScrolled] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
-    const [lastScrollY, setLastScrollY] = useState(0);
+    const lastScrollYRef = useRef(0);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [user, setUser] = useState<any>(null);
 
     // Search State
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -45,24 +44,16 @@ export function Header() {
             setIsScrolled(currentScrollY > 20);
 
             // Determine visibility (show on scroll up, hide on scroll down)
-            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+            if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
                 setIsVisible(false);
             } else {
                 setIsVisible(true);
             }
 
-            setLastScrollY(currentScrollY);
+            lastScrollYRef.current = currentScrollY;
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
-
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-        });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-        });
 
         // Click outside handler for search
         const handleClickOutside = (event: MouseEvent) => {
@@ -86,9 +77,8 @@ export function Header() {
             window.removeEventListener('scroll', handleScroll);
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('keydown', handleKeyDown);
-            subscription.unsubscribe();
         };
-    }, [lastScrollY]);
+    }, []);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();

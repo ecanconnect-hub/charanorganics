@@ -1,29 +1,38 @@
 /**
  * Cart Page
- * 
+ *
  * View and manage cart items
  */
 
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { useAuth } from '@/lib/auth/context';
-import { supabase } from '@/lib/supabase/client';
 import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
-import toast from 'react-hot-toast';
-
 import { useCart } from '@/lib/cart-context';
+
+const hasFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value);
 
 export default function CartPage() {
     const router = useRouter();
-    const { user } = useAuth();
     const locale = useLocale();
     const { items: cartItems, updateQuantity, removeItem, isLoading } = useCart();
+
+    const subtotal = cartItems.reduce((sum, item) => {
+        const price = item.product?.current_price;
+        return hasFiniteNumber(price) ? sum + price * item.quantity : sum;
+    }, 0);
+
+    const shippingCandidates = cartItems
+        .map((item) => item.product?.shipping_charges)
+        .filter(hasFiniteNumber);
+    const maxShipping = shippingCandidates.length > 0 ? Math.max(...shippingCandidates) : 0;
+    const shipping = subtotal >= 2000 ? 0 : maxShipping;
+    const total = subtotal + shipping;
+    const hasUnavailablePricing = cartItems.some((item) => !hasFiniteNumber(item.product?.current_price));
 
     return (
         <main className="section-padding min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -47,7 +56,7 @@ export default function CartPage() {
                             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                         </div>
                         <h2 className="text-2xl font-black text-gray-900 mb-2">Your cart is empty</h2>
-                        <p className="text-gray-500 mb-10 max-w-xs mx-auto">Looks like you haven't added any Ayurvedic goodness yet.</p>
+                        <p className="text-gray-500 mb-10 max-w-xs mx-auto">Looks like you haven&apos;t added any Ayurvedic goodness yet.</p>
                         <Link href="/shop">
                             <Button variant="primary" size="lg" className="rounded-full px-12 shadow-xl shadow-green-100 font-bold">
                                 Start Shopping
@@ -58,18 +67,22 @@ export default function CartPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
                         {/* Cart Items */}
                         <div className="lg:col-span-8 space-y-4">
-                            {cartItems.map((item, idx) => {
+                            {cartItems.map((item) => {
                                 const product = item.product;
                                 const title = locale === 'en'
                                     ? product?.title_en
                                     : resolveLocalizedText(product?.title_en, product?.title_te);
                                 const itemKey = item.id || `${item.product_id}-${item.variant_id || 'none'}`;
+                                const productHref = product?.product_id ? `/product/${product.product_id}` : '/shop';
+                                const unitPrice = product?.current_price;
+                                const hasUnitPrice = hasFiniteNumber(unitPrice);
+                                const lineTotal = hasUnitPrice ? unitPrice * item.quantity : null;
 
                                 return (
                                     <div key={itemKey} className="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-gray-100 flex gap-4 md:gap-5 group hover:shadow-md hover:border-gray-200 transition-all duration-200">
                                         {/* Image */}
                                         <Link
-                                            href={`/product/${product?.product_id}`}
+                                            href={productHref}
                                             className="w-24 h-24 md:w-28 md:h-28 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 ring-1 ring-gray-100"
                                         >
                                             {product?.image_url ? (
@@ -89,17 +102,23 @@ export default function CartPage() {
                                         <div className="flex-1 min-w-0 flex flex-col justify-between">
                                             <div>
                                                 <div className="flex justify-between items-start gap-3 mb-2">
-                                                    <Link href={`/product/${product?.product_id}`}>
-                                                        <h3 className="text-lg font-semibold leading-snug text-gray-900 group-hover:text-green-700 transition-colors">{title}</h3>
+                                                    <Link href={productHref}>
+                                                        <h3 className="text-lg font-semibold leading-snug text-gray-900 group-hover:text-green-700 transition-colors">
+                                                            {title || 'Product unavailable'}
+                                                        </h3>
                                                     </Link>
-                                                    <p className="text-xl font-bold text-gray-900 tracking-tight whitespace-nowrap">₹{((product?.current_price || 0) * item.quantity).toFixed(2)}</p>
+                                                    <p className="text-xl font-bold text-gray-900 tracking-tight whitespace-nowrap">
+                                                        {lineTotal === null ? 'Price unavailable' : `₹${lineTotal.toFixed(2)}`}
+                                                    </p>
                                                 </div>
                                                 {item.variant_label && (
                                                     <span className="inline-flex items-center text-[11px] font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-lg ring-1 ring-green-100 mb-3">
                                                         {item.variant_label}
                                                     </span>
                                                 )}
-                                                <p className="text-sm font-medium text-gray-500">Unit Price: ₹{product?.current_price}</p>
+                                                <p className="text-sm font-medium text-gray-500">
+                                                    Unit Price: {hasUnitPrice ? `₹${unitPrice.toFixed(2)}` : 'Unavailable'}
+                                                </p>
                                             </div>
 
                                             {/* Controls */}
@@ -146,31 +165,20 @@ export default function CartPage() {
                                 <div className="space-y-4 mb-6">
                                     <div className="flex justify-between text-sm font-medium text-gray-500">
                                         <span>Subtotal</span>
-                                        <span className="text-base font-semibold text-gray-900">₹{cartItems.reduce((sum, item) => sum + (item.product?.current_price || 0) * item.quantity, 0).toFixed(2)}</span>
+                                        <span className="text-base font-semibold text-gray-900">₹{subtotal.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-sm font-medium text-gray-500">
                                         <span>Shipping</span>
                                         <span className="text-base font-semibold text-gray-900">
-                                            {(() => {
-                                                const subtotal = cartItems.reduce((sum, item) => sum + (item.product?.current_price || 0) * item.quantity, 0);
-                                                const maxShipping = cartItems.length > 0 ? Math.max(...cartItems.map(item => item.product?.shipping_charges || 0)) : 0;
-                                                return subtotal >= 2000 ? (
-                                                    <span className="text-green-600 font-semibold text-xs uppercase tracking-[0.14em]">Free Shipping</span>
-                                                ) : `₹${maxShipping.toFixed(2)}`;
-                                            })()}
+                                            {subtotal >= 2000 ? (
+                                                <span className="text-green-600 font-semibold text-xs uppercase tracking-[0.14em]">Free Shipping</span>
+                                            ) : `₹${shipping.toFixed(2)}`}
                                         </span>
                                     </div>
                                     <div className="pt-5 mt-5 border-t border-gray-200 flex justify-between items-end">
                                         <div>
                                             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-1">Total Amount</p>
-                                            <p className="text-3xl md:text-4xl font-bold text-gray-900">₹{
-                                                (() => {
-                                                    const subtotal = cartItems.reduce((sum, item) => sum + (item.product?.current_price || 0) * item.quantity, 0);
-                                                    const maxShipping = cartItems.length > 0 ? Math.max(...cartItems.map(item => item.product?.shipping_charges || 0)) : 0;
-                                                    const shipping = subtotal >= 2000 ? 0 : maxShipping;
-                                                    return (subtotal + shipping).toFixed(2);
-                                                })()
-                                            }</p>
+                                            <p className="text-3xl md:text-4xl font-bold text-gray-900">₹{total.toFixed(2)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -180,16 +188,22 @@ export default function CartPage() {
                                     size="lg"
                                     fullWidth
                                     className="rounded-xl h-12 shadow-md shadow-green-100/70 font-semibold text-base group"
+                                    disabled={hasUnavailablePricing}
                                     onClick={() => router.push('/checkout')}
                                 >
-                                    Checkout
+                                    {hasUnavailablePricing ? 'Fix Cart Items' : 'Checkout'}
                                     <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                                 </Button>
+
+                                {hasUnavailablePricing && (
+                                    <p className="mt-2 text-xs text-amber-700 font-medium">
+                                        Some items could not load pricing. Remove them and add again.
+                                    </p>
+                                )}
 
                                 <div className="mt-6 pt-6 border-t border-gray-100 text-center">
                                     <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-[0.12em] mb-3">Safe & Secure Payment</p>
                                     <div className="flex justify-center gap-4 grayscale opacity-50">
-                                        {/* Simple representations of payment methods */}
                                         <div className="w-10 h-6 bg-gray-200 rounded-md"></div>
                                         <div className="w-10 h-6 bg-gray-200 rounded-md"></div>
                                         <div className="w-10 h-6 bg-gray-200 rounded-md"></div>
@@ -203,6 +217,3 @@ export default function CartPage() {
         </main>
     );
 }
-
-
-

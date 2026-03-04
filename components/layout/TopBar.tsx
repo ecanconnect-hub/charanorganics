@@ -16,16 +16,21 @@ export function TopBar() {
 
     useEffect(() => {
         const fetchMessage = async () => {
-            const { data } = await (supabase
-                .from('site_content' as any) as any)
-                .select('content_en, content_te')
-                .eq('content_key', 'top_bar_message')
-                .single();
+            try {
+                const { data } = await (supabase
+                    .from('site_content' as any) as any)
+                    .select('content_en, content_te')
+                    .eq('content_key', 'top_bar_message')
+                    .single();
 
-            const content = data as any; // Cast to any to bypass type inference issue
+                const content = data as any; // Cast to any to bypass type inference issue
 
-            if (content) {
-                setMessage(locale === 'en' ? content.content_en || '' : content.content_te || '');
+                if (content) {
+                    setMessage(locale === 'en' ? content.content_en || '' : content.content_te || '');
+                }
+            } catch (error) {
+                console.warn('Top bar message load failed:', error);
+                setMessage('');
             }
         };
 

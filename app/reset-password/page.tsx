@@ -25,11 +25,16 @@ export default function ResetPasswordPage() {
         // Supabase handles the recovery session automatically when the link is clicked
         // We just need to check if we have a session or if it's a recovery flow
         const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                // If no session, they might have landed here manually or link expired
-                // toast.error('Session expired or invalid link.');
-                // router.push('/login');
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    // If no session, they might have landed here manually or link expired
+                    // toast.error('Session expired or invalid link.');
+                    // router.push('/login');
+                }
+            } catch (error) {
+                console.warn('Reset password session check failed:', error);
+                // Keep the page rendered; update call below will show a precise error if session is invalid.
             }
             setVerifying(false);
         };

@@ -23,10 +23,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * Uses SSR helpers for proper cookie-based auth
  * Respects Row Level Security (RLS) policies
  */
-export const supabase = createBrowserClient<Database>(
-  supabaseUrl,
-  supabaseAnonKey
-);
+export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Avoid repeated retry/abort loops when network to Supabase is unstable or blocked.
+    autoRefreshToken: false,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});
 
 /**
  * Server-side Supabase client with service role

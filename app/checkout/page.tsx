@@ -20,7 +20,7 @@ type ProfilePolicyRow = Pick<Database['public']['Tables']['profiles']['Row'], 'p
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { user, loading: authLoading } = useAuth();
+    const { user, session, loading: authLoading } = useAuth();
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [policyBlocked, setPolicyBlocked] = useState(false);
@@ -80,35 +80,52 @@ export default function CheckoutPage() {
             const productIds = Array.from(new Set(guestCart.map((item: any) => item.product_id)));
             const variantIds = Array.from(new Set(guestCart.map((item: any) => item.variant_id).filter(Boolean))) as string[];
 
-            if (productIds.length > 0) {
-                const [{ data: products }, { data: variants }] = await Promise.all([
-                    supabase
-                        .from('products')
-                        .select('*')
-                        .in('id', productIds),
-                    variantIds.length > 0 ?
-                        supabase
-                            .from('product_variants')
-                            .select('*')
-                            .in('id', variantIds) : { data: [] }
-                ]);
-
-                const items = guestCart.map((item: any) => {
-                    const product = (products as any[])?.find(p => p.id === item.product_id);
-                    const variant = (variants as any[])?.find(v => v.id === item.variant_id);
-
-                    return {
-                        ...item,
-                        product: product ? {
-                            ...product,
-                            current_price: variant?.price ?? product.current_price,
-                            mrp: variant?.mrp ?? product.mrp,
-                            shipping_charges: variant?.shipping_charge ?? product.shipping_charges,
-                        } : product,
-                    };
-                });
-                setCartItems(items);
+            if (productIds.length === 0) {
+                setCartItems([]);
+                return;
             }
+
+            const [{ data: products, error: productsError }, { data: variants, error: variantsError }] = await Promise.all([
+                supabase
+                    .from('products')
+                    .select('*')
+                    .in('id', productIds),
+                variantIds.length > 0 ?
+                    supabase
+                        .from('product_variants')
+                        .select('*')
+                        .in('id', variantIds) : Promise.resolve({ data: [], error: null })
+            ]);
+
+            if (productsError || variantsError) {
+                throw productsError || variantsError;
+            }
+
+            const productMap = new Map(((products as any[]) || []).map((product) => [product.id, product]));
+            const variantMap = new Map(((variants as any[]) || []).map((variant) => [variant.id, variant]));
+
+            const items = guestCart.flatMap((item: any) => {
+                const product = productMap.get(item.product_id);
+                if (!product) return [];
+
+                const variant = item.variant_id ? variantMap.get(item.variant_id) : undefined;
+                return [{
+                    ...item,
+                    product: {
+                        ...product,
+                        current_price: variant?.price ?? product.current_price,
+                        mrp: variant?.mrp ?? product.mrp,
+                        shipping_charges: variant?.shipping_charge ?? product.shipping_charges,
+                    },
+                }];
+            });
+
+            if (items.length !== guestCart.length) {
+                const cleaned = guestCart.filter((item: any) => productMap.has(item.product_id));
+                localStorage.setItem('guest_cart', JSON.stringify(cleaned));
+            }
+
+            setCartItems(items);
         } catch (error) {
             console.error('Guest cart error:', error);
         }
@@ -177,8 +194,6 @@ export default function CheckoutPage() {
         setLoading(true);
 
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-
             const payload: any = {
                 fullName,
                 phone,

@@ -10,18 +10,20 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/auth/context';
 import { ProductCard } from '@/components/product/ProductCard';
 
 export function RecentlyBrowsed() {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { user, loading: authLoading } = useAuth();
 
     useEffect(() => {
         const fetchRecentlyBrowsed = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
+            if (authLoading) return;
 
-                if (session?.user) {
+            try {
+                if (user) {
                     // Fetch from database
                     const { data } = await (supabase
                         .from('browsing_history' as any) as any)
@@ -37,7 +39,7 @@ export function RecentlyBrowsed() {
                 is_active
               )
             `)
-                        .eq('user_id', session.user.id)
+                        .eq('user_id', user.id)
                         .order('viewed_at', { ascending: false })
                         .limit(4);
 
@@ -72,7 +74,7 @@ export function RecentlyBrowsed() {
         };
 
         fetchRecentlyBrowsed();
-    }, []);
+    }, [authLoading, user]);
 
     if (loading || products.length === 0) {
         return null;

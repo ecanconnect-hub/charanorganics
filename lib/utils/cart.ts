@@ -25,6 +25,28 @@ export interface CartItem {
 }
 
 const CART_STORAGE_KEY = 'guest_cart';
+let hasLoggedUserCartNetworkWarning = false;
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        const value = (error as { message?: unknown }).message;
+        if (typeof value === 'string') return value;
+    }
+    return '';
+}
+
+function isNetworkError(message: string): boolean {
+    const normalized = message.toLowerCase();
+    return (
+        normalized.includes('failed to fetch') ||
+        normalized.includes('fetch failed') ||
+        normalized.includes('network') ||
+        normalized.includes('timeout') ||
+        normalized.includes('abort')
+    );
+}
 
 /**
  * Get cart items for guest users (from localStorage)
@@ -154,6 +176,8 @@ export const getUserCart = async (userId: string): Promise<CartItem[]> => {
             throw error;
         }
 
+        hasLoggedUserCartNetworkWarning = false;
+
         // Transform to include variant info in the items
         return (data || []).map((item: any) => ({
             ...item,
@@ -167,6 +191,18 @@ export const getUserCart = async (userId: string): Promise<CartItem[]> => {
             } : item.product
         }));
     } catch (error: any) {
+        const message = getErrorMessage(error);
+        const isLikelyEmptyObjectError =
+            !message && typeof error === 'object' && error !== null && Object.keys(error as object).length === 0;
+
+        if (isNetworkError(message) || isLikelyEmptyObjectError) {
+            if (!hasLoggedUserCartNetworkWarning) {
+                console.warn('User cart sync is temporarily unavailable due to Supabase connectivity.');
+                hasLoggedUserCartNetworkWarning = true;
+            }
+            return [];
+        }
+
         // Enhanced error logging to diagnose issues
         console.error('Failed to fetch user cart:', {
             message: error?.message || 'Unknown error',
@@ -174,19 +210,17 @@ export const getUserCart = async (userId: string): Promise<CartItem[]> => {
             hint: error?.hint,
             details: error?.details,
             userId,
-            supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-            timestamp: new Date().toISOString()
         });
 
         // Log specific error types
         if (error?.message?.includes('JWT')) {
-            console.error('⚠️ Authentication error - user session may be invalid');
+            console.error('Authentication error - user session may be invalid');
         } else if (error?.message?.includes('permission') || error?.code === '42501') {
-            console.error('⚠️ Permission denied - check RLS policies on cart_items table');
+            console.error('Permission denied - check RLS policies on cart_items table');
         } else if (error?.message?.includes('relation') || error?.code === '42P01') {
-            console.error('⚠️ Table not found - cart_items table may not exist');
+            console.error('Table not found - cart_items table may not exist');
         } else if (!error?.message) {
-            console.error('⚠️ Empty error object - possible network or CORS issue');
+            console.error('Empty error object - possible network or CORS issue');
         }
 
         return [];
@@ -355,3 +389,4 @@ export const calculateCartTotals = (cart: CartItem[]) => {
 
     return { subtotal, shippingTotal, total };
 };
+

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { CartItem, getGuestCart, getUserCart, addToGuestCart, addToUserCart, removeFromGuestCart, removeFromUserCart, updateGuestCartQuantity, updateUserCartQuantity } from '@/lib/utils/cart';
+import { CartItem, getGuestCart, getUserCart, addToGuestCart, addToUserCart, removeFromGuestCart, removeFromUserCart, saveGuestCart, updateGuestCartQuantity, updateUserCartQuantity } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/auth/context';
 
 interface CartContextType {
@@ -19,11 +19,33 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        const value = (error as { message?: unknown }).message;
+        if (typeof value === 'string') return value;
+    }
+    return '';
+}
+
+function isNetworkError(message: string): boolean {
+    const normalized = message.toLowerCase();
+    return (
+        normalized.includes('failed to fetch') ||
+        normalized.includes('fetch failed') ||
+        normalized.includes('network') ||
+        normalized.includes('timeout') ||
+        normalized.includes('abort')
+    );
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const { user, loading: authLoading } = useAuth();
+    const hasShownNetworkWarningRef = useRef(false);
 
     const openCart = () => setIsOpen(true);
     const closeCart = () => setIsOpen(false);
@@ -34,13 +56,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             if (userId) {
                 const userItems = await getUserCart(userId);
                 setItems(userItems);
+                hasShownNetworkWarningRef.current = false;
             } else {
                 const guestItems = getGuestCart();
                 if (guestItems.length > 0) {
                     const productIds = Array.from(new Set(guestItems.map(item => item.product_id)));
                     const variantIds = Array.from(new Set(guestItems.map(item => item.variant_id).filter(Boolean))) as string[];
 
-                    const [{ data: products }, { data: variants }] = await Promise.all([
+                    const [{ data: products, error: productsError }, { data: variants, error: variantsError }] = await Promise.all([
                         supabase
                             .from('products')
                             .select('id, product_id, title_en, title_te, image_url, current_price, mrp, shipping_charges')
@@ -49,34 +72,73 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                             supabase
                                 .from('product_variants')
                                 .select('*')
-                                .in('id', variantIds) : { data: [] }
+                                .in('id', variantIds) : Promise.resolve({ data: [], error: null })
                     ]);
 
-                    if (products) {
-                        const enrichedItems = guestItems.map(item => {
-                            const product = (products as any[]).find(p => p.id === item.product_id);
-                            const variant = (variants as any[]).find(v => v.id === item.variant_id);
-
-                            return {
-                                ...item,
-                                variant_label: variant?.label,
-                                product: product ? {
-                                    ...product,
-                                    current_price: variant?.price ?? product.current_price,
-                                    mrp: variant?.mrp ?? product.mrp,
-                                    shipping_charges: variant?.shipping_charge ?? product.shipping_charges,
-                                } : product
-                            };
-                        });
-                        setItems(enrichedItems);
-                    } else {
-                        setItems(guestItems);
+                    if (productsError || variantsError) {
+                        throw productsError || variantsError;
                     }
+
+                    type VariantRow = {
+                        id: string;
+                        label: string | null;
+                        price: number | null;
+                        mrp: number | null;
+                        shipping_charge: number | null;
+                    };
+                    type ProductRow = NonNullable<CartItem['product']>;
+
+                    const typedProducts = (Array.isArray(products) ? products : []) as ProductRow[];
+                    const productMap = new Map(typedProducts.map(product => [product.id, product]));
+                    const typedVariants = (Array.isArray(variants) ? variants : []) as VariantRow[];
+                    const variantMap = new Map(typedVariants.map(variant => [variant.id, variant]));
+
+                    const enrichedItems: CartItem[] = guestItems.flatMap(item => {
+                        const product = productMap.get(item.product_id);
+                        if (!product) return [];
+
+                        const variant = item.variant_id ? variantMap.get(item.variant_id) : undefined;
+                        return [{
+                            ...item,
+                            variant_label: variant?.label ?? null,
+                            product: {
+                                ...product,
+                                current_price: variant?.price ?? product.current_price,
+                                mrp: variant?.mrp ?? product.mrp,
+                                shipping_charges: variant?.shipping_charge ?? product.shipping_charges,
+                            }
+                        }];
+                    });
+
+                    if (enrichedItems.length !== guestItems.length) {
+                        const cleanedGuestItems = guestItems.filter(item => productMap.has(item.product_id));
+                        saveGuestCart(cleanedGuestItems);
+                    }
+
+                    setItems(enrichedItems);
+                    hasShownNetworkWarningRef.current = false;
                 } else {
                     setItems([]);
+                    hasShownNetworkWarningRef.current = false;
                 }
             }
         } catch (error) {
+            const message = getErrorMessage(error);
+            const isLikelyEmptyObjectError =
+                !message && typeof error === 'object' && error !== null && Object.keys(error as object).length === 0;
+
+            if (isNetworkError(message) || isLikelyEmptyObjectError) {
+                if (!hasShownNetworkWarningRef.current) {
+                    console.warn('Cart data sync is temporarily unavailable due to Supabase connectivity.');
+                    hasShownNetworkWarningRef.current = true;
+                }
+
+                if (!userId) {
+                    setItems(getGuestCart());
+                }
+                return;
+            }
+
             console.error('Error in fetchItems:', error);
         } finally {
             if (!silent) setIsLoading(false);
