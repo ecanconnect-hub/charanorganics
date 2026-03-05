@@ -55,7 +55,7 @@ export async function proxy(req: NextRequest) {
         console.log('getUser() result:', { userEmail: user?.email, error: error?.message });
     }
 
-    if (pathname.startsWith('/admin')) {
+    if (pathname.startsWith('/admin') || pathname.startsWith('/diagnostic')) {
         if (!user) {
             const url = req.nextUrl.clone();
             url.pathname = '/login';
@@ -79,13 +79,13 @@ export async function proxy(req: NextRequest) {
 
         if (!profile || profile.role !== 'admin') {
             if (isDev) {
-                console.log('Blocked non-admin admin-panel attempt:', user.email);
+                console.log('Blocked non-admin protected-panel attempt:', user.email, pathname);
             }
 
             await supabase.rpc('log_security_event', {
                 p_user_id: user.id,
                 p_action_type: 'unauthorized_access_attempt',
-                p_resource_type: 'admin_panel',
+                p_resource_type: pathname.startsWith('/diagnostic') ? 'diagnostic_panel' : 'admin_panel',
                 p_request_path: pathname,
                 p_success: false,
                 p_failure_reason: 'Non-admin role: ' + (profile?.role || 'none'),
@@ -124,5 +124,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*', '/account/:path*', '/checkout/:path*'],
+    matcher: ['/admin/:path*', '/diagnostic', '/diagnostic/:path*', '/account/:path*', '/checkout/:path*'],
 };

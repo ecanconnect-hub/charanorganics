@@ -6,6 +6,8 @@
  * Follows OWASP best practices
  */
 
+import 'server-only';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/client';
 
@@ -24,6 +26,10 @@ interface RateLimitRow {
 const RATE_LIMITS: Record<string, RateLimitConfig> = {
     '/api/auth/login': { windowMs: 15 * 60 * 1000, maxRequests: 5 }, // 5 attempts per 15 minutes
     '/api/auth/signup': { windowMs: 60 * 60 * 1000, maxRequests: 3 }, // 3 signups per hour
+    '/api/checkout': { windowMs: 5 * 60 * 1000, maxRequests: 6 }, // 6 checkout attempts per 5 minutes
+    '/api/payment/submit': { windowMs: 10 * 60 * 1000, maxRequests: 8 }, // 8 payment submits per 10 minutes
+    '/api/payment/details': { windowMs: 5 * 60 * 1000, maxRequests: 20 }, // 20 payment detail lookups per 5 minutes
+    '/api/send-order-email': { windowMs: 10 * 60 * 1000, maxRequests: 5 }, // 5 email triggers per 10 minutes
     '/api/orders': { windowMs: 60 * 1000, maxRequests: 10 }, // 10 orders per minute
     '/api/cart': { windowMs: 60 * 1000, maxRequests: 30 }, // 30 cart operations per minute
     '/api/products': { windowMs: 60 * 1000, maxRequests: 60 }, // 60 product requests per minute
@@ -43,7 +49,9 @@ const getClientIdentifier = (request: NextRequest): string => {
 
     // Get IP address
     const forwarded = request.headers.get('x-forwarded-for');
-    const ip = forwarded ? forwarded.split(',')[0] : request.headers.get('x-real-ip') || 'unknown';
+    const ipFromForwarded = forwarded ? forwarded.split(',')[0]?.trim() : null;
+    const ipFromRealIp = request.headers.get('x-real-ip')?.trim() || null;
+    const ip = ipFromForwarded || ipFromRealIp || request.ip || 'unknown';
 
     return ip;
 };
