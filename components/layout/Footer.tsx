@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Footer Component - PREMIUM REDESIGN
  *
  * Clean, industry-standard footer layout with clear hierarchy,
@@ -8,6 +8,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useLocale, useTranslations } from '@/lib/i18n/context';
 
 export function Footer() {
@@ -27,7 +28,7 @@ export function Footer() {
             name: 'WhatsApp',
             href: 'https://wa.me/918247838125',
             icon: (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.397-4.394 9.788-9.791 9.788Z" />
                 </svg>
             ),
@@ -37,24 +38,24 @@ export function Footer() {
     const categoryLinks = [
         {
             href: '/shop',
-            label: locale === 'te' ? 'అన్ని ఉత్పత్తులు' : 'All Products'
+            label: locale === 'te' ? 'à°…à°¨à±à°¨à°¿ à°‰à°¤à±à°ªà°¤à±à°¤à±à°²à±' : 'All Products'
         },
         {
             href: '/shop?section=herbal-powders-skin-soap',
-            label: locale === 'te' ? 'చర్మ సంరక్షణ' : 'Skin Care'
+            label: locale === 'te' ? 'à°šà°°à±à°® à°¸à°‚à°°à°•à±à°·à°£' : 'Skin Care'
         },
         {
             href: '/shop?section=herbal-powders-hair-shampoo',
-            label: locale === 'te' ? 'జుట్టు సంరక్షణ' : 'Hair Care'
+            label: locale === 'te' ? 'à°œà±à°Ÿà±à°Ÿà± à°¸à°‚à°°à°•à±à°·à°£' : 'Hair Care'
         },
         {
             href: '/shop?section=essential-oils',
-            label: locale === 'te' ? 'ఎసెన్షియల్ ఆయిల్స్' : 'Essential Oils'
+            label: locale === 'te' ? 'à°Žà°¸à±†à°¨à±à°·à°¿à°¯à°²à± à°†à°¯à°¿à°²à±à°¸à±' : 'Essential Oils'
         },
     ];
 
     return (
-        <footer className="bg-[#050505] text-white relative pt-20 pb-8 border-t border-gray-900">
+        <footer className="relative border-t border-white/10 bg-[#0B1110] pt-20 pb-8 text-white">
             <div className="container mx-auto px-6 md:px-12">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-16 mb-20">
 
@@ -62,31 +63,37 @@ export function Footer() {
                     <div className="lg:col-span-1 space-y-8">
                         <Link href="/" className="inline-block group">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 border border-gray-800 shadow-sm transition-transform group-hover:rotate-6">
-                                    <img src="/favicon.ico" alt="Charan Organics" className="w-full h-full object-contain" />
+                                <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-gray-800 bg-white shadow-sm transition-transform group-hover:rotate-6 !p-0">
+                                    <Image
+                                        src="/charan-emblem-tight.png"
+                                        alt="Charan Organics"
+                                        fill
+                                        sizes="40px"
+                                        className="scale-[0.95] object-cover object-center"
+                                    />
                                 </div>
                                 <div>
                                     <span className="block text-lg font-bold tracking-tight text-white leading-none">
                                         CHARAN<span className="text-green-500">ORGANICS</span>
                                     </span>
-                                    <span className="block text-[10px] uppercase tracking-[0.2em] text-gray-500 mt-1">
+                                    <span className="mt-1 block text-[10px] uppercase tracking-[0.2em] text-gray-400">
                                         Pure Ayurvedic Soul
                                     </span>
                                 </div>
                             </div>
                         </Link>
 
-                        <p className="text-sm text-gray-400 leading-relaxed font-medium">
+                        <p className="text-sm font-medium leading-relaxed text-gray-300">
                             Crafting organic, small-batch Ayurvedic formulas for the modern soul. Purely natural, scientifically inspired.
                         </p>
 
                         <div className="pt-2">
-                            <h5 className="text-xs font-bold uppercase tracking-widest text-white mb-4">Join our community</h5>
+                            <h5 className="mb-4 text-xs font-bold uppercase tracking-widest !text-gray-200">Join our community</h5>
                             <form className="flex gap-2">
                                 <input
                                     type="email"
                                     placeholder="Enter your email"
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-600 focus:bg-white/10 transition-all placeholder:text-gray-600"
+                                    className="w-full rounded-lg border border-white/20 bg-white/[0.06] px-4 py-2.5 text-sm text-gray-100 transition-all placeholder:text-gray-400 focus:border-green-500 focus:bg-white/[0.1] focus:outline-none"
                                 />
                                 <button className="px-5 py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-colors">
                                     Join
@@ -97,11 +104,11 @@ export function Footer() {
 
                     {/* Column 2: Shop */}
                     <div>
-                        <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-6">{locale === 'te' ? 'షాప్' : 'Shop'}</h4>
+                        <h4 className="mb-6 text-xs font-bold uppercase tracking-widest !text-gray-200">{locale === 'te' ? 'à°·à°¾à°ªà±' : 'Shop'}</h4>
                         <ul className="space-y-3">
                             {categoryLinks.map((item) => (
                                 <li key={item.href}>
-                                    <Link href={item.href} className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">
+                                    <Link href={item.href} className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">
                                         {item.label}
                                     </Link>
                                 </li>
@@ -111,21 +118,21 @@ export function Footer() {
 
                     {/* Column 3: Company */}
                     <div>
-                        <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-6">Company</h4>
+                        <h4 className="mb-6 text-xs font-bold uppercase tracking-widest !text-gray-200">Company</h4>
                         <ul className="space-y-3">
-                            <li><Link href="/about" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Our Story</Link></li>
-                            <li><Link href="/contact" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Contact Us</Link></li>
-                            <li><Link href="/track-order" className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">Track Order</Link></li>
+                            <li><Link href="/about" className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">Our Story</Link></li>
+                            <li><Link href="/contact" className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">Contact Us</Link></li>
+                            <li><Link href="/track-order" className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">Track Order</Link></li>
                         </ul>
                     </div>
 
                     {/* Column 4: Support & Contact */}
                     <div>
-                        <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-6">Support</h4>
+                        <h4 className="mb-6 text-xs font-bold uppercase tracking-widest !text-gray-200">Support</h4>
                         <ul className="space-y-3 mb-8">
                             {footerLinks.map((link) => (
                                 <li key={link.href}>
-                                    <Link href={link.href} className="text-sm text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">
+                                    <Link href={link.href} className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">
                                         {link.label}
                                     </Link>
                                 </li>
@@ -139,7 +146,7 @@ export function Footer() {
                                     href={social.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-green-600 hover:text-white transition-all transform hover:scale-105"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-gray-200 transition-all transform hover:scale-105 hover:bg-green-600 hover:text-white !p-0"
                                     title={social.name}
                                 >
                                     {social.icon}
@@ -150,7 +157,7 @@ export function Footer() {
                 </div>
 
                 {/* Bottom Bar - Professional Credit */}
-                <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+                <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-xs text-gray-400 md:flex-row">
                     <div>
                         &copy; {currentYear} Charan Organics. All rights reserved.
                     </div>
@@ -161,7 +168,7 @@ export function Footer() {
                             href="https://ecantechesolutions.vercel.app/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-gray-300 hover:text-green-500 font-medium transition-colors border-b border-transparent hover:border-green-500"
+                            className="border-b border-transparent font-medium text-gray-200 transition-colors hover:border-green-500 hover:text-green-400"
                         >
                             eCantech Solutions
                         </a>
@@ -171,8 +178,9 @@ export function Footer() {
 
             {/* Minimal Decorative Element */}
             <div className="absolute bottom-0 right-0 opacity-[0.03] pointer-events-none select-none overflow-hidden">
-                <span className="text-[150px] leading-none text-white">🌿</span>
+                <span className="text-[150px] leading-none text-white">ðŸŒ¿</span>
             </div>
         </footer>
     );
 }
+

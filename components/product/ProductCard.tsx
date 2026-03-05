@@ -39,7 +39,13 @@ export function ProductCard({ product }: ProductCardProps) {
     const title = locale === 'en'
         ? product.title_en
         : resolveLocalizedText(product.title_en, product.title_te);
-    const discount = Math.round(((product.mrp - product.current_price) / product.mrp) * 100);
+    const normalizedCurrentPrice = Number.isFinite(product.current_price) ? product.current_price : 0;
+    const normalizedMrp = Number.isFinite(product.mrp) ? product.mrp : 0;
+    const fallbackMrp = normalizedCurrentPrice > 0 ? normalizedCurrentPrice / 0.9 : normalizedCurrentPrice;
+    const effectiveMrp = normalizedMrp > normalizedCurrentPrice ? normalizedMrp : fallbackMrp;
+    const discount = effectiveMrp > normalizedCurrentPrice && normalizedCurrentPrice > 0
+        ? Math.max(1, Math.round(((effectiveMrp - normalizedCurrentPrice) / effectiveMrp) * 100))
+        : 0;
 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -49,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
         try {
             await addItem(product.id, null, 1);
             toast.success('Added to cart!', {
-                icon: '🛒',
+                icon: '\u{1F6D2}',
                 style: {
                     borderRadius: '8px',
                     background: '#2cdea3ff',
@@ -86,7 +92,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-                            <span className="text-4xl opacity-20">🌿</span>
+                            <span className="text-4xl opacity-20">{'\u{1F33F}'}</span>
                         </div>
                     )}
 
@@ -120,11 +126,11 @@ export function ProductCard({ product }: ProductCardProps) {
                     {/* Pricing - Bold & Prominent */}
                     <div className="flex items-center gap-2 mb-3 md:mb-5">
                         <span className="text-[20px] md:text-[20px] font-black text-[#1A1A1A]">
-                            ₹{product.current_price.toFixed(0)}
+                            {'\u20B9'}{normalizedCurrentPrice.toFixed(0)}
                         </span>
-                        {product.mrp > product.current_price && (
+                        {effectiveMrp > normalizedCurrentPrice && (
                             <span className="text-[14px] md:text-[14px] text-gray-300 line-through decoration-gray-300">
-                                ₹{product.mrp.toFixed(0)}
+                                {'\u20B9'}{effectiveMrp.toFixed(0)}
                             </span>
                         )}
                     </div>
@@ -147,4 +153,3 @@ export function ProductCard({ product }: ProductCardProps) {
         </Link>
     );
 }
-

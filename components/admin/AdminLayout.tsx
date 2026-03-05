@@ -49,8 +49,8 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
     if (verifying) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
-                <div className="mb-6 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-xl">
-                    <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={110} height={110} className="h-full w-full scale-125 object-cover" />
+                <div className="mb-6 flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-xl !p-0">
+                    <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={110} height={110} className="h-full w-full scale-[1] object-cover object-center" />
                 </div>
                 <div className="flex flex-col items-center gap-2">
                     <div className="text-xl font-bold text-gray-900">Verifying Admin Access...</div>
@@ -70,8 +70,8 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
             <div className="sticky top-0 z-50 bg-gradient-to-r from-indigo-600 to-indigo-700 p-4 text-white shadow-lg lg:hidden">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg">
-                            <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={46} height={46} className="h-full w-full scale-125 object-cover" />
+                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg !p-0">
+                            <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={46} height={46} className="h-full w-full scale-[1] object-cover object-center" />
                         </div>
                         <h1 className="text-xl font-bold">Admin Panel</h1>
                     </div>
@@ -105,8 +105,8 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
                     <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5">
                         {!sidebarCollapsed ? (
                             <div className="flex items-center gap-3">
-                                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg">
-                                    <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={60} height={60} className="h-full w-full scale-125 object-cover" />
+                                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg !p-0">
+                                    <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={60} height={60} className="h-full w-full scale-[1] object-cover object-center" />
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-bold text-gray-900 leading-tight">Charan Organics</h2>
@@ -114,8 +114,8 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
                                 </div>
                             </div>
                         ) : (
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg">
-                                <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={46} height={46} className="h-full w-full scale-125 object-cover" />
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-white shadow-lg !p-0">
+                                <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={46} height={46} className="h-full w-full scale-[1] object-cover object-center" />
                             </div>
                         )}
 

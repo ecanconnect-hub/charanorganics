@@ -21,8 +21,39 @@ const PRODUCT_IMAGE_HEIGHT = 1200;
 
 const isMissingAdditionalInfoTeColumn = (error: unknown): boolean => {
     if (!error || typeof error !== 'object') return false;
-    const candidate = error as { code?: string; message?: string };
-    return candidate.code === '42703' && (candidate.message || '').toLowerCase().includes('additional_info_te');
+    const candidate = error as { code?: string; message?: string; details?: string; hint?: string };
+    const combinedMessage = `${candidate.message || ''} ${candidate.details || ''} ${candidate.hint || ''}`.toLowerCase();
+    const missingColumnMentioned = combinedMessage.includes('additional_info_te');
+    const knownMissingColumnCode = candidate.code === '42703' || candidate.code === 'PGRST204';
+    const looksLikeSchemaCacheMiss = combinedMessage.includes('schema cache') && combinedMessage.includes('could not find');
+
+    return missingColumnMentioned && (knownMissingColumnCode || looksLikeSchemaCacheMiss);
+};
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+    if (error instanceof Error && error.message.trim()) {
+        return error.message;
+    }
+
+    if (typeof error === 'string' && error.trim()) {
+        return error;
+    }
+
+    if (error && typeof error === 'object') {
+        const candidate = error as {
+            message?: unknown;
+            details?: unknown;
+            hint?: unknown;
+            error_description?: unknown;
+        };
+
+        if (typeof candidate.message === 'string' && candidate.message.trim()) return candidate.message;
+        if (typeof candidate.details === 'string' && candidate.details.trim()) return candidate.details;
+        if (typeof candidate.hint === 'string' && candidate.hint.trim()) return candidate.hint;
+        if (typeof candidate.error_description === 'string' && candidate.error_description.trim()) return candidate.error_description;
+    }
+
+    return fallback;
 };
 
 export default function EditProductPage() {
@@ -123,9 +154,10 @@ export default function EditProductPage() {
                 })));
             }
 
-        } catch (error: any) {
-            console.error('Error:', error);
-            toast.error('Failed to load product data');
+        } catch (error: unknown) {
+            const message = getErrorMessage(error, 'Failed to load product data');
+            console.warn('Failed to load product data:', { message, error });
+            toast.error(message);
         } finally {
             setFetching(false);
         }
@@ -197,10 +229,11 @@ export default function EditProductPage() {
             if (error) throw error;
 
             // Update Categories: Delete all existing and insert new
-            await supabase
+            const { error: deleteSectionsError } = await supabase
                 .from('product_sections' as any)
                 .delete()
                 .eq('product_id', productId);
+            if (deleteSectionsError) throw deleteSectionsError;
 
             if (selectedSectionIds.length > 0) {
                 const sectionsToInsert = selectedSectionIds.map(sectionId => ({
@@ -208,16 +241,18 @@ export default function EditProductPage() {
                     section_id: sectionId
                 }));
 
-                await supabase
+                const { error: insertSectionsError } = await supabase
                     .from('product_sections' as any)
                     .insert(sectionsToInsert as any);
+                if (insertSectionsError) throw insertSectionsError;
             }
 
             // Update Variants: Delete all existing and insert new
-            await supabase
+            const { error: deleteVariantsError } = await supabase
                 .from('product_variants' as any)
                 .delete()
                 .eq('product_id', productId);
+            if (deleteVariantsError) throw deleteVariantsError;
 
             if (variants.length > 0) {
                 const variantsToInsert = variants.map(v => ({
@@ -230,16 +265,18 @@ export default function EditProductPage() {
                     enabled: v.enabled
                 }));
 
-                await supabase
+                const { error: insertVariantsError } = await supabase
                     .from('product_variants' as any)
                     .insert(variantsToInsert as any);
+                if (insertVariantsError) throw insertVariantsError;
             }
 
             toast.success('Product updated successfully!');
             router.push('/admin/products');
-        } catch (error: any) {
-            console.error('Error:', error);
-            toast.error(error.message || 'Failed to update product');
+        } catch (error: unknown) {
+            const message = getErrorMessage(error, 'Failed to update product');
+            console.warn('Failed to update product:', { message, error });
+            toast.error(message);
         } finally {
             setLoading(false);
         }

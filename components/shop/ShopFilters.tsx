@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
@@ -115,6 +115,23 @@ export function ShopFilters() {
 
     const selectedSections = searchParams.get('section')?.split(',').filter(Boolean) || [];
     const hasActiveFilters = selectedSections.length > 0 || searchParams.get('minPrice') || searchParams.get('maxPrice');
+    const sortedSections = useMemo(() => {
+        const languageTag = locale === 'te' ? 'te' : 'en';
+
+        return [...sections].sort((a, b) => {
+            const labelA = locale === 'te'
+                ? resolveLocalizedText(a.title_en, a.title_te)
+                : a.title_en;
+            const labelB = locale === 'te'
+                ? resolveLocalizedText(b.title_en, b.title_te)
+                : b.title_en;
+
+            return labelA.localeCompare(labelB, languageTag, {
+                sensitivity: 'base',
+                numeric: true,
+            });
+        });
+    }, [locale, sections]);
 
     if (loading) return (
         <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 animate-pulse">
@@ -153,7 +170,7 @@ export function ShopFilters() {
                 </h4>
 
                 <div className="flex flex-col gap-1 max-h-[220px] md:max-h-[280px] lg:max-h-[350px] overflow-y-auto pr-1.5 custom-scrollbar transition-all duration-300">
-                    {sections.map((section) => {
+                    {sortedSections.map((section) => {
                         const isSelected = selectedSections.includes(section.section_id);
                         return (
                             <button

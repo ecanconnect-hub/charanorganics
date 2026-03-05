@@ -57,10 +57,18 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     const usage = locale === 'en' ? product.usage_en : product.usage_te;
 
     // Derived prices
-    const displayedPrice = selectedVariant ? selectedVariant.price : product.current_price;
-    const displayedMrp = selectedVariant ? selectedVariant.mrp || selectedVariant.price : product.mrp;
+    const parsePrice = (value: unknown): number => {
+        const parsed = typeof value === 'number' ? value : Number(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+    };
+    const displayedPrice = selectedVariant ? parsePrice(selectedVariant.price) : parsePrice(product.current_price);
+    const sourceMrp = selectedVariant ? parsePrice(selectedVariant.mrp ?? selectedVariant.price) : parsePrice(product.mrp);
+    const fallbackMrp = displayedPrice > 0 ? displayedPrice / 0.9 : displayedPrice;
+    const displayedMrp = sourceMrp > displayedPrice ? sourceMrp : fallbackMrp;
     const displayedShipping = selectedVariant ? (selectedVariant.shipping_charge ?? product.shipping_charges) : product.shipping_charges;
-    const discount = displayedMrp > displayedPrice ? Math.round(((displayedMrp - displayedPrice) / displayedMrp) * 100) : 0;
+    const discount = displayedMrp > displayedPrice && displayedPrice > 0
+        ? Math.max(1, Math.round(((displayedMrp - displayedPrice) / displayedMrp) * 100))
+        : 0;
 
     const fetchData = useCallback(async () => {
         // Fetch Variants

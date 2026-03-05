@@ -21,8 +21,13 @@ const PRODUCT_IMAGE_HEIGHT = 1200;
 
 const isMissingAdditionalInfoTeColumn = (error: unknown): boolean => {
     if (!error || typeof error !== 'object') return false;
-    const candidate = error as { code?: string; message?: string };
-    return candidate.code === '42703' && (candidate.message || '').toLowerCase().includes('additional_info_te');
+    const candidate = error as { code?: string; message?: string; details?: string; hint?: string };
+    const combinedMessage = `${candidate.message || ''} ${candidate.details || ''} ${candidate.hint || ''}`.toLowerCase();
+    const missingColumnMentioned = combinedMessage.includes('additional_info_te');
+    const knownMissingColumnCode = candidate.code === '42703' || candidate.code === 'PGRST204';
+    const looksLikeSchemaCacheMiss = combinedMessage.includes('schema cache') && combinedMessage.includes('could not find');
+
+    return missingColumnMentioned && (knownMissingColumnCode || looksLikeSchemaCacheMiss);
 };
 
 export default function AddProductPage() {
