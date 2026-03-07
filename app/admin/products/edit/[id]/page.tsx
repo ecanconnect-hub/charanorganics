@@ -70,6 +70,8 @@ export default function EditProductPage() {
     // Form fields
     const [titleEn, setTitleEn] = useState('');
     const [titleTe, setTitleTe] = useState('');
+    const [unitValue, setUnitValue] = useState('');
+    const [unitType, setUnitType] = useState('ml');
     const [descriptionEn, setDescriptionEn] = useState('');
     const [descriptionTe, setDescriptionTe] = useState('');
     const [mrp, setMrp] = useState('');
@@ -114,6 +116,8 @@ export default function EditProductPage() {
                 const p = product as any;
                 setTitleEn(p.title_en || '');
                 setTitleTe(p.title_te || '');
+                setUnitValue(p.unit_value?.toString() || '');
+                setUnitType(p.unit_type || 'ml');
                 setDescriptionEn(p.description_en || '');
                 setDescriptionTe(p.description_te || '');
                 setMrp(p.mrp?.toString() || '');
@@ -206,6 +210,8 @@ export default function EditProductPage() {
                 usage_en: usageEn,
                 additional_info_en: additionalInfoEn,
                 additional_info_te: additionalInfoTe || additionalInfoEn,
+                unit_value: unitValue ? parseFloat(unitValue) : null,
+                unit_type: unitValue ? unitType : null,
                 mrp: parseFloat(mrp),
                 current_price: parseFloat(currentPrice),
                 stock_quantity: parseInt(stockQuantity),
@@ -319,6 +325,37 @@ export default function EditProductPage() {
                             value={titleTe}
                             onChange={(e) => setTitleTe(e.target.value)}
                         />
+
+                        {/* Unit/Weight Section */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Product Unit/Weight (Optional)
+                            </label>
+                            <div className="flex gap-2">
+                                <Input
+                                    type="number"
+                                    value={unitValue}
+                                    onChange={(e) => setUnitValue(e.target.value)}
+                                    placeholder="100"
+                                    step="0.01"
+                                    className="flex-1"
+                                />
+                                <select
+                                    value={unitType}
+                                    onChange={(e) => setUnitType(e.target.value)}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                                >
+                                    <option value="ml">ml (milliliters)</option>
+                                    <option value="l">L (liters)</option>
+                                    <option value="gm">gm (grams)</option>
+                                    <option value="kg">kg (kilograms)</option>
+                                    <option value="pcs">pcs (pieces)</option>
+                                </select>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">e.g., 100 ml or 500 gm</p>
+                        </div>
+
+                        <div></div> {/* Empty div for grid spacing */}
 
                         {/* Categories Selection */}
                         <div className="md:col-span-2">
