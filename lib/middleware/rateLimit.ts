@@ -51,7 +51,11 @@ const getClientIdentifier = (request: NextRequest): string => {
     const forwarded = request.headers.get('x-forwarded-for');
     const ipFromForwarded = forwarded ? forwarded.split(',')[0]?.trim() : null;
     const ipFromRealIp = request.headers.get('x-real-ip')?.trim() || null;
-    const ip = ipFromForwarded || ipFromRealIp || request.ip || 'unknown';
+    const ipFromRequest = (() => {
+        const candidate = (request as { ip?: string }).ip;
+        return typeof candidate === 'string' && candidate.trim() ? candidate : null;
+    })();
+    const ip = ipFromForwarded || ipFromRealIp || ipFromRequest || 'unknown';
 
     return ip;
 };
