@@ -48,6 +48,10 @@ function isNetworkError(message: string): boolean {
     );
 }
 
+function hasFiniteNumber(value: unknown): value is number {
+    return typeof value === 'number' && Number.isFinite(value);
+}
+
 /**
  * Get cart items for guest users (from localStorage)
  */
@@ -145,6 +149,7 @@ export const getUserCart = async (userId: string): Promise<CartItem[]> => {
         const { data, error } = await supabase
             .from('cart_items')
             .select(`
+                id,
                 product_id,
                 variant_id,
                 quantity,
@@ -179,7 +184,7 @@ export const getUserCart = async (userId: string): Promise<CartItem[]> => {
         hasLoggedUserCartNetworkWarning = false;
 
         // Transform to include variant info in the items
-        return (data || []).map((item: any) => ({
+        const transformedItems = (data || []).map((item: any) => ({
             ...item,
             variant_label: item.variant?.label,
             // If variant exists, override price/mrp/shipping from variant
@@ -190,6 +195,20 @@ export const getUserCart = async (userId: string): Promise<CartItem[]> => {
                 shipping_charges: item.variant?.shipping_charge ?? item.product.shipping_charges,
             } : item.product
         }));
+
+        const invalidItemIds = transformedItems
+            .filter((item: any) => !hasFiniteNumber(item.product?.current_price))
+            .map((item: any) => item.id)
+            .filter((id: unknown): id is string => typeof id === 'string');
+
+        if (invalidItemIds.length > 0) {
+            await supabase
+                .from('cart_items')
+                .delete()
+                .in('id', invalidItemIds);
+        }
+
+        return transformedItems.filter((item: any) => hasFiniteNumber(item.product?.current_price));
     } catch (error: any) {
         const message = getErrorMessage(error);
         const isLikelyEmptyObjectError =

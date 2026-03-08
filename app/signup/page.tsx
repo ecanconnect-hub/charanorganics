@@ -47,7 +47,7 @@ export default function SignupPage() {
 
         try {
             await signUp(email, password, fullName);
-            router.push('/login');
+            router.push(`/login?verify=1&email=${encodeURIComponent(email)}`);
         } catch (err: any) {
             setError(err.message || 'Failed to create account');
         } finally {

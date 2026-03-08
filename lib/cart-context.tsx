@@ -40,6 +40,10 @@ function isNetworkError(message: string): boolean {
     );
 }
 
+function hasFiniteNumber(value: unknown): value is number {
+    return typeof value === 'number' && Number.isFinite(value);
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -98,12 +102,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                         if (!product) return [];
 
                         const variant = item.variant_id ? variantMap.get(item.variant_id) : undefined;
+                        const resolvedPrice = variant?.price ?? product.current_price;
+                        if (!hasFiniteNumber(resolvedPrice)) {
+                            return [];
+                        }
+
                         return [{
                             ...item,
                             variant_label: variant?.label ?? null,
                             product: {
                                 ...product,
-                                current_price: variant?.price ?? product.current_price,
+                                current_price: resolvedPrice,
                                 mrp: variant?.mrp ?? product.mrp,
                                 shipping_charges: variant?.shipping_charge ?? product.shipping_charges,
                             }
@@ -111,7 +120,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     });
 
                     if (enrichedItems.length !== guestItems.length) {
-                        const cleanedGuestItems = guestItems.filter(item => productMap.has(item.product_id));
+                        const enrichedKeys = new Set(
+                            enrichedItems.map((item) => `${item.product_id}:${item.variant_id || 'no_variant'}`)
+                        );
+                        const cleanedGuestItems = guestItems.filter((item) =>
+                            enrichedKeys.has(`${item.product_id}:${item.variant_id || 'no_variant'}`)
+                        );
                         saveGuestCart(cleanedGuestItems);
                     }
 

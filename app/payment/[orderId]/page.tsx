@@ -1,8 +1,7 @@
 /**
  * Payment Page
- * 
- * Display UPI QR code (desktop) or deep link (mobile)
- * Upload payment screenshot
+ *
+ * Display UPI QR code and collect payment proof.
  */
 
 'use client';
@@ -14,8 +13,15 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
-import { generateUPIQRCode, isMobileDevice, openUPIApp } from '@/lib/utils/upi';
+import { generateUPIQRCode, isMobileDevice } from '@/lib/utils/upi';
 import toast from 'react-hot-toast';
+
+type PaymentOrder = {
+    id: string;
+    total_amount: number;
+    status: string;
+    order_id: string;
+};
 
 export default function PaymentPage() {
     const params = useParams();
@@ -23,32 +29,40 @@ export default function PaymentPage() {
     const { user } = useAuth();
     const orderId = params.orderId as string;
 
-    const [order, setOrder] = useState<any>(null);
+    const [order, setOrder] = useState<PaymentOrder | null>(null);
     const [qrCode, setQRCode] = useState('');
     const [uploading, setUploading] = useState(false);
     const [screenshot, setScreenshot] = useState<File | null>(null);
     const [utrNumber, setUtrNumber] = useState('');
     const [phone, setPhone] = useState('');
-    const [step, setStep] = useState(1); // 1 = Pay, 2 = Confirm (UTR/Screen)
+    const [step, setStep] = useState(1);
     const [isMobile, setIsMobile] = useState(false);
+
     const upiId = process.env.NEXT_PUBLIC_UPI_ID || '';
     const upiName = process.env.NEXT_PUBLIC_UPI_NAME || 'Charan Organics';
+    const upiPhone = process.env.NEXT_PUBLIC_UPI_PHONE || '';
+    const supportWhatsappPhone = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || '';
+    const supportWhatsappDigits = supportWhatsappPhone.replace(/\D/g, '');
+    const supportWhatsappHref = supportWhatsappDigits ? `https://wa.me/${supportWhatsappDigits}` : '';
 
     useEffect(() => {
         setIsMobile(isMobileDevice());
+
         const searchParams = new URLSearchParams(window.location.search);
         const phoneFromUrl = searchParams.get('phone') || '';
         setPhone(phoneFromUrl);
+
         if (orderId) {
-            fetchOrder(phoneFromUrl);
+            void fetchOrder(phoneFromUrl);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderId]);
 
-    // Re-generate QR once order data is fetched
     useEffect(() => {
         if (order) {
-            generateQR();
+            void generateQR();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [order]);
 
     const fetchOrder = async (phoneValue?: string) => {
@@ -58,8 +72,8 @@ export default function PaymentPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     orderId,
-                    phone: phoneValue || phone || undefined
-                })
+                    phone: phoneValue || phone || undefined,
+                }),
             });
 
             const data = await response.json();
@@ -73,10 +87,11 @@ export default function PaymentPage() {
                 id: data.id,
                 total_amount: data.totalAmount,
                 status: data.status,
-                order_id: data.orderId
+                order_id: data.orderId,
             });
-        } catch (err) {
-            console.error('Fetch order error:', err);
+        } catch (error) {
+            console.error('Fetch order error:', error);
+            toast.error('Failed to load payment details');
         }
     };
 
@@ -92,42 +107,36 @@ export default function PaymentPage() {
             name: upiName,
             amount: order.total_amount,
             transactionNote: `Order ${orderId}`,
-            transactionRef: orderId
+            transactionRef: orderId,
         });
+
         setQRCode(qr);
     };
 
-    const handlePayNow = () => {
-        if (!upiId) {
-            toast.error('UPI configuration missing');
+    const handleCopyText = async (value: string, successMessage: string) => {
+        if (!value) {
+            toast.error('Value not configured');
             return;
         }
-        const amount = order?.total_amount || 0;
 
-        // Don't auto-advance. Let user confirm they paid.
-        // setStep(2); 
-
-        openUPIApp({
-            upiId,
-            name: upiName,
-            amount,
-            transactionNote: `Order ${orderId}`,
-            transactionRef: orderId
-        });
+        try {
+            await navigator.clipboard.writeText(value);
+            toast.success(successMessage);
+        } catch {
+            toast.error('Copy failed. Please copy manually.');
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
 
-            // 1. Validate File Type
             const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (!allowedTypes.includes(file.type)) {
                 toast.error('Please upload a valid image (JPG, PNG, or WEBP)');
                 return;
             }
 
-            // 2. Validate File Size (5MB)
             if (file.size > 5 * 1024 * 1024) {
                 toast.error('File size must be less than 5MB');
                 return;
@@ -148,15 +157,10 @@ export default function PaymentPage() {
         try {
             let publicUrl = '';
 
-            // Upload Screenshot if provided
             if (screenshot) {
                 const fileExt = screenshot.name.split('.').pop()?.toLowerCase();
                 const fileName = `${orderId}-${Date.now()}.${fileExt}`;
-
-                // Guests use 'guest-uploads' folder, users use their ID
-                const filePath = user
-                    ? `${user.id}/${fileName}`
-                    : `guest-uploads/${fileName}`;
+                const filePath = user ? `${user.id}/${fileName}` : `guest-uploads/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
                     .from('payments')
@@ -164,10 +168,7 @@ export default function PaymentPage() {
 
                 if (uploadError) throw uploadError;
 
-                const { data } = supabase.storage
-                    .from('payments')
-                    .getPublicUrl(filePath);
-
+                const { data } = supabase.storage.from('payments').getPublicUrl(filePath);
                 publicUrl = data.publicUrl;
             }
 
@@ -178,8 +179,8 @@ export default function PaymentPage() {
                     orderId,
                     phone: phone || undefined,
                     utr: utrNumber || undefined,
-                    screenshotUrl: publicUrl || undefined
-                })
+                    screenshotUrl: publicUrl || undefined,
+                }),
             });
 
             const submitResult = await submitResponse.json();
@@ -187,26 +188,23 @@ export default function PaymentPage() {
                 throw new Error(submitResult.error || 'Failed to submit payment details');
             }
 
-            // Send order confirmation email
             try {
                 await fetch('/api/send-order-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderId, phone: phone || undefined })
+                    body: JSON.stringify({ orderId, phone: phone || undefined }),
                 });
             } catch (emailError) {
-                // Don't fail the submission if email fails
                 console.error('Failed to send confirmation email:', emailError);
             }
 
-            // Clear guest cart as payment is now submitted for verification
             localStorage.removeItem('guest_cart');
-
             toast.success('Payment details submitted! We will verify and confirm your order soon.');
             router.push(`/order-confirmation/${orderId}`);
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Check connection';
             console.error('Submission error:', error);
-            toast.error('Failed to submit: ' + (error.message || 'Check connection'));
+            toast.error('Failed to submit: ' + errorMessage);
         } finally {
             setUploading(false);
         }
@@ -222,32 +220,28 @@ export default function PaymentPage() {
 
     return (
         <main className="section-padding bg-gray-50 min-h-screen">
-            <div className="h-24 md:h-28"></div> {/* Header spacing */}
+            <div className="h-24 md:h-28"></div>
 
             <div className="container mx-auto px-4 max-w-2xl">
-                {/* Progress Tracker */}
                 <div className="flex items-center justify-center mb-10 gap-4">
-                    <div className="flex items-center justify-center mb-10 gap-4">
-                        <button
-                            onClick={() => setStep(1)}
-                            className={`flex items-center gap-2 transition-colors ${step >= 1 ? 'text-green-600' : 'text-gray-400'} hover:text-green-700`}
-                        >
-                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 1 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>1</span>
-                            <span className="font-black uppercase tracking-widest text-[10px] italic">Pay Now</span>
-                        </button>
-                        <div className={`w-12 h-0.5 transition-colors ${step >= 2 ? 'bg-green-600' : 'bg-gray-200'}`}></div>
-                        <button
-                            onClick={() => setStep(2)}
-                            className={`flex items-center gap-2 transition-colors ${step >= 2 ? 'text-green-600' : 'text-gray-400'} hover:text-green-700`}
-                        >
-                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 2 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>2</span>
-                            <span className="font-black uppercase tracking-widest text-[10px] italic">Confirm</span>
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => setStep(1)}
+                        className={`flex items-center gap-2 transition-colors ${step >= 1 ? 'text-green-600' : 'text-gray-400'} hover:text-green-700`}
+                    >
+                        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 1 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>1</span>
+                        <span className="font-black uppercase tracking-widest text-[10px] italic">Pay</span>
+                    </button>
+                    <div className={`w-12 h-0.5 transition-colors ${step >= 2 ? 'bg-green-600' : 'bg-gray-200'}`}></div>
+                    <button
+                        onClick={() => setStep(2)}
+                        className={`flex items-center gap-2 transition-colors ${step >= 2 ? 'text-green-600' : 'text-gray-400'} hover:text-green-700`}
+                    >
+                        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 2 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>2</span>
+                        <span className="font-black uppercase tracking-widest text-[10px] italic">Confirm</span>
+                    </button>
                 </div>
 
                 <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-gray-100">
-                    {/* Header Summary */}
                     <div className="bg-gray-900 p-8 text-center text-white">
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">Checkout Verification</p>
                         <h1 className="text-2xl font-black tracking-tight uppercase italic mb-2">
@@ -268,183 +262,85 @@ export default function PaymentPage() {
 
                     <div className="p-8">
                         {step === 1 ? (
-                            /* Step 1: Make Payment */
                             <div className="space-y-8">
                                 <div className="space-y-4">
                                     <h2 className="text-lg font-black text-gray-900 uppercase italic tracking-tight underline underline-offset-8 decoration-green-600/30">Instructions</h2>
                                     <p className="text-gray-600 text-sm leading-relaxed font-medium">
-                                        Please pay exactly <span className="font-black text-gray-900">₹{order.total_amount.toFixed(0)}</span> using any UPI app. Once paid, come back here to submit your proof.
+                                        Please pay exactly <span className="font-black text-gray-900">₹{order.total_amount.toFixed(0)}</span> using any UPI app. After payment, continue to confirmation.
                                     </p>
                                 </div>
 
-                                {isMobile ? (
-                                    <div className="space-y-6">
-                                        <div className="text-center space-y-3">
-                                            <div className="inline-block p-4 bg-white border-4 border-gray-50 rounded-[1.5rem] shadow-inner">
-                                                {qrCode ? (
-                                                    <Image
-                                                        src={qrCode}
-                                                        alt="UPI QR Code"
-                                                        width={220}
-                                                        height={220}
-                                                        className="rounded-xl"
-                                                    />
-                                                ) : (
-                                                    <div className="w-[220px] h-[220px] bg-gray-50 rounded-xl flex items-center justify-center">
-                                                        <span className="animate-pulse text-gray-300">Generating QR...</span>
-                                                    </div>
-                                                )}
+                                <div className="text-center space-y-6">
+                                    <div className="inline-block p-4 sm:p-6 bg-white border-4 border-gray-50 rounded-[1.5rem] sm:rounded-[2rem] shadow-inner">
+                                        {qrCode ? (
+                                            <Image
+                                                src={qrCode}
+                                                alt="UPI QR Code"
+                                                width={isMobile ? 220 : 260}
+                                                height={isMobile ? 220 : 260}
+                                                className="rounded-xl"
+                                            />
+                                        ) : (
+                                            <div className="w-[220px] h-[220px] sm:w-[260px] sm:h-[260px] bg-gray-50 rounded-xl flex items-center justify-center">
+                                                <span className="animate-pulse text-gray-300">Generating QR...</span>
                                             </div>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                Scan QR from another device if app launch fails
-                                            </p>
-                                        </div>
+                                        )}
+                                    </div>
 
-                                        <Button
-                                            variant="primary"
-                                            size="lg"
-                                            fullWidth
-                                            onClick={handlePayNow}
-                                            className="h-20 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-green-900/20 gap-3"
-                                        >
-                                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" />
-                                            </svg>
-                                            Pay Now with UPI
-                                        </Button>
-                                        <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                            This will open your preferred UPI app (PhonePe, GPay, etc.)
-                                        </p>
+                                    <div>
+                                        <p className="text-sm font-black text-gray-900 uppercase italic">Scan QR with any app</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">GPay • PhonePe • Paytm • Amazon Pay</p>
+                                    </div>
 
-                                        {/* Mobile UPI ID Display */}
-                                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-between gap-3">
-                                            <div className="flex-1">
+                                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex-1 text-left">
                                                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">UPI ID</p>
                                                 <p className="text-sm font-black text-gray-900 tracking-tight">{upiId || 'Not configured'}</p>
                                             </div>
                                             <button
-                                                onClick={() => {
-                                                    if (!upiId) {
-                                                        toast.error('UPI ID not configured');
-                                                        return;
-                                                    }
-                                                    navigator.clipboard.writeText(upiId);
-                                                    toast.success('UPI ID copied!', {
-                                                        icon: '📋',
-                                                        style: {
-                                                            borderRadius: '8px',
-                                                            background: '#2cdea3ff',
-                                                            color: '#fff',
-                                                            fontWeight: '600',
-                                                            fontSize: '13px'
-                                                        }
-                                                    });
-                                                }}
-                                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-xs uppercase tracking-wide transition-colors flex items-center gap-2 shadow-sm"
+                                                type="button"
+                                                onClick={() => void handleCopyText(upiId, 'UPI ID copied')}
+                                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-xs uppercase tracking-wide transition-colors"
                                             >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                                </svg>
                                                 Copy
                                             </button>
                                         </div>
-
-                                        <div className="relative py-2">
-                                            <div className="absolute inset-0 flex items-center">
-                                                <div className="w-full border-t border-gray-100"></div>
-                                            </div>
-                                            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">
-                                                <span className="bg-white px-4 italic">AFTER PAYMENT</span>
-                                            </div>
-                                        </div>
-
-                                        <Button
-                                            variant="primary"
-                                            size="lg"
-                                            fullWidth
-                                            onClick={() => setStep(2)}
-                                            className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-green-900/20"
-                                        >
-                                            I have paid, Proceed to Confirm
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="text-center space-y-6">
-                                        <div className="inline-block p-6 bg-white border-4 border-gray-50 rounded-[2rem] shadow-inner">
-                                            {qrCode ? (
-                                                <Image
-                                                    src={qrCode}
-                                                    alt="UPI QR Code"
-                                                    width={260}
-                                                    height={260}
-                                                    className="rounded-xl"
-                                                />
-                                            ) : (
-                                                <div className="w-[260px] h-[260px] bg-gray-50 rounded-xl flex items-center justify-center">
-                                                    <span className="animate-pulse text-gray-300">Generating QR...</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-black text-gray-900 uppercase italic">Scan QR with any app</p>
-                                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">GPay • PhonePe • Paytm • Amazon Pay</p>
-                                        </div>
-
-                                        {/* UPI ID with Copy Button */}
-                                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center justify-between gap-3">
-                                            <div className="flex-1">
-                                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">UPI ID</p>
-                                                <p className="text-sm font-black text-gray-900 tracking-tight">{upiId || 'Not configured'}</p>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex-1 text-left">
+                                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">UPI Phone</p>
+                                                <p className="text-sm font-black text-gray-900 tracking-tight">{upiPhone || 'Not configured'}</p>
                                             </div>
                                             <button
-                                                onClick={() => {
-                                                    if (!upiId) {
-                                                        toast.error('UPI ID not configured');
-                                                        return;
-                                                    }
-                                                    navigator.clipboard.writeText(upiId);
-                                                    toast.success('UPI ID copied!', {
-                                                        icon: '📋',
-                                                        style: {
-                                                            borderRadius: '8px',
-                                                            background: '#2cdea3ff',
-                                                            color: '#fff',
-                                                            fontWeight: '600',
-                                                            fontSize: '13px'
-                                                        }
-                                                    });
-                                                }}
-                                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-xs uppercase tracking-wide transition-colors flex items-center gap-2 shadow-sm"
+                                                type="button"
+                                                onClick={() => void handleCopyText(upiPhone, 'UPI phone copied')}
+                                                className="px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-lg font-bold text-xs uppercase tracking-wide transition-colors"
                                             >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                                </svg>
                                                 Copy
                                             </button>
                                         </div>
-
-                                        <Button
-                                            variant="primary"
-                                            size="lg"
-                                            fullWidth
-                                            onClick={() => setStep(2)}
-                                            className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-green-900/20"
-                                        >
-                                            I have paid, Proceed to Confirm
-                                        </Button>
                                     </div>
-                                )}
+
+                                    <Button
+                                        variant="primary"
+                                        size="lg"
+                                        fullWidth
+                                        onClick={() => setStep(2)}
+                                        className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-green-900/20"
+                                    >
+                                        I have paid, Proceed to Confirm
+                                    </Button>
+                                </div>
 
                                 <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex gap-4">
                                     <span className="text-xl">🛡️</span>
                                     <div>
                                         <p className="text-xs font-black text-blue-900 uppercase tracking-tight">Safe & Secure Environment</p>
-                                        <p className="text-[10px] text-blue-700 font-bold leading-tight mt-0.5">Your payment is direct via UPI. We do not store your банковские данные.</p>
+                                        <p className="text-[10px] text-blue-700 font-bold leading-tight mt-0.5">Your payment is direct via UPI. We do not store your bank details.</p>
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            /* Step 2: Confirm Proof */
                             <div className="space-y-8">
                                 <button
                                     onClick={() => setStep(1)}
@@ -456,7 +352,7 @@ export default function PaymentPage() {
                                 <div className="space-y-4">
                                     <h2 className="text-lg font-black text-gray-900 uppercase italic tracking-tight underline underline-offset-8 decoration-green-600/30">Confirmation Details</h2>
                                     <p className="text-gray-600 text-sm leading-relaxed font-medium">
-                                        Almost there! Please provide your UTR number or upload a screenshot so we can verify your payment manually.
+                                        Almost there. Please provide your UTR number or upload a screenshot so we can verify your payment manually.
                                     </p>
                                 </div>
 
@@ -514,16 +410,23 @@ export default function PaymentPage() {
                         )}
                     </div>
 
-                    {/* Support Footer */}
                     <div className="bg-gray-50 p-6 border-t border-gray-100 text-center">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Need help or stuck?</p>
-                        <a href="https://wa.me/918247838125" className="text-xs font-black text-green-600 hover:text-green-700 transition-colors italic underline decoration-green-600/30 underline-offset-4">
-                            WhatsApp support: +91 824 783 8125
-                        </a>
+                        {supportWhatsappHref ? (
+                            <a
+                                href={supportWhatsappHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs font-black text-green-600 hover:text-green-700 transition-colors italic underline decoration-green-600/30 underline-offset-4"
+                            >
+                                WhatsApp support: {supportWhatsappPhone}
+                            </a>
+                        ) : (
+                            <p className="text-xs font-black text-gray-500">WhatsApp support not configured</p>
+                        )}
                     </div>
                 </div>
             </div>
         </main>
     );
 }
-

@@ -217,6 +217,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             if (error) {
+                const normalizedMessage = (error.message || '').toLowerCase();
+                if (
+                    normalizedMessage.includes('email not confirmed') ||
+                    normalizedMessage.includes('email_not_confirmed') ||
+                    normalizedMessage.includes('confirm your email')
+                ) {
+                    throw new Error('Email not verified. Please check your inbox and confirm your email before logging in.');
+                }
+
                 // Log failure for security monitoring (optional)
                 try {
                     await supabase

@@ -18,6 +18,9 @@ import toast from 'react-hot-toast';
 
 type ProfilePolicyRow = Pick<Database['public']['Tables']['profiles']['Row'], 'privacy_policy_accepted'>;
 
+const hasFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value);
+
 export default function CheckoutPage() {
     const router = useRouter();
     const { user, session, loading: authLoading } = useAuth();
@@ -60,16 +63,36 @@ export default function CheckoutPage() {
             `)
             .eq('user_id', user.id);
 
+        if (error) {
+            console.error('Failed to fetch cart:', error);
+            return;
+        }
+
         if (data) {
-            const enriched = (data as any[]).map(item => ({
-                ...item,
-                product: item.product ? {
-                    ...item.product,
-                    current_price: item.variant?.price ?? item.product.current_price,
-                    mrp: item.variant?.mrp ?? item.product.mrp,
-                    shipping_charges: item.variant?.shipping_charge ?? item.product.shipping_charges,
-                } : item.product
-            }));
+            const invalidIds: string[] = [];
+            const enriched = (data as any[]).flatMap(item => {
+                const resolvedPrice = item.variant?.price ?? item.product?.current_price;
+                if (!hasFiniteNumber(resolvedPrice)) {
+                    if (typeof item.id === 'string') invalidIds.push(item.id);
+                    return [];
+                }
+
+                return [{
+                    ...item,
+                    product: item.product ? {
+                        ...item.product,
+                        current_price: resolvedPrice,
+                        mrp: item.variant?.mrp ?? item.product.mrp,
+                        shipping_charges: item.variant?.shipping_charge ?? item.product.shipping_charges,
+                    } : item.product
+                }];
+            });
+
+            if (invalidIds.length > 0) {
+                await supabase.from('cart_items').delete().in('id', invalidIds);
+                toast.error('Unavailable items were removed from your cart.');
+            }
+
             setCartItems(enriched);
         }
     };
@@ -109,11 +132,14 @@ export default function CheckoutPage() {
                 if (!product) return [];
 
                 const variant = item.variant_id ? variantMap.get(item.variant_id) : undefined;
+                const resolvedPrice = variant?.price ?? product.current_price;
+                if (!hasFiniteNumber(resolvedPrice)) return [];
+
                 return [{
                     ...item,
                     product: {
                         ...product,
-                        current_price: variant?.price ?? product.current_price,
+                        current_price: resolvedPrice,
                         mrp: variant?.mrp ?? product.mrp,
                         shipping_charges: variant?.shipping_charge ?? product.shipping_charges,
                     },
@@ -121,7 +147,12 @@ export default function CheckoutPage() {
             });
 
             if (items.length !== guestCart.length) {
-                const cleaned = guestCart.filter((item: any) => productMap.has(item.product_id));
+                const itemKeys = new Set(
+                    items.map((item: any) => `${item.product_id}:${item.variant_id || 'no_variant'}`)
+                );
+                const cleaned = guestCart.filter((item: any) =>
+                    itemKeys.has(`${item.product_id}:${item.variant_id || 'no_variant'}`)
+                );
                 localStorage.setItem('guest_cart', JSON.stringify(cleaned));
             }
 
