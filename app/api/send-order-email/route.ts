@@ -10,15 +10,39 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/lib/supabase/database.types';
 import { emailService } from '@/lib/email-service/EmailService';
 import { OrderConfirmationTemplate } from '@/lib/email-service/templates/OrderConfirmationTemplate';
+import { z } from 'zod';
+import { checkRateLimit } from '@/lib/middleware/rateLimit';
+import { verifyGuestOrderToken } from '@/lib/security/guest-order-token';
+
+const sendOrderEmailSchema = z.object({
+    orderId: z.string().min(1),
+    accessToken: z.string().trim().optional(),
+});
 
 export async function POST(request: NextRequest) {
+    const { allowed, remaining, resetTime } = await checkRateLimit(request);
+    if (!allowed) {
+        return NextResponse.json(
+            { error: 'Too many requests. Please try again later.' },
+            {
+                status: 429,
+                headers: {
+                    'X-RateLimit-Remaining': '0',
+                    'X-RateLimit-Reset': resetTime.toISOString(),
+                    'Retry-After': Math.ceil((resetTime.getTime() - Date.now()) / 1000).toString(),
+                },
+            }
+        );
+    }
+
     try {
         const body = await request.json();
-        const { orderId, phone } = body;
-
-        if (!orderId || typeof orderId !== 'string') {
+        const parsed = sendOrderEmailSchema.safeParse(body);
+        if (!parsed.success) {
             return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
         }
+
+        const { orderId, accessToken } = parsed.data;
 
         const cookieStore = await cookies();
         const authClient = createServerClient(
@@ -80,8 +104,8 @@ export async function POST(request: NextRequest) {
         }
 
         const isOwner = !!user && orderData.user_id === user.id;
-        const hasPhoneMatch = typeof phone === 'string' && phone.trim() !== '' && orderData.shipping_phone === phone.trim();
-        if (!isAdmin && !isOwner && !hasPhoneMatch) {
+        const isTokenVerified = !!accessToken && verifyGuestOrderToken(accessToken, orderId);
+        if (!isAdmin && !isOwner && !isTokenVerified) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -128,7 +152,7 @@ export async function POST(request: NextRequest) {
             }
         };
 
-        const emailItems = orderData.order_items.map((item: any) => ({
+        const emailItems = (orderData.order_items || []).map((item: any) => ({
             product_title_en: item.product_title_en,
             variant_label: item.variant_label,
             quantity: item.quantity,
@@ -157,7 +181,15 @@ export async function POST(request: NextRequest) {
             console.error('Failed to send admin notification:', adminEmailError);
         }
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json(
+            { success: true },
+            {
+                headers: {
+                    'X-RateLimit-Remaining': remaining.toString(),
+                    'X-RateLimit-Reset': resetTime.toISOString(),
+                },
+            }
+        );
 
     } catch (error: any) {
         console.error('Send email API error:', error);

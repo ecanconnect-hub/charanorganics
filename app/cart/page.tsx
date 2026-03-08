@@ -6,33 +6,73 @@
 
 'use client';
 
+import { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { useCart } from '@/lib/cart-context';
+import toast from 'react-hot-toast';
 
-const hasFiniteNumber = (value: unknown): value is number =>
-    typeof value === 'number' && Number.isFinite(value);
+const toFiniteNumber = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    return null;
+};
 
 export default function CartPage() {
     const router = useRouter();
     const locale = useLocale();
     const { items: cartItems, updateQuantity, removeItem, isLoading } = useCart();
+    const cleanupInProgressRef = useRef(false);
 
     const subtotal = cartItems.reduce((sum, item) => {
-        const price = item.product?.current_price;
-        return hasFiniteNumber(price) ? sum + price * item.quantity : sum;
+        const price = toFiniteNumber(item.product?.current_price);
+        return price !== null ? sum + price * item.quantity : sum;
     }, 0);
 
     const shippingCandidates = cartItems
-        .map((item) => item.product?.shipping_charges)
-        .filter(hasFiniteNumber);
+        .map((item) => toFiniteNumber(item.product?.shipping_charges))
+        .filter((value): value is number => value !== null);
     const maxShipping = shippingCandidates.length > 0 ? Math.max(...shippingCandidates) : 0;
     const shipping = subtotal >= 2000 ? 0 : maxShipping;
     const total = subtotal + shipping;
-    const hasUnavailablePricing = cartItems.some((item) => !hasFiniteNumber(item.product?.current_price));
+    const unavailableItems = useMemo(
+        () => cartItems.filter((item) => toFiniteNumber(item.product?.current_price) === null),
+        [cartItems]
+    );
+    const hasUnavailablePricing = unavailableItems.length > 0;
+
+    useEffect(() => {
+        if (unavailableItems.length === 0 || cleanupInProgressRef.current) {
+            return;
+        }
+
+        cleanupInProgressRef.current = true;
+
+        const cleanupUnavailableItems = async () => {
+            try {
+                for (const item of unavailableItems) {
+                    await removeItem(item.product_id, item.variant_id);
+                }
+                toast.error('Unavailable items were removed from your cart.');
+            } finally {
+                cleanupInProgressRef.current = false;
+            }
+        };
+
+        void cleanupUnavailableItems();
+    }, [removeItem, unavailableItems]);
 
     return (
         <main className="section-padding min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -74,8 +114,8 @@ export default function CartPage() {
                                     : resolveLocalizedText(product?.title_en, product?.title_te);
                                 const itemKey = item.id || `${item.product_id}-${item.variant_id || 'none'}`;
                                 const productHref = product?.product_id ? `/product/${product.product_id}` : '/shop';
-                                const unitPrice = product?.current_price;
-                                const hasUnitPrice = hasFiniteNumber(unitPrice);
+                                const unitPrice = toFiniteNumber(product?.current_price);
+                                const hasUnitPrice = unitPrice !== null;
                                 const lineTotal = hasUnitPrice ? unitPrice * item.quantity : null;
 
                                 return (
@@ -195,11 +235,11 @@ export default function CartPage() {
                                     <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                                 </Button>
 
-                                {hasUnavailablePricing && (
+                                {hasUnavailablePricing ? (
                                     <p className="mt-2 text-xs text-amber-700 font-medium">
-                                        Some items could not load pricing. Remove them and add again.
+                                        Fixing unavailable item prices...
                                     </p>
-                                )}
+                                ) : null}
 
                                 <div className="mt-6 pt-6 border-t border-gray-100 text-center">
                                     <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-[0.12em] mb-3">Safe & Secure Payment</p>

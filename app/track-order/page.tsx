@@ -23,10 +23,9 @@ export default function TrackOrderPage() {
         if (!orderId.trim() || !phone.trim()) return;
 
         setLoading(true);
-        // Navigate to the order tracking page with phone as query param for verification
-        const searchParams = new URLSearchParams();
-        searchParams.set('phone', phone.trim());
-        router.push(`/track-order/${orderId.trim()}?${searchParams.toString()}`);
+        const normalizedOrderId = orderId.trim().toUpperCase();
+        sessionStorage.setItem(`guest_track_phone:${normalizedOrderId}`, phone.trim());
+        router.push(`/track-order/${encodeURIComponent(normalizedOrderId)}`);
     };
 
     return (

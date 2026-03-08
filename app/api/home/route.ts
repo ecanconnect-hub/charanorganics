@@ -193,7 +193,7 @@ export async function GET() {
         const message = getErrorMessage(error);
         console.error('Home API error:', message, error);
         return NextResponse.json(
-            { error: message || 'Failed to load home data' },
+            { error: 'Failed to load home data' },
             { status: 503 }
         );
     }

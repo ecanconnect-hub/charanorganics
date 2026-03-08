@@ -4,13 +4,30 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import type { Database } from '@/lib/supabase/database.types';
+import { checkRateLimit } from '@/lib/middleware/rateLimit';
+import { verifyGuestOrderToken } from '@/lib/security/guest-order-token';
 
 const detailsSchema = z.object({
     orderId: z.string().min(1),
-    phone: z.string().trim().optional(),
+    accessToken: z.string().trim().optional(),
 });
 
 export async function POST(request: NextRequest) {
+    const { allowed, remaining, resetTime } = await checkRateLimit(request);
+    if (!allowed) {
+        return NextResponse.json(
+            { error: 'Too many requests. Please try again later.' },
+            {
+                status: 429,
+                headers: {
+                    'X-RateLimit-Remaining': '0',
+                    'X-RateLimit-Reset': resetTime.toISOString(),
+                    'Retry-After': Math.ceil((resetTime.getTime() - Date.now()) / 1000).toString(),
+                },
+            }
+        );
+    }
+
     try {
         const body = await request.json();
         const parsed = detailsSchema.safeParse(body);
@@ -45,7 +62,7 @@ export async function POST(request: NextRequest) {
 
         const { data: order, error } = await serviceClient
             .from('orders')
-            .select('id, order_id, total_amount, status, user_id, shipping_phone')
+            .select('id, order_id, total_amount, status, user_id')
             .eq('order_id', parsed.data.orderId)
             .single() as { data: any; error: any };
 
@@ -53,10 +70,22 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
-        const isOwner = !!user && order.user_id === user.id;
-        const isPhoneVerified = !!parsed.data.phone && parsed.data.phone.trim() === order.shipping_phone;
+        let isAdmin = false;
+        if (user) {
+            const { data: requesterProfile } = await serviceClient
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single() as { data: { role: string } | null };
+            isAdmin = requesterProfile?.role === 'admin';
+        }
 
-        if (!isOwner && !isPhoneVerified) {
+        const isOwner = !!user && order.user_id === user.id;
+        const isTokenVerified =
+            typeof parsed.data.accessToken === 'string' &&
+            verifyGuestOrderToken(parsed.data.accessToken, parsed.data.orderId);
+
+        if (!isOwner && !isAdmin && !isTokenVerified) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -69,6 +98,11 @@ export async function POST(request: NextRequest) {
             orderId: order.order_id,
             totalAmount: Number(order.total_amount),
             status: order.status,
+        }, {
+            headers: {
+                'X-RateLimit-Remaining': remaining.toString(),
+                'X-RateLimit-Reset': resetTime.toISOString(),
+            },
         });
     } catch (error) {
         console.error('Payment details API error:', error);

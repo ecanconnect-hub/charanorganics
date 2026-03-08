@@ -111,7 +111,7 @@ export async function GET() {
         const message = getErrorMessage(error);
         console.error('Shop filters API error:', message, error);
         return NextResponse.json(
-            { error: message || 'Failed to load shop filters' },
+            { error: 'Failed to load shop filters' },
             { status: 503 }
         );
     }

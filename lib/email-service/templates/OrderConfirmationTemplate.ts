@@ -1,3 +1,20 @@
+﻿const escapeHtml = (value: unknown): string => {
+    if (value === null || value === undefined) return '';
+
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+};
+
+const toAmount = (value: unknown, fallback = 0): number => {
+    const parsed = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const inr = (value: unknown): string => `&#8377;${toAmount(value).toFixed(2)}`;
 
 export const OrderConfirmationTemplate = (order: any, items: any[]) => {
     const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
@@ -6,18 +23,26 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
         day: 'numeric',
     });
 
-    const trackingUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.charanorganics.com'}/account/orders`; // directs user to their order history
+    const trackingUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.charanorganics.com'}/account/orders`;
 
-    const itemsHtml = items.map((item: any) => `
+    const itemsHtml = items
+        .map(
+            (item: any) => `
         <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #eee;">
-                <div style="font-weight: bold; color: #333;">${item.product_title_en}</div>
-                <div style="font-size: 12px; color: #888;">${item.variant_label || ''}</div>
+                <div style="font-weight: bold; color: #333;">${escapeHtml(item.product_title_en)}</div>
+                <div style="font-size: 12px; color: #888;">${escapeHtml(item.variant_label || '')}</div>
             </td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right;">₹${item.unit_price}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: center;">${escapeHtml(item.quantity)}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right;">${inr(item.unit_price)}</td>
         </tr>
-    `).join('');
+    `
+        )
+        .join('');
+
+    const subtotal = toAmount(order.subtotal_amount, toAmount(order.total_amount));
+    const shipping = toAmount(order.shipping_cost);
+    const total = toAmount(order.total_amount);
 
     return `
 <!DOCTYPE html>
@@ -32,8 +57,6 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
         <tr>
             <td align="center" style="padding: 40px 0;">
                 <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                    
-                    <!-- Header -->
                     <tr>
                         <td style="padding: 40px 40px 30px; text-align: center;">
                             <img src="https://res.cloudinary.com/dur6fkyoz/image/upload/v1770221833/cfavicon.ico_wj8cze.png" alt="Charan Organics" width="60" style="margin-bottom: 20px;">
@@ -42,22 +65,20 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
                         </td>
                     </tr>
 
-                    <!-- Order Info -->
                     <tr>
                         <td style="padding: 0 40px;">
                             <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f0fdf4; border-radius: 12px; border: 1px solid #dcfce7;">
                                 <tr>
                                     <td style="padding: 20px; text-align: center;">
                                         <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #15803d; font-weight: 700;">Order ID</div>
-                                        <div style="font-size: 20px; font-weight: 900; color: #166534; margin-top: 5px;">#${order.order_id}</div>
-                                        <div style="font-size: 14px; color: #15803d; margin-top: 5px;">${orderDate}</div>
+                                        <div style="font-size: 20px; font-weight: 900; color: #166534; margin-top: 5px;">#${escapeHtml(order.order_id)}</div>
+                                        <div style="font-size: 14px; color: #15803d; margin-top: 5px;">${escapeHtml(orderDate)}</div>
                                     </td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
 
-                    <!-- Items Table -->
                     <tr>
                         <td style="padding: 30px 40px;">
                             <h3 style="margin: 0 0 15px; color: #111827; font-size: 18px; font-weight: 700;">Order Summary</h3>
@@ -75,35 +96,33 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
                                 <tfoot>
                                     <tr>
                                         <td colspan="2" style="padding-top: 15px; text-align: right; font-weight: 600; color: #4b5563;">Subtotal</td>
-                                        <td style="padding-top: 15px; text-align: right; font-weight: 600; color: #111827;">₹${order.subtotal_amount?.toFixed(2) || order.total_amount?.toFixed(2)}</td>
+                                        <td style="padding-top: 15px; text-align: right; font-weight: 600; color: #111827;">${inr(subtotal)}</td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" style="padding-top: 5px; text-align: right; font-weight: 600; color: #4b5563;">Shipping</td>
-                                        <td style="padding-top: 5px; text-align: right; font-weight: 600; color: #111827;">₹${order.shipping_cost?.toFixed(2) || '0.00'}</td>
+                                        <td style="padding-top: 5px; text-align: right; font-weight: 600; color: #111827;">${inr(shipping)}</td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" style="padding-top: 15px; text-align: right; font-weight: 900; color: #166534; font-size: 18px;">Total</td>
-                                        <td style="padding-top: 15px; text-align: right; font-weight: 900; color: #166534; font-size: 18px;">₹${order.total_amount?.toFixed(2)}</td>
+                                        <td style="padding-top: 15px; text-align: right; font-weight: 900; color: #166534; font-size: 18px;">${inr(total)}</td>
                                     </tr>
                                 </tfoot>
                             </table>
                         </td>
                     </tr>
 
-                    <!-- Address -->
                     <tr>
                         <td style="padding: 0 40px 30px;">
                             <h3 style="margin: 0 0 10px; color: #111827; font-size: 16px; font-weight: 700;">Shipping Address</h3>
                             <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">
-                                ${order.shipping_address?.full_name || 'Customer'}<br>
-                                ${order.shipping_address?.flat_no ? order.shipping_address.flat_no + ', ' : ''}${order.shipping_address?.address_line1 || ''}<br>
-                                ${order.shipping_address?.city || ''}, ${order.shipping_address?.state || ''} ${order.shipping_address?.pincode || ''}<br>
-                                Phone: ${order.shipping_address?.phone || 'N/A'}
+                                ${escapeHtml(order.shipping_address?.full_name || 'Customer')}<br>
+                                ${escapeHtml(order.shipping_address?.address_line1 || '')}<br>
+                                ${escapeHtml(order.shipping_address?.city || '')}, ${escapeHtml(order.shipping_address?.state || '')} ${escapeHtml(order.shipping_address?.pincode || '')}<br>
+                                Phone: ${escapeHtml(order.shipping_address?.phone || 'N/A')}
                             </p>
                         </td>
                     </tr>
 
-                    <!-- Payment Proof Info -->
                     <tr>
                         <td style="padding: 0 40px 30px;">
                             <h3 style="margin: 0 0 10px; color: #111827; font-size: 16px; font-weight: 700;">Payment Proof Submitted</h3>
@@ -112,12 +131,12 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
                                     <td style="padding: 15px 20px;">
                                         ${order.payment_proof?.utr_number ? `
                                             <div style="color: #92400e; font-size: 14px; line-height: 1.6;">
-                                                <strong style="color: #78350f;">UTR Number:</strong> ${order.payment_proof.utr_number}
+                                                <strong style="color: #78350f;">UTR Number:</strong> ${escapeHtml(order.payment_proof.utr_number)}
                                             </div>
                                         ` : ''}
                                         ${order.payment_proof?.has_screenshot ? `
                                             <div style="color: #92400e; font-size: 14px; margin-top: ${order.payment_proof?.utr_number ? '8px' : '0'};">
-                                                ✓ Payment screenshot uploaded
+                                                Payment screenshot uploaded
                                             </div>
                                         ` : ''}
                                         <div style="color: #92400e; font-size: 12px; margin-top: 10px; font-style: italic;">
@@ -129,16 +148,14 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
                         </td>
                     </tr>
 
-                    <!-- Track Order Button -->
                     <tr>
                         <td align="center" style="padding: 0 40px 40px;">
-                            <a href="${trackingUrl}" style="display: inline-block; background-color: #166534; color: #ffffff; font-weight: 700; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(22, 101, 52, 0.4);">
+                            <a href="${escapeHtml(trackingUrl)}" style="display: inline-block; background-color: #166534; color: #ffffff; font-weight: 700; text-decoration: none; padding: 16px 32px; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(22, 101, 52, 0.4);">
                                 Track Your Order
                             </a>
                         </td>
                     </tr>
 
-                    <!-- Footer -->
                     <tr>
                         <td style="background-color: #f3f4f6; padding: 30px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
                             <p style="margin: 0; color: #9ca3af; font-size: 12px;">
@@ -155,4 +172,3 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
 </html>
     `;
 };
-

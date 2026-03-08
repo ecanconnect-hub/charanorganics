@@ -365,7 +365,7 @@ export async function GET(req: NextRequest) {
         const message = getErrorMessage(error);
         console.error('Shop products API error:', message, error);
         return NextResponse.json(
-            { error: message || 'Failed to load products' },
+            { error: 'Failed to load products' },
             { status: 503 }
         );
     }

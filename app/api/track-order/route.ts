@@ -5,14 +5,13 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import type { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
-import { verifyGuestOrderToken } from '@/lib/security/guest-order-token';
 
-const submitSchema = z.object({
+const trackOrderSchema = z.object({
     orderId: z.string().min(1),
-    accessToken: z.string().trim().optional(),
-    utr: z.string().trim().optional(),
-    screenshotUrl: z.string().url().optional(),
+    phone: z.string().trim().optional(),
 });
+
+const normalizePhone = (value: string): string => value.replace(/\D/g, '');
 
 export async function POST(request: NextRequest) {
     const { allowed, remaining, resetTime } = await checkRateLimit(request);
@@ -32,14 +31,11 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const parsed = submitSchema.safeParse(body);
+        const parsed = trackOrderSchema.safeParse(body);
         if (!parsed.success) {
             return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
         }
-
-        if (!parsed.data.utr && !parsed.data.screenshotUrl) {
-            return NextResponse.json({ error: 'UTR or screenshot is required' }, { status: 400 });
-        }
+        const normalizedOrderId = parsed.data.orderId.trim().toUpperCase();
 
         const cookieStore = await cookies();
         const authClient = createServerClient(
@@ -68,8 +64,8 @@ export async function POST(request: NextRequest) {
 
         const { data: order, error: orderError } = await serviceClient
             .from('orders')
-            .select('id, user_id, status')
-            .eq('order_id', parsed.data.orderId)
+            .select('id, order_id, created_at, total_amount, status, shipping_name, shipping_phone, shipping_address, shipping_city, shipping_state, shipping_pincode, user_id')
+            .ilike('order_id', normalizedOrderId)
             .single() as { data: any; error: any };
 
         if (orderError || !order) {
@@ -87,53 +83,58 @@ export async function POST(request: NextRequest) {
         }
 
         const isOwner = !!user && order.user_id === user.id;
-        const isTokenVerified =
-            typeof parsed.data.accessToken === 'string' &&
-            verifyGuestOrderToken(parsed.data.accessToken, parsed.data.orderId);
-        if (!isOwner && !isAdmin && !isTokenVerified) {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        const normalizedOrderPhone = normalizePhone(order.shipping_phone || '');
+        const normalizedInputPhone = normalizePhone(parsed.data.phone || '');
+        const isPhoneVerified = normalizedInputPhone.length >= 10 && normalizedInputPhone === normalizedOrderPhone;
+
+        if (!isOwner && !isAdmin && !isPhoneVerified) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
-        if (order.status !== 'pending_payment') {
-            return NextResponse.json({ error: 'Payment already submitted' }, { status: 409 });
+        const { data: orderItems, error: orderItemsError } = await serviceClient
+            .from('order_items')
+            .select('product_id, product_title_en, variant_label, quantity, unit_price')
+            .eq('order_id', order.id) as { data: any[] | null; error: any };
+
+        if (orderItemsError) {
+            console.error('Track order items fetch error:', orderItemsError);
+            return NextResponse.json({ error: 'Failed to load order details' }, { status: 500 });
         }
 
-        const { error: insertError } = await (serviceClient
-            .from('payments') as any)
-            .insert({
-                order_id: order.id,
-                utr_number: parsed.data.utr || null,
-                payment_screenshot_url: parsed.data.screenshotUrl || null,
-                status: 'pending',
-            });
+        const productIds = Array.from(
+            new Set(
+                (orderItems || [])
+                    .map((item) => item.product_id)
+                    .filter((id): id is string => typeof id === 'string' && id.length > 0)
+            )
+        );
 
-        if (insertError) {
-            if (insertError.message?.toLowerCase().includes('unique')) {
-                return NextResponse.json({ error: 'Duplicate payment reference detected' }, { status: 409 });
-            }
-            return NextResponse.json({ error: 'Failed to save payment details' }, { status: 400 });
+        let productImageById = new Map<string, string | null>();
+        if (productIds.length > 0) {
+            const { data: productsRaw } = await serviceClient
+                .from('products')
+                .select('id, image_url')
+                .in('id', productIds);
+            const products = (productsRaw || []) as Array<{ id: string; image_url: string | null }>;
+
+            productImageById = new Map(products.map((product) => [product.id, product.image_url]));
         }
 
-        const { error: updateError } = await (serviceClient
-            .from('orders') as any)
-            .update({ status: 'payment_verification' })
-            .eq('id', order.id)
-            .eq('status', 'pending_payment');
-
-        if (updateError) {
-            return NextResponse.json({ error: 'Failed to update order status' }, { status: 400 });
-        }
-
-        // Clear cart items for this user now that payment is submitted
-        if (order.user_id) {
-            await serviceClient
-                .from('cart_items')
-                .delete()
-                .eq('user_id', order.user_id);
-        }
+        const items = (orderItems || []).map((item) => ({
+            ...item,
+            product: {
+                image_url: productImageById.get(item.product_id) || null,
+            },
+        }));
 
         return NextResponse.json(
-            { success: true },
+            {
+                order: {
+                    ...order,
+                    total_amount: Number(order.total_amount),
+                },
+                items,
+            },
             {
                 headers: {
                     'X-RateLimit-Remaining': remaining.toString(),
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
             }
         );
     } catch (error) {
-        console.error('Payment submit API error:', error);
+        console.error('Track order API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

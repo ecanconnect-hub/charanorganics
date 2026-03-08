@@ -30,11 +30,22 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
     '/api/payment/submit': { windowMs: 10 * 60 * 1000, maxRequests: 8 }, // 8 payment submits per 10 minutes
     '/api/payment/details': { windowMs: 5 * 60 * 1000, maxRequests: 20 }, // 20 payment detail lookups per 5 minutes
     '/api/send-order-email': { windowMs: 10 * 60 * 1000, maxRequests: 5 }, // 5 email triggers per 10 minutes
+    '/api/track-order': { windowMs: 5 * 60 * 1000, maxRequests: 12 }, // 12 tracking checks per 5 minutes
     '/api/orders': { windowMs: 60 * 1000, maxRequests: 10 }, // 10 orders per minute
     '/api/cart': { windowMs: 60 * 1000, maxRequests: 30 }, // 30 cart operations per minute
     '/api/products': { windowMs: 60 * 1000, maxRequests: 60 }, // 60 product requests per minute
     default: { windowMs: 60 * 1000, maxRequests: 100 }, // 100 requests per minute (default)
 };
+
+const FAIL_CLOSED_ENDPOINT_PREFIXES = [
+    '/api/auth/login',
+    '/api/auth/signup',
+    '/api/checkout',
+    '/api/payment/details',
+    '/api/payment/submit',
+    '/api/send-order-email',
+    '/api/track-order',
+];
 
 /**
  * Get client identifier (IP address or user ID)
@@ -74,6 +85,9 @@ const getRateLimitConfig = (pathname: string): RateLimitConfig => {
     return RATE_LIMITS.default;
 };
 
+const shouldFailClosed = (pathname: string): boolean =>
+    FAIL_CLOSED_ENDPOINT_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
 /**
  * Check and update rate limit
  */
@@ -83,6 +97,7 @@ export const checkRateLimit = async (
     const pathname = request.nextUrl.pathname;
     const identifier = getClientIdentifier(request);
     const config = getRateLimitConfig(pathname);
+    const failClosed = shouldFailClosed(pathname);
 
     const supabase = getServiceSupabase();
     const now = new Date();
@@ -101,8 +116,12 @@ export const checkRateLimit = async (
         if (fetchError && fetchError.code !== 'PGRST116') {
             // Error other than "not found"
             console.error('Rate limit check error:', fetchError);
-            // Allow request on error (fail open)
-            return { allowed: true, remaining: config.maxRequests, resetTime: new Date(now.getTime() + config.windowMs) };
+            // Fail closed on sensitive endpoints.
+            return {
+                allowed: !failClosed,
+                remaining: failClosed ? 0 : config.maxRequests,
+                resetTime: new Date(now.getTime() + config.windowMs),
+            };
         }
 
         if (!existing) {
@@ -168,8 +187,12 @@ export const checkRateLimit = async (
         };
     } catch (error) {
         console.error('Rate limit error:', error);
-        // Allow request on error (fail open)
-        return { allowed: true, remaining: config.maxRequests, resetTime: new Date(now.getTime() + config.windowMs) };
+        // Fail closed on sensitive endpoints.
+        return {
+            allowed: !failClosed,
+            remaining: failClosed ? 0 : config.maxRequests,
+            resetTime: new Date(now.getTime() + config.windowMs),
+        };
     }
 };
 

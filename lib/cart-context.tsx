@@ -44,6 +44,21 @@ function hasFiniteNumber(value: unknown): value is number {
     return typeof value === 'number' && Number.isFinite(value);
 }
 
+function toFiniteNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    return null;
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -102,10 +117,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                         if (!product) return [];
 
                         const variant = item.variant_id ? variantMap.get(item.variant_id) : undefined;
-                        const resolvedPrice = variant?.price ?? product.current_price;
-                        if (!hasFiniteNumber(resolvedPrice)) {
+                        const resolvedPrice = toFiniteNumber(variant?.price ?? product.current_price);
+                        if (resolvedPrice === null) {
                             return [];
                         }
+
+                        const resolvedMrp = toFiniteNumber(variant?.mrp ?? product.mrp);
+                        const resolvedShipping = toFiniteNumber(variant?.shipping_charge ?? product.shipping_charges);
 
                         return [{
                             ...item,
@@ -113,8 +131,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                             product: {
                                 ...product,
                                 current_price: resolvedPrice,
-                                mrp: variant?.mrp ?? product.mrp,
-                                shipping_charges: variant?.shipping_charge ?? product.shipping_charges,
+                                mrp: resolvedMrp ?? product.mrp,
+                                shipping_charges: resolvedShipping ?? product.shipping_charges,
                             }
                         }];
                     });
@@ -148,7 +166,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 }
 
                 if (!userId) {
-                    setItems(getGuestCart());
+                    setItems((prevItems) =>
+                        prevItems.filter((item) => hasFiniteNumber(item.product?.current_price))
+                    );
                 }
                 return;
             }

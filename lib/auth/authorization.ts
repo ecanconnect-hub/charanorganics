@@ -5,6 +5,8 @@
  * for sensitive resources using public tokens.
  */
 
+import 'server-only';
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(

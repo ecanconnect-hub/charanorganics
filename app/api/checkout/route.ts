@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
+import { createGuestOrderToken } from '@/lib/security/guest-order-token';
 
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
@@ -248,12 +249,23 @@ export async function POST(req: NextRequest) {
         });
 
         if (duplicateOrder) {
+            const responsePayload: {
+                success: boolean;
+                orderId: string;
+                reusedExistingOrder: boolean;
+                guestAccessToken?: string;
+            } = {
+                success: true,
+                orderId: duplicateOrder.order_id,
+                reusedExistingOrder: true,
+            };
+
+            if (!user) {
+                responsePayload.guestAccessToken = createGuestOrderToken(duplicateOrder.order_id);
+            }
+
             return NextResponse.json(
-                {
-                    success: true,
-                    orderId: duplicateOrder.order_id,
-                    reusedExistingOrder: true,
-                },
+                responsePayload,
                 {
                     headers: {
                         'X-RateLimit-Remaining': remaining.toString(),
@@ -290,11 +302,21 @@ export async function POST(req: NextRequest) {
 
         // Email will be sent AFTER payment proof submission, not here
 
+        const responsePayload: {
+            success: boolean;
+            orderId: string;
+            guestAccessToken?: string;
+        } = {
+            success: true,
+            orderId: typedResult.order_id,
+        };
+
+        if (!user) {
+            responsePayload.guestAccessToken = createGuestOrderToken(typedResult.order_id);
+        }
+
         return NextResponse.json(
-            {
-                success: true,
-                orderId: typedResult.order_id
-            },
+            responsePayload,
             {
                 headers: {
                     'X-RateLimit-Remaining': remaining.toString(),

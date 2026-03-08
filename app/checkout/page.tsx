@@ -21,6 +21,21 @@ type ProfilePolicyRow = Pick<Database['public']['Tables']['profiles']['Row'], 'p
 const hasFiniteNumber = (value: unknown): value is number =>
     typeof value === 'number' && Number.isFinite(value);
 
+const toFiniteNumber = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    return null;
+};
+
 export default function CheckoutPage() {
     const router = useRouter();
     const { user, session, loading: authLoading } = useAuth();
@@ -71,19 +86,22 @@ export default function CheckoutPage() {
         if (data) {
             const invalidIds: string[] = [];
             const enriched = (data as any[]).flatMap(item => {
-                const resolvedPrice = item.variant?.price ?? item.product?.current_price;
-                if (!hasFiniteNumber(resolvedPrice)) {
+                const resolvedPrice = toFiniteNumber(item.variant?.price ?? item.product?.current_price);
+                if (resolvedPrice === null) {
                     if (typeof item.id === 'string') invalidIds.push(item.id);
                     return [];
                 }
+
+                const resolvedMrp = toFiniteNumber(item.variant?.mrp ?? item.product?.mrp);
+                const resolvedShipping = toFiniteNumber(item.variant?.shipping_charge ?? item.product?.shipping_charges);
 
                 return [{
                     ...item,
                     product: item.product ? {
                         ...item.product,
                         current_price: resolvedPrice,
-                        mrp: item.variant?.mrp ?? item.product.mrp,
-                        shipping_charges: item.variant?.shipping_charge ?? item.product.shipping_charges,
+                        mrp: resolvedMrp ?? item.product.mrp,
+                        shipping_charges: resolvedShipping ?? item.product.shipping_charges,
                     } : item.product
                 }];
             });
@@ -132,16 +150,19 @@ export default function CheckoutPage() {
                 if (!product) return [];
 
                 const variant = item.variant_id ? variantMap.get(item.variant_id) : undefined;
-                const resolvedPrice = variant?.price ?? product.current_price;
-                if (!hasFiniteNumber(resolvedPrice)) return [];
+                const resolvedPrice = toFiniteNumber(variant?.price ?? product.current_price);
+                if (resolvedPrice === null) return [];
+
+                const resolvedMrp = toFiniteNumber(variant?.mrp ?? product.mrp);
+                const resolvedShipping = toFiniteNumber(variant?.shipping_charge ?? product.shipping_charges);
 
                 return [{
                     ...item,
                     product: {
                         ...product,
                         current_price: resolvedPrice,
-                        mrp: variant?.mrp ?? product.mrp,
-                        shipping_charges: variant?.shipping_charge ?? product.shipping_charges,
+                        mrp: resolvedMrp ?? product.mrp,
+                        shipping_charges: resolvedShipping ?? product.shipping_charges,
                     },
                 }];
             });
@@ -274,9 +295,17 @@ export default function CheckoutPage() {
             //     localStorage.removeItem('guest_cart');
             // }
 
-            const params = new URLSearchParams();
-            params.set('phone', phone);
-            router.push(`/payment/${result.orderId}?${params.toString()}`);
+            if (!user) {
+                if (!result.guestAccessToken) {
+                    toast.error('Unable to start guest payment session. Please retry checkout.');
+                    return;
+                }
+                sessionStorage.setItem(`guest_payment_token:${result.orderId}`, result.guestAccessToken);
+            } else {
+                sessionStorage.removeItem(`guest_payment_token:${result.orderId}`);
+            }
+
+            router.push(`/payment/${result.orderId}`);
         } catch (error: any) {
             console.error('Order error:', error);
             toast.error(error.message || 'An error occurred');

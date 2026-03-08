@@ -52,6 +52,21 @@ function hasFiniteNumber(value: unknown): value is number {
     return typeof value === 'number' && Number.isFinite(value);
 }
 
+function toFiniteNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    return null;
+}
+
 /**
  * Get cart items for guest users (from localStorage)
  */
@@ -184,17 +199,23 @@ export const getUserCart = async (userId: string): Promise<CartItem[]> => {
         hasLoggedUserCartNetworkWarning = false;
 
         // Transform to include variant info in the items
-        const transformedItems = (data || []).map((item: any) => ({
-            ...item,
-            variant_label: item.variant?.label,
-            // If variant exists, override price/mrp/shipping from variant
-            product: item.product ? {
-                ...item.product,
-                current_price: item.variant?.price ?? item.product.current_price,
-                mrp: item.variant?.mrp ?? item.product.mrp,
-                shipping_charges: item.variant?.shipping_charge ?? item.product.shipping_charges,
-            } : item.product
-        }));
+        const transformedItems = (data || []).map((item: any) => {
+            const resolvedPrice = toFiniteNumber(item.variant?.price ?? item.product?.current_price);
+            const resolvedMrp = toFiniteNumber(item.variant?.mrp ?? item.product?.mrp);
+            const resolvedShipping = toFiniteNumber(item.variant?.shipping_charge ?? item.product?.shipping_charges);
+
+            return {
+                ...item,
+                variant_label: item.variant?.label,
+                // If variant exists, override price/mrp/shipping from variant
+                product: item.product ? {
+                    ...item.product,
+                    current_price: resolvedPrice ?? item.product.current_price,
+                    mrp: resolvedMrp ?? item.product.mrp,
+                    shipping_charges: resolvedShipping ?? item.product.shipping_charges,
+                } : item.product
+            };
+        });
 
         const invalidItemIds = transformedItems
             .filter((item: any) => !hasFiniteNumber(item.product?.current_price))

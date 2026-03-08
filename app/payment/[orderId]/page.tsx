@@ -26,15 +26,16 @@ type PaymentOrder = {
 export default function PaymentPage() {
     const params = useParams();
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const orderId = params.orderId as string;
 
     const [order, setOrder] = useState<PaymentOrder | null>(null);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [qrCode, setQRCode] = useState('');
     const [uploading, setUploading] = useState(false);
     const [screenshot, setScreenshot] = useState<File | null>(null);
     const [utrNumber, setUtrNumber] = useState('');
-    const [phone, setPhone] = useState('');
+    const [accessToken, setAccessToken] = useState<string | null>(null);
     const [step, setStep] = useState(1);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -48,15 +49,20 @@ export default function PaymentPage() {
     useEffect(() => {
         setIsMobile(isMobileDevice());
 
-        const searchParams = new URLSearchParams(window.location.search);
-        const phoneFromUrl = searchParams.get('phone') || '';
-        setPhone(phoneFromUrl);
+        if (!orderId || authLoading) {
+            return;
+        }
 
-        if (orderId) {
-            void fetchOrder(phoneFromUrl);
+        if (user) {
+            setAccessToken(null);
+            void fetchOrder();
+        } else {
+            const storedToken = sessionStorage.getItem(`guest_payment_token:${orderId}`);
+            setAccessToken(storedToken);
+            void fetchOrder(storedToken || undefined);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orderId]);
+    }, [orderId, user, authLoading]);
 
     useEffect(() => {
         if (order) {
@@ -65,21 +71,30 @@ export default function PaymentPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [order]);
 
-    const fetchOrder = async (phoneValue?: string) => {
+    const fetchOrder = async (guestAccessToken?: string) => {
         try {
+            setLoadError(null);
             const response = await fetch('/api/payment/details', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     orderId,
-                    phone: phoneValue || phone || undefined,
+                    accessToken: guestAccessToken || accessToken || undefined,
                 }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                toast.error('Order not found or already paid');
+                if (response.status === 403) {
+                    const message = 'Payment session expired. Please return to checkout.';
+                    setLoadError(message);
+                    toast.error(message);
+                } else {
+                    const message = 'Order not found or already paid';
+                    setLoadError(message);
+                    toast.error(message);
+                }
                 return;
             }
 
@@ -91,6 +106,7 @@ export default function PaymentPage() {
             });
         } catch (error) {
             console.error('Fetch order error:', error);
+            setLoadError('Failed to load payment details');
             toast.error('Failed to load payment details');
         }
     };
@@ -177,7 +193,7 @@ export default function PaymentPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     orderId,
-                    phone: phone || undefined,
+                    accessToken: accessToken || undefined,
                     utr: utrNumber || undefined,
                     screenshotUrl: publicUrl || undefined,
                 }),
@@ -192,13 +208,17 @@ export default function PaymentPage() {
                 await fetch('/api/send-order-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderId, phone: phone || undefined }),
+                    body: JSON.stringify({
+                        orderId,
+                        accessToken: accessToken || undefined,
+                    }),
                 });
             } catch (emailError) {
                 console.error('Failed to send confirmation email:', emailError);
             }
 
             localStorage.removeItem('guest_cart');
+            sessionStorage.removeItem(`guest_payment_token:${orderId}`);
             toast.success('Payment details submitted! We will verify and confirm your order soon.');
             router.push(`/order-confirmation/${orderId}`);
         } catch (error: unknown) {
@@ -209,6 +229,20 @@ export default function PaymentPage() {
             setUploading(false);
         }
     };
+
+    if (loadError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+                <div className="max-w-md w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+                    <h1 className="text-xl font-black text-gray-900 mb-2">Payment Access Error</h1>
+                    <p className="text-sm text-gray-600 mb-6">{loadError}</p>
+                    <Button variant="primary" onClick={() => router.push('/checkout')}>
+                        Back to Checkout
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     if (!order) {
         return (

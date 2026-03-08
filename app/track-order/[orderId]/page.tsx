@@ -10,7 +10,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { supabase } from '@/lib/supabase/client';
 
 export default function TrackOrderPage() {
     const params = useParams();
@@ -26,22 +25,29 @@ export default function TrackOrderPage() {
 
     const fetchOrder = async () => {
         setLoading(true);
-
-        const searchParams = new URLSearchParams(window.location.search);
-        const phone = searchParams.get('phone') || '';
+        const phone =
+            sessionStorage.getItem(`guest_track_phone:${orderId}`) ||
+            sessionStorage.getItem(`guest_track_phone:${orderId.toUpperCase()}`) ||
+            '';
 
         try {
-            const { data, error } = await (supabase as any).rpc('get_order_tracking', {
-                p_order_id: orderId,
-                p_phone: phone
+            const response = await fetch('/api/track-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId,
+                    phone: phone || undefined,
+                }),
             });
 
-            if (error || !data) {
+            const data = await response.json();
+
+            if (!response.ok || !data?.order) {
                 setOrder(null);
             } else {
                 setOrder({
-                    ...(data as any).order,
-                    order_items: (data as any).items
+                    ...data.order,
+                    order_items: data.items || [],
                 });
             }
         } catch (err) {
@@ -60,8 +66,8 @@ export default function TrackOrderPage() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-xl text-gray-600 mb-4">Order not found</p>
-                    <Link href="/account/orders">
-                        <Button variant="primary">View My Orders</Button>
+                    <Link href="/track-order">
+                        <Button variant="primary">Try Again</Button>
                     </Link>
                 </div>
             </div>
@@ -95,7 +101,7 @@ export default function TrackOrderPage() {
             <div className="section-padding">
                 <div className="container mx-auto px-4 max-w-4xl">
                     <div className="mb-8 flex items-center gap-4">
-                        <Link href="/account/orders">
+                        <Link href="/track-order">
                             <button className="p-2 hover:bg-white rounded-full transition-colors group">
                                 <svg className="w-6 h-6 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
