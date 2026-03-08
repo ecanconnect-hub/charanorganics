@@ -1,12 +1,12 @@
-/**
+﻿/**
  * My Account - Order History
- * 
+ *
  * View all user orders
  */
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -14,42 +14,83 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
 
+type OrderItem = {
+    quantity: number;
+    unit_price: number;
+    product_title_en: string;
+    variant_label: string | null;
+    product: { image_url: string | null } | Array<{ image_url: string | null }> | null;
+};
+
+type OrderRecord = {
+    id: string;
+    order_id: string;
+    created_at: string;
+    total_amount: number;
+    status: string;
+    order_items: OrderItem[];
+};
+
+const statusClassMap: Record<string, string> = {
+    delivered: 'bg-green-100 text-green-700 ring-green-200',
+    shipped: 'bg-blue-100 text-blue-700 ring-blue-200',
+    cancelled: 'bg-red-100 text-red-700 ring-red-200',
+};
+
+function getOrderItemImage(item: OrderItem): string | null {
+    if (!item.product) return null;
+    if (Array.isArray(item.product)) {
+        return item.product[0]?.image_url ?? null;
+    }
+    return item.product.image_url;
+}
+
 export default function MyOrdersPage() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<OrderRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-        } else if (user) {
-            fetchOrders();
-        }
-    }, [user, authLoading, router]);
-
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         if (!user) return;
 
         setLoading(true);
-        const { data } = await supabase
-            .from('orders' as any)
-            .select(`
-        *,
-        order_items (
-          quantity,
-          unit_price,
-          product_title_en,
-          variant_label,
-          product:products (image_url)
-        )
-      `)
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
+        try {
+            const { data } = await supabase
+                .from('orders')
+                .select(`
+                    id,
+                    order_id,
+                    created_at,
+                    total_amount,
+                    status,
+                    order_items (
+                        quantity,
+                        unit_price,
+                        product_title_en,
+                        variant_label,
+                        product:products (image_url)
+                    )
+                `)
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
 
-        setOrders(data || []);
-        setLoading(false);
-    };
+            setOrders((data as OrderRecord[] | null) || []);
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (authLoading) return;
+
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
+        void fetchOrders();
+    }, [authLoading, user, router, fetchOrders]);
 
     if (authLoading || loading) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -57,7 +98,6 @@ export default function MyOrdersPage() {
 
     return (
         <main className="section-padding">
-            {/* Safe top spacing to avoid header overlap */}
             <div className="h-24 md:h-28"></div>
 
             <div className="container mx-auto px-4 max-w-6xl">
@@ -71,7 +111,7 @@ export default function MyOrdersPage() {
                     </Link>
                     <div>
                         <h1 className="text-3xl font-black text-gray-900">My Orders</h1>
-                        <p className="text-gray-500">View order history & track status</p>
+                        <p className="text-gray-500">View order history and track status</p>
                     </div>
                 </div>
 
@@ -87,7 +127,7 @@ export default function MyOrdersPage() {
                             </svg>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">No orders found</h2>
-                        <p className="text-gray-500 mb-8 max-w-xs mx-auto">You haven't placed any orders yet. Start exploring our organic collection!</p>
+                        <p className="text-gray-500 mb-8 max-w-xs mx-auto">You have not placed any orders yet. Start exploring our organic collection.</p>
                         <Link href="/shop">
                             <Button variant="primary" size="lg" className="rounded-full px-12 shadow-xl shadow-green-100 font-bold">
                                 Start Shopping
@@ -102,9 +142,8 @@ export default function MyOrdersPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
-                                className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden group hover:border-green-200 transition-all duration-500"
+                                className="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden"
                             >
-                                {/* Order Header */}
                                 <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100 flex flex-wrap items-center justify-between gap-6">
                                     <div className="flex items-center gap-6">
                                         <div className="bg-white p-3 rounded-2xl shadow-sm ring-1 ring-gray-100">
@@ -114,7 +153,11 @@ export default function MyOrdersPage() {
                                         <div>
                                             <p className="text-[10px] uppercase font-black text-gray-400 tracking-wider mb-0.5">Placed On</p>
                                             <p className="font-bold text-gray-700 leading-none">
-                                                {new Date(order.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                {new Date(order.created_at).toLocaleDateString(undefined, {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                })}
                                             </p>
                                         </div>
                                     </div>
@@ -122,30 +165,23 @@ export default function MyOrdersPage() {
                                     <div className="flex items-center gap-6 ml-auto">
                                         <div className="text-right">
                                             <p className="text-[10px] uppercase font-black text-gray-400 tracking-wider mb-0.5">Total Amount</p>
-                                            <p className="text-2xl font-black text-green-600 leading-none">
-                                                ₹{order.total_amount.toFixed(2)}
-                                            </p>
+                                            <p className="text-2xl font-black text-green-600 leading-none">Rs {Number(order.total_amount).toFixed(2)}</p>
                                         </div>
-                                        <div className={`px-5 py-2 rounded-2xl text-xs font-black uppercase tracking-widest ring-1 ${order.status === 'delivered' ? 'bg-green-100 text-green-700 ring-green-200' :
-                                            order.status === 'shipped' ? 'bg-blue-100 text-blue-700 ring-blue-200' :
-                                                order.status === 'cancelled' ? 'bg-red-100 text-red-700 ring-red-200' :
-                                                    'bg-yellow-100 text-yellow-700 ring-yellow-200'
-                                            }`}>
+                                        <div className={`px-5 py-2 rounded-2xl text-xs font-black uppercase tracking-widest ring-1 ${statusClassMap[order.status] || 'bg-yellow-100 text-yellow-700 ring-yellow-200'}`}>
                                             {order.status.replace('_', ' ')}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Order Items */}
                                 <div className="p-8">
                                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                                         <div className="lg:col-span-8 space-y-6">
-                                            {order.order_items?.map((item: any, index: number) => (
-                                                <div key={index} className="flex items-center gap-6 group/item">
-                                                    <div className="w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner group-hover/item:scale-105 transition-transform duration-300">
-                                                        {item.product?.image_url ? (
+                                            {order.order_items?.map((item, index: number) => (
+                                                <div key={`${order.id}-item-${index}`} className="flex items-center gap-6">
+                                                    <div className="w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner">
+                                                        {getOrderItemImage(item) ? (
                                                             <img
-                                                                src={item.product.image_url}
+                                                                src={getOrderItemImage(item) || ''}
                                                                 alt={item.product_title_en}
                                                                 className="w-full h-full object-cover"
                                                             />
@@ -164,18 +200,17 @@ export default function MyOrdersPage() {
                                                                 </span>
                                                             )}
                                                             <p className="text-sm text-gray-500 font-medium">
-                                                                {item.quantity} Unit{item.quantity > 1 ? 's' : ''} × ₹{item.unit_price}
+                                                                {item.quantity} Unit{item.quantity > 1 ? 's' : ''} x Rs {Number(item.unit_price).toFixed(2)}
                                                             </p>
                                                         </div>
                                                     </div>
                                                     <p className="font-bold text-gray-900 text-lg">
-                                                        ₹{(item.quantity * item.unit_price).toFixed(2)}
+                                                        Rs {(item.quantity * Number(item.unit_price)).toFixed(2)}
                                                     </p>
                                                 </div>
                                             ))}
                                         </div>
 
-                                        {/* Tracking & Actions */}
                                         <div className="lg:col-span-4 bg-gray-50/50 rounded-3xl p-6 flex flex-col justify-center gap-4">
                                             <Link href={`/track-order/${order.order_id}`} className="w-full">
                                                 <Button variant="primary" fullWidth className="rounded-xl shadow-lg shadow-green-100 font-bold group/btn">

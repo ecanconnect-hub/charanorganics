@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth/context';
 
@@ -14,7 +14,7 @@ export default function DiagnosticPage() {
     });
     const [testing, setTesting] = useState(false);
 
-    const runDiagnostics = async () => {
+    const runDiagnostics = useCallback(async () => {
         setTesting(true);
         const diagnostics: any = {};
 
@@ -123,13 +123,15 @@ export default function DiagnosticPage() {
 
         setResults(diagnostics);
         setTesting(false);
-    };
+    }, [user]);
 
     useEffect(() => {
-        if (!loading) {
-            runDiagnostics();
-        }
-    }, [loading, user]);
+        if (loading) return;
+        const timer = window.setTimeout(() => {
+            void runDiagnostics();
+        }, 0);
+        return () => window.clearTimeout(timer);
+    }, [loading, runDiagnostics]);
 
     const getStatusColor = (status: string) => {
         switch (status) {

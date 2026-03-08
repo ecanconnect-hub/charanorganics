@@ -190,7 +190,7 @@ export default function AddressesPage() {
                     <div className="bg-white rounded-3xl p-12 text-center border-2 border-dashed border-gray-200">
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 font-bold text-2xl">?</div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">No addresses found</h3>
-                        <p className="text-gray-500 mb-6">You haven't added any shipping addresses yet.</p>
+                        <p className="text-gray-500 mb-6">You haven&apos;t added any shipping addresses yet.</p>
                         <Button variant="outline" onClick={() => setShowAddForm(true)} className="rounded-full font-bold">Add One Now</Button>
                     </div>
                 ) : (

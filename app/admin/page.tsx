@@ -23,8 +23,8 @@ type ViewType = 'dashboard' | 'orders' | 'products';
 export default function AdminDashboard() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [checking, setChecking] = useState(true);
+    const isAdmin = Boolean(user);
+    const checking = authLoading;
     const [currentView, setCurrentView] = useState<ViewType>('dashboard');
     const [stats, setStats] = useState({
         totalOrders: 0,
@@ -39,16 +39,6 @@ export default function AdminDashboard() {
     });
     const [orders, setOrders] = useState<any[]>([]);
     const [recentOrders, setRecentOrders] = useState<any[]>([]);
-
-    useEffect(() => {
-        if (!authLoading && user) {
-            setChecking(false);
-            setIsAdmin(true);
-            fetchStats();
-            fetchRecentOrders();
-            fetchAllOrders();
-        }
-    }, [user, authLoading]);
 
     const fetchStats = async () => {
         try {
@@ -184,6 +174,18 @@ export default function AdminDashboard() {
             console.error('Error updating order:', error);
         }
     };
+
+    useEffect(() => {
+        if (!authLoading && user) {
+            const timer = setTimeout(() => {
+                void fetchStats();
+                void fetchRecentOrders();
+                void fetchAllOrders();
+            }, 0);
+
+            return () => clearTimeout(timer);
+        }
+    }, [user, authLoading]);
 
 
     if (authLoading || checking) {

@@ -61,7 +61,7 @@ export default function ContactPage() {
                         Contact Us
                     </h1>
                     <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-                        We'd love to hear from you
+                        We&apos;d love to hear from you
                     </p>
                 </div>
             </div>
@@ -78,7 +78,7 @@ export default function ContactPage() {
                                     Send us a Message
                                 </h2>
                                 <p className="text-gray-600 mb-8">
-                                    Fill out the form below and we'll get back to you within 24 hours.
+                                    Fill out the form below and we&apos;ll get back to you within 24 hours.
                                 </p>
 
                                 <form onSubmit={handleSubmit} className="space-y-6">

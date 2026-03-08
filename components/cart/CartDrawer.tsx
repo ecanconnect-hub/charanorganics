@@ -63,7 +63,7 @@ export function CartDrawer() {
                                 <div className="h-full flex flex-col items-center justify-center text-center">
                                     <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-3xl mb-4">🛒</div>
                                     <h3 className="text-lg font-bold text-gray-900">Your cart is empty</h3>
-                                    <p className="text-gray-500 mt-2 mb-8 max-w-xs">Looks like you haven't added anything to your cart yet.</p>
+                                    <p className="text-gray-500 mt-2 mb-8 max-w-xs">Looks like you haven&apos;t added anything to your cart yet.</p>
                                     <Button onClick={closeCart} variant="primary">Start Shopping</Button>
                                 </div>
                             ) : (

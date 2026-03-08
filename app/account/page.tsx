@@ -215,7 +215,7 @@ export default function AccountPage() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
                     <div>
                         <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">My Account</h1>
-                        <p className="text-gray-500 font-medium">Welcome back! Here's an overview of your activity.</p>
+                        <p className="text-gray-500 font-medium">Welcome back! Here&apos;s an overview of your activity.</p>
                     </div>
                     <div className="h-0.5 flex-1 bg-gradient-to-r from-green-100 to-transparent mx-8 hidden md:block self-center"></div>
                 </div>

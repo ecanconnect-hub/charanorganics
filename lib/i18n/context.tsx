@@ -16,6 +16,14 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
+const isLocale = (value: string | null): value is Locale => value === 'en' || value === 'te';
+
+const getInitialLocale = (fallback: Locale): Locale => {
+    if (typeof window === 'undefined') return fallback;
+    const saved = window.localStorage.getItem('locale');
+    return isLocale(saved) ? saved : fallback;
+};
+
 export function I18nProvider({
     children,
     initialLocale = 'en',
@@ -23,26 +31,11 @@ export function I18nProvider({
     children: ReactNode;
     initialLocale?: Locale;
 }) {
-    // Try to get from localStorage first, otherwise fallback to initial
-    const [locale, setLocaleState] = useState<Locale>(initialLocale);
-    const [messages, setMessages] = useState<Messages>(enMessages);
+    const [locale, setLocaleState] = useState<Locale>(() => getInitialLocale(initialLocale));
+    const messages: Messages = locale === 'te' ? (teMessages as Messages) : enMessages;
 
-    // Load saved preference on mount
     useEffect(() => {
-        const saved = localStorage.getItem('locale') as Locale;
-        if (saved && (saved === 'en' || saved === 'te')) {
-            setLocaleState(saved);
-        }
-    }, []);
-
-    // Load messages when locale changes
-    useEffect(() => {
-        if (locale === 'te') {
-            setMessages(teMessages as Messages);
-        } else {
-            setMessages(enMessages);
-        }
-        localStorage.setItem('locale', locale);
+        window.localStorage.setItem('locale', locale);
     }, [locale]);
 
     const setLocale = (newLocale: Locale) => {
@@ -51,13 +44,17 @@ export function I18nProvider({
 
     const t = (key: string): string => {
         const keys = key.split('.');
-        let value: any = messages;
+        let value: unknown = messages;
 
         for (const k of keys) {
-            value = value?.[k];
+            if (typeof value === 'object' && value !== null && k in value) {
+                value = (value as Record<string, unknown>)[k];
+            } else {
+                return key;
+            }
         }
 
-        return value || key;
+        return typeof value === 'string' ? value : key;
     };
 
     return (

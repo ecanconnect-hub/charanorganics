@@ -560,7 +560,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                                             {new Date(review.created_at).toLocaleDateString()}
                                         </span>
                                     </div>
-                                    <p className="text-gray-600 text-lg font-medium leading-relaxed italic">"{review.review_text}"</p>
+                                    <p className="text-gray-600 text-lg font-medium leading-relaxed italic">&ldquo;{review.review_text}&rdquo;</p>
                                 </div>
                             ))}
                         </div>

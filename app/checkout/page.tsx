@@ -340,7 +340,7 @@ export default function CheckoutPage() {
                     <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
                         <div className="text-6xl mb-6">🛒</div>
                         <h2 className="text-2xl font-black text-gray-900 mb-4">Your cart is empty</h2>
-                        <p className="text-gray-500 mb-8">It looks like you don't have any items to checkout.</p>
+                        <p className="text-gray-500 mb-8">It looks like you don&apos;t have any items to checkout.</p>
                         <Link href="/shop" className="inline-block">
                             <Button variant="primary" size="lg" className="rounded-xl">
                                 Continue Shopping

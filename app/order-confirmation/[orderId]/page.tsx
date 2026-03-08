@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
@@ -18,18 +18,7 @@ export default function OrderConfirmationPage() {
     const [order, setOrder] = useState<any>(null);
     const [showEmailModal, setShowEmailModal] = useState(true);
 
-    useEffect(() => {
-        fetchOrder();
-
-        // Auto-close modal after 10 seconds
-        const timer = setTimeout(() => {
-            setShowEmailModal(false);
-        }, 10000);
-
-        return () => clearTimeout(timer);
-    }, [orderId]);
-
-    const fetchOrder = async () => {
+    const fetchOrder = useCallback(async () => {
         const { data } = await supabase
             .from('orders')
             .select(`
@@ -40,7 +29,23 @@ export default function OrderConfirmationPage() {
             .single();
 
         setOrder(data);
-    };
+    }, [orderId]);
+
+    useEffect(() => {
+        const fetchTimer = setTimeout(() => {
+            void fetchOrder();
+        }, 0);
+
+        // Auto-close modal after 10 seconds
+        const timer = setTimeout(() => {
+            setShowEmailModal(false);
+        }, 10000);
+
+        return () => {
+            clearTimeout(fetchTimer);
+            clearTimeout(timer);
+        };
+    }, [fetchOrder]);
 
     return (
         <main className="section-padding">
@@ -143,10 +148,10 @@ export default function OrderConfirmationPage() {
 
                     {/* Next Steps */}
                     <div className="text-left mb-8">
-                        <h2 className="text-xl font-bold mb-4">What's Next?</h2>
+                        <h2 className="text-xl font-bold mb-4">What&apos;s Next?</h2>
                         <ol className="list-decimal list-inside space-y-2 text-gray-700">
-                            <li>We'll verify your payment within 24 hours</li>
-                            <li>You'll receive an email confirmation once verified</li>
+                            <li>We&apos;ll verify your payment within 24 hours</li>
+                            <li>You&apos;ll receive an email confirmation once verified</li>
                             <li>Your order will be shipped within 2-3 business days</li>
                             <li>Track your order status in your account</li>
                         </ol>
