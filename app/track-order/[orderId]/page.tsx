@@ -10,25 +10,32 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import toast from 'react-hot-toast';
 
 export default function TrackOrderPage() {
     const params = useParams();
     const orderId = params.orderId as string;
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [phoneInput, setPhoneInput] = useState('');
+    const [verificationLoading, setVerificationLoading] = useState(false);
+    const [attemptedWithPhone, setAttemptedWithPhone] = useState(false);
 
     useEffect(() => {
         if (orderId) {
-            fetchOrder();
+            void fetchOrder();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderId]);
 
-    const fetchOrder = async () => {
+    const fetchOrder = async (phoneOverride?: string): Promise<boolean> => {
         setLoading(true);
-        const phone =
+        const phoneFromSession =
             sessionStorage.getItem(`guest_track_phone:${orderId}`) ||
             sessionStorage.getItem(`guest_track_phone:${orderId.toUpperCase()}`) ||
             '';
+        const phone = phoneOverride || phoneFromSession || '';
 
         try {
             const response = await fetch('/api/track-order', {
@@ -44,16 +51,47 @@ export default function TrackOrderPage() {
 
             if (!response.ok || !data?.order) {
                 setOrder(null);
+                if (phoneOverride) {
+                    setAttemptedWithPhone(true);
+                }
+                return false;
             } else {
+                if (phone) {
+                    sessionStorage.setItem(`guest_track_phone:${orderId}`, phone);
+                    sessionStorage.setItem(`guest_track_phone:${orderId.toUpperCase()}`, phone);
+                }
+                setAttemptedWithPhone(false);
                 setOrder({
                     ...data.order,
                     order_items: data.items || [],
                 });
+                return true;
             }
-        } catch (err) {
+        } catch {
             setOrder(null);
+            return false;
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handlePhoneVerify = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const normalizedPhone = phoneInput.trim();
+
+        if (!normalizedPhone) {
+            toast.error('Please enter the phone number used in your order.');
+            return;
+        }
+
+        setVerificationLoading(true);
+        try {
+            const success = await fetchOrder(normalizedPhone);
+            if (!success) {
+                toast.error('Order not found with this phone number.');
+            }
+        } finally {
+            setVerificationLoading(false);
         }
     };
 
@@ -66,8 +104,34 @@ export default function TrackOrderPage() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-xl text-gray-600 mb-4">Order not found</p>
+                    <p className="text-sm text-gray-500 mb-5">
+                        If you are a guest, verify with the phone number used during checkout.
+                    </p>
+                    <form onSubmit={handlePhoneVerify} className="space-y-3 max-w-sm mx-auto mb-4">
+                        <Input
+                            type="tel"
+                            value={phoneInput}
+                            onChange={(e) => setPhoneInput(e.target.value)}
+                            placeholder="Enter phone number"
+                            className="h-12 rounded-xl"
+                        />
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            fullWidth
+                            isLoading={verificationLoading}
+                            className="h-12 rounded-xl"
+                        >
+                            Verify & Track
+                        </Button>
+                    </form>
+                    {attemptedWithPhone && (
+                        <p className="text-xs text-red-600 mb-4">
+                            Could not verify this order with that phone number.
+                        </p>
+                    )}
                     <Link href="/track-order">
-                        <Button variant="primary">Try Again</Button>
+                        <Button variant="outline">Back to Track Order</Button>
                     </Link>
                 </div>
             </div>
