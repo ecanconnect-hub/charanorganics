@@ -18,6 +18,7 @@ type PaymentRow = Database['public']['Tables']['payments']['Row'];
 type UserOrderSummary = Pick<OrderRow, 'id' | 'order_id' | 'total_amount' | 'status' | 'created_at'>;
 type UserOrderItem = Pick<OrderItemRow, 'id' | 'order_id' | 'product_title_en' | 'variant_label' | 'quantity' | 'unit_price' | 'total_price'>;
 type UserPayment = Pick<PaymentRow, 'id' | 'order_id' | 'utr_number' | 'status' | 'payment_screenshot_url' | 'verified_at' | 'rejection_reason' | 'created_at'>;
+type VerifiedPaymentOrder = Pick<PaymentRow, 'order_id'>;
 
 type ProfileWithMetrics = ProfileRow & {
     ordersCount: number;
@@ -76,12 +77,17 @@ export default function AdminUsersPage() {
     const fetchProfiles = async () => {
         setLoading(true);
 
-        const [{ data: profileRowsData, error: profilesError }, { data: orderRowsData, error: ordersError }] = await Promise.all([
+        const [
+            { data: profileRowsData, error: profilesError },
+            { data: orderRowsData, error: ordersError },
+            { data: verifiedPaymentRowsData, error: paymentsError }
+        ] = await Promise.all([
             supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-            supabase.from('orders').select('id, user_id, order_id, total_amount, status, created_at')
+            supabase.from('orders').select('id, user_id, order_id, total_amount, status, created_at'),
+            supabase.from('payments').select('order_id').eq('status', 'verified')
         ]);
 
-        if (profilesError || ordersError) {
+        if (profilesError || ordersError || paymentsError) {
             toast.error('Failed to fetch users');
             setLoading(false);
             return;
@@ -89,6 +95,8 @@ export default function AdminUsersPage() {
 
         const profileRows = (profileRowsData ?? []) as ProfileRow[];
         const orderRows = (orderRowsData ?? []) as Array<UserOrderSummary & Pick<OrderRow, 'user_id'>>;
+        const verifiedPaymentRows = (verifiedPaymentRowsData ?? []) as VerifiedPaymentOrder[];
+        const verifiedOrderIds = new Set(verifiedPaymentRows.map((payment) => payment.order_id));
 
         const ordersByUser: Record<string, UserOrderSummary[]> = {};
         for (const order of orderRows) {
@@ -100,7 +108,9 @@ export default function AdminUsersPage() {
 
         const hydratedProfiles: ProfileWithMetrics[] = profileRows.map((profile) => {
             const profileOrders = ordersByUser[profile.id] ?? [];
-            const totalSpent = profileOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+            const totalSpent = profileOrders
+                .filter((order) => verifiedOrderIds.has(order.id))
+                .reduce((sum, order) => sum + (order.total_amount || 0), 0);
             const lastOrder = profileOrders[0] ?? null;
 
             return {

@@ -61,6 +61,14 @@ type SelectedOrder = OrderListRecord & {
 const ORDER_STATUSES: FilterStatus[] = ['all', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 const formatCurrency = (value: number) => `Rs. ${(value || 0).toFixed(2)}`;
+const formatDate = (value: string | null, includeTime = false) => {
+    if (!value) return 'N/A';
+    const options: Intl.DateTimeFormatOptions = includeTime
+        ? { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+        : { day: '2-digit', month: 'short', year: 'numeric' };
+    return new Date(value).toLocaleString('en-IN', options);
+};
+const formatStatusLabel = (status: string) => status.replace(/_/g, ' ').toUpperCase();
 
 export default function AdminOrdersPage() {
     const router = useRouter();
@@ -73,6 +81,7 @@ export default function AdminOrdersPage() {
     const [sortBy, setSortBy] = useState<SortOption>('newest');
     const [selectedOrder, setSelectedOrder] = useState<SelectedOrder | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [isExportingPdf, setIsExportingPdf] = useState(false);
 
     useEffect(() => {
         void checkAdmin();
@@ -254,6 +263,138 @@ export default function AdminOrdersPage() {
         });
 
         setShowModal(true);
+    };
+
+    const downloadOrderDetailsPdf = async (order: SelectedOrder) => {
+        setIsExportingPdf(true);
+
+        try {
+            const { jsPDF } = await import('jspdf');
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const margin = 40;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const contentWidth = pageWidth - margin * 2;
+            let y = margin;
+
+            const ensureSpace = (requiredHeight = 16) => {
+                if (y + requiredHeight > pageHeight - margin) {
+                    doc.addPage();
+                    y = margin;
+                }
+            };
+
+            const addWrappedLine = (
+                text: string,
+                options?: { bold?: boolean; fontSize?: number; indent?: number; gap?: number }
+            ) => {
+                const fontSize = options?.fontSize ?? 10;
+                const gap = options?.gap ?? 14;
+                const indent = options?.indent ?? 0;
+                const printableWidth = contentWidth - indent;
+                const lines = doc.splitTextToSize(text, printableWidth) as string[];
+
+                doc.setFont('helvetica', options?.bold ? 'bold' : 'normal');
+                doc.setFontSize(fontSize);
+
+                for (const line of lines) {
+                    ensureSpace(gap);
+                    doc.text(line, margin + indent, y);
+                    y += gap;
+                }
+            };
+
+            const addSectionTitle = (title: string) => {
+                ensureSpace(22);
+                y += 4;
+                addWrappedLine(title, { bold: true, fontSize: 12, gap: 16 });
+            };
+
+            const addLabelLine = (label: string, value: string) => {
+                addWrappedLine(`${label}: ${value || 'N/A'}`);
+            };
+
+            addWrappedLine('Charan Organics - Order Full Details', { bold: true, fontSize: 16, gap: 20 });
+            addWrappedLine(`Generated on: ${formatDate(new Date().toISOString(), true)}`, { fontSize: 9, gap: 12 });
+
+            addSectionTitle('Order Summary');
+            addLabelLine('Order ID', order.order_id);
+            addLabelLine('Status', formatStatusLabel(order.status));
+            addLabelLine('Created', formatDate(order.created_at, true));
+            addLabelLine('Last Updated', formatDate(order.updated_at, true));
+            addLabelLine('Subtotal', formatCurrency(order.subtotal));
+            addLabelLine('Shipping', formatCurrency(order.shipping_total));
+            addLabelLine('Total Amount', formatCurrency(order.total_amount));
+
+            addSectionTitle('Customer and Shipping');
+            addLabelLine('Name', order.shipping_name || order.profile?.full_name || 'N/A');
+            addLabelLine('Phone', order.shipping_phone || order.profile?.phone || 'N/A');
+            addLabelLine('Email', order.profile?.email || 'N/A');
+            addLabelLine(
+                'Address',
+                [order.shipping_address, order.shipping_city, order.shipping_state, order.shipping_pincode].filter(Boolean).join(', ') || 'N/A'
+            );
+
+            addSectionTitle('Payment Details');
+            if (order.payment.length === 0) {
+                addWrappedLine('No payment records available.');
+            } else {
+                order.payment.forEach((payment, index) => {
+                    addWrappedLine(`Payment ${index + 1}`, { bold: true });
+                    addLabelLine('Status', formatStatusLabel(payment.status));
+                    addLabelLine('UTR Number', payment.utr_number || 'Not provided');
+                    addLabelLine('Submitted At', formatDate(payment.created_at, true));
+                    addLabelLine('Verified At', formatDate(payment.verified_at, true));
+                    if (payment.rejection_reason) {
+                        addLabelLine('Rejection Reason', payment.rejection_reason);
+                    }
+                    if (payment.payment_screenshot_url) {
+                        addLabelLine('Screenshot URL', payment.payment_screenshot_url);
+                    }
+                    y += 4;
+                });
+            }
+
+            addSectionTitle(`Order Items (${order.items.length})`);
+            if (order.items.length === 0) {
+                addWrappedLine('No order items found.');
+            } else {
+                order.items.forEach((item, index) => {
+                    addWrappedLine(`${index + 1}. ${item.product_title_en}`, { bold: true });
+                    if (item.variant_label) {
+                        addLabelLine('Variant', item.variant_label);
+                    }
+                    addLabelLine('Quantity', String(item.quantity || 0));
+                    addLabelLine('Unit Price', formatCurrency(item.unit_price || 0));
+                    addLabelLine('Line Total', formatCurrency(item.total_price || 0));
+                    y += 4;
+                });
+            }
+
+            addSectionTitle(`Order Timeline (${order.history.length})`);
+            if (order.history.length === 0) {
+                addWrappedLine('No history entries available.');
+            } else {
+                order.history.forEach((entry, index) => {
+                    addWrappedLine(`${index + 1}. ${formatStatusLabel(entry.status)}`, { bold: true });
+                    addLabelLine('Changed At', formatDate(entry.changed_at, true));
+                    addLabelLine('Changed By', entry.changed_by_profile?.full_name || entry.changed_by_profile?.email || 'System');
+                    if (entry.notes) {
+                        addLabelLine('Notes', entry.notes);
+                    }
+                    y += 4;
+                });
+            }
+
+            const safeOrderId = order.order_id.replace(/[^a-zA-Z0-9_-]+/g, '-');
+            doc.save(`order-${safeOrderId}.pdf`);
+            toast.success('Order PDF downloaded');
+        } catch (error) {
+            console.error('PDF export failed', error);
+            toast.error('Could not generate PDF');
+        } finally {
+            setIsExportingPdf(false);
+        }
     };
 
     const filteredOrders = useMemo(() => {
@@ -512,6 +653,15 @@ export default function AdminOrdersPage() {
             <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Order Full Details" size="xl">
                 {selectedOrder && (
                     <div className="space-y-6">
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => void downloadOrderDetailsPdf(selectedOrder)}
+                                disabled={isExportingPdf}
+                                className="rounded-lg border border-indigo-300 bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                {isExportingPdf ? 'Preparing PDF...' : 'Download PDF'}
+                            </button>
+                        </div>
                         <div className="grid gap-4 sm:grid-cols-3">
                             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                                 <p className="text-xs text-gray-500">Order ID</p>

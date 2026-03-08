@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS public.security_audit_log (
         'payment_submit',
         'payment_verify',
         'payment_reject',
+        'payment_update',
         'address_create',
         'address_update',
         'address_delete',

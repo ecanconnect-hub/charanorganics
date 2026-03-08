@@ -208,6 +208,40 @@ export default function AdminPaymentsPage() {
         await fetchPayments();
     };
 
+    const handleUnverify = async (paymentId: string, orderId: string) => {
+        const confirmed = confirm('Move this payment back to verification?');
+        if (!confirmed) return;
+
+        const { error: paymentError } = await supabase
+            .from('payments')
+            .update({
+                status: 'pending',
+                verified_at: null,
+                verified_by: null,
+                rejection_reason: null
+            } as never)
+            .eq('id', paymentId);
+
+        if (paymentError) {
+            toast.error(`Failed to move payment back: ${paymentError.message || 'Unknown error'}`);
+            return;
+        }
+
+        const { error: orderError } = await supabase
+            .from('orders')
+            .update({ status: 'payment_verification' } as never)
+            .eq('id', orderId);
+
+        if (orderError) {
+            toast.error('Payment reset, but failed to update order status');
+            return;
+        }
+
+        toast.success('Payment moved back to verification');
+        setShowModal(false);
+        await fetchPayments();
+    };
+
     if (loading && payments.length === 0) {
         return (
             <AdminLayout title="Payment Verification" subtitle="Review payments with full order context">
@@ -284,15 +318,29 @@ export default function AdminPaymentsPage() {
 
                             <p className="text-xs uppercase text-gray-500">Payment: {payment.status}</p>
 
-                            <button
-                                onClick={() => void openPaymentDetails(payment)}
-                                className={`w-full rounded-lg py-2 text-sm font-bold ${activeTab === 'pending'
-                                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                    : 'border border-gray-300 bg-white text-gray-700 hover:border-indigo-400'
-                                    }`}
-                            >
-                                {activeTab === 'pending' ? 'Review Payment' : 'View Details'}
-                            </button>
+                            {activeTab === 'pending' ? (
+                                <button
+                                    onClick={() => void openPaymentDetails(payment)}
+                                    className="w-full rounded-lg bg-indigo-600 py-2 text-sm font-bold text-white hover:bg-indigo-700"
+                                >
+                                    Review Payment
+                                </button>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => void openPaymentDetails(payment)}
+                                        className="flex-1 rounded-lg border border-gray-300 bg-white py-2 text-sm font-bold text-gray-700 hover:border-indigo-400"
+                                    >
+                                        View Details
+                                    </button>
+                                    <button
+                                        onClick={() => void handleUnverify(payment.id, payment.order_id)}
+                                        className="flex-1 rounded-lg bg-amber-500 py-2 text-sm font-bold text-white hover:bg-amber-600"
+                                    >
+                                        Move Back
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -424,12 +472,20 @@ export default function AdminPaymentsPage() {
                                 </button>
                             </div>
                         ) : (
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="w-full rounded-xl bg-gray-100 py-3 font-bold text-gray-700 hover:bg-gray-200"
-                            >
-                                Close
-                            </button>
+                            <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                                <button
+                                    onClick={() => void handleUnverify(selectedPayment.id, selectedPayment.order_id)}
+                                    className="flex-1 rounded-xl bg-amber-500 py-3 font-bold text-white hover:bg-amber-600"
+                                >
+                                    Move Back To Verification
+                                </button>
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="flex-1 rounded-xl bg-gray-100 py-3 font-bold text-gray-700 hover:bg-gray-200"
+                                >
+                                    Close
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}

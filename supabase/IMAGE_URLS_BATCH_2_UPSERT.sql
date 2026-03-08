@@ -164,87 +164,29 @@ SELECT
   i.title_en,
   i.title_en,
   CASE
-    WHEN i.title_en = 'Kojic Acid Powder'
-      THEN 'Kojic Acid Powder is a premium active ingredient used in professional skin-brightening formulations. Commonly used in anti-pigmentation blends for uneven tone support.'
-    WHEN i.title_en = 'Salicylic Acid Powder'
-      THEN 'Salicylic Acid Powder is a targeted active used in acne-care formulations. Helps support pore-cleansing routines and clarifying leave-on or wash-off products.'
-    WHEN i.title_en = 'Niacinamide Vitamin Powder'
-      THEN 'Niacinamide Vitamin Powder is a high-value active ingredient for brightening, barrier support, and tone-evening cosmetic formulations.'
-    WHEN i.title_en = 'Vitamin C Powder'
-      THEN 'Vitamin C Powder is a premium antioxidant active used in glow-focused and dullness-care formulations for fresh-looking skin.'
-    WHEN i.title_en = 'Kumkumadi Oil'
-      THEN 'Kumkumadi Oil is a premium facial oil blend designed for glow support, tone-refining routines, and overnight nourishment care.'
-    WHEN i.title_en IN ('SPF 50 Cream', 'SPF 45 / 50 / 70 Cream')
-      THEN i.title_en || ' is a premium sun-care cream for daily broad-spectrum protection and daytime skin comfort.'
-    WHEN i.category_tag = 'soap'
-      THEN i.title_en || ' is a premium cleansing bar designed for daily hygiene, smooth skin feel, and consistent wash performance.'
-    WHEN i.category_tag = 'cream'
-      THEN i.title_en || ' is a premium topical formulation for hydration, repair support, and visible skin-finish improvement.'
-    WHEN i.category_tag = 'powder'
-      THEN i.title_en || ' is a premium grade powder suitable for masks, packs, and formulation blends in skin and hair care.'
-    WHEN i.category_tag = 'oil'
-      THEN i.title_en || ' is a premium oil for blend-based application in skin, scalp, or targeted care routines.'
-    WHEN i.category_tag = 'cleanser'
-      THEN i.title_en || ' is a premium cleansing product for controlled foam, effective cleaning, and routine-safe use.'
-    WHEN i.category_tag = 'additive'
-      THEN i.title_en || ' is a premium formulation additive used to improve structure, feel, and performance in finished cosmetics.'
-    WHEN i.category_tag = 'home-cleaner'
-      THEN i.title_en || ' is a premium home-care cleaner for reliable daily cleaning with efficient soil removal.'
-    WHEN i.category_tag IN ('kit','container')
-      THEN i.title_en || ' is a premium utility product designed for structured DIY production, storage, and workflow use.'
-    ELSE
-      i.title_en || ' is a premium product for daily practical use.'
+    WHEN i.category_tag = 'soap' THEN i.title_en || ' for daily cleansing and skin-care routine.'
+    WHEN i.category_tag = 'cream' THEN i.title_en || ' for topical care, hydration, and skin support.'
+    WHEN i.category_tag = 'powder' THEN i.title_en || ' used in masks, packs, and formulation blends.'
+    WHEN i.category_tag = 'oil' THEN i.title_en || ' for skin/hair application and blend support.'
+    WHEN i.category_tag = 'cleanser' THEN i.title_en || ' used as gentle cleansing product in daily routine.'
+    WHEN i.category_tag = 'additive' THEN i.title_en || ' is a formulation ingredient for cosmetic preparation.'
+    WHEN i.category_tag = 'home-cleaner' THEN i.title_en || ' is a home-care cleaner for utility and daily cleaning.'
+    WHEN i.category_tag IN ('kit','container') THEN i.title_en || ' supports DIY/product preparation workflows.'
+    ELSE i.title_en || ' for daily use.'
   END,
   CASE
-    WHEN i.title_en = 'Herbal Hair Oil (30 Herbs)'
-      THEN 'Pack Size: 1 litre | Form: Herbal infused oil | Category: Hair care treatment | Use: Scalp and hair application'
-    WHEN i.title_en = 'Tears Free Shampoo'
-      THEN 'Pack Size: 500 g | Form: Mild shampoo | Suitable For: Baby and sensitive users | Use: Routine wash'
-    WHEN i.title_en = 'Kumkumadi Oil'
-      THEN 'Pack Size: 15 ml | Form: Facial oil | Category: Premium skin care | Suggested Use: Night routine'
-    WHEN i.category_tag = 'soap'
-      THEN 'Net Weight: 100 g | Form: Solid bar | Application: Body/face wash | Usage: Daily cleansing'
-    WHEN i.category_tag = 'cream'
-      THEN 'Pack Size: 50 g | Form: Cream/Gel | Category: Topical care | Usage: Daily or targeted routine'
-    WHEN i.category_tag = 'powder'
-      THEN 'Net Weight: 100 g | Form: Fine powder | Grade: Cosmetic use | Usage: Masks, packs, and blends'
-    WHEN i.category_tag = 'oil'
-      THEN 'Pack Size: 100 ml | Form: Liquid oil | Category: Carrier/Treatment oil | Usage: Topical blend support'
-    WHEN i.category_tag = 'cleanser'
-      THEN 'Pack Size: 100 ml | Form: Liquid cleanser | Category: Wash care | Usage: Routine cleansing'
-    WHEN i.category_tag = 'additive'
-      THEN 'Pack Size: 100 g | Form: Functional additive | Category: Cosmetic ingredient | Usage: Formulation support'
-    WHEN i.category_tag = 'home-cleaner'
-      THEN 'Pack Size: 500 ml | Form: Liquid cleaner | Category: Home care | Usage: Dish/laundry/surface cleaning'
-    WHEN i.category_tag = 'container'
-      THEN 'Pack Size: 1 piece | Category: Packaging accessory | Usage: Storage and filling support'
-    WHEN i.category_tag = 'kit'
-      THEN 'Pack Size: 1 kit | Category: DIY/Training material | Usage: Guided production workflows'
-    ELSE
-      'Standard pack'
+    WHEN i.category_tag = 'soap' THEN '100 g | Soap product'
+    WHEN i.category_tag = 'cream' THEN '50 g | Cream/Gel product'
+    WHEN i.category_tag = 'powder' THEN '100 g | Powder product'
+    WHEN i.category_tag = 'oil' THEN '100 ml | Oil product'
+    WHEN i.category_tag = 'cleanser' THEN '100 ml | Cleanser product'
+    WHEN i.category_tag = 'additive' THEN '100 g | Cosmetic additive'
+    WHEN i.category_tag = 'home-cleaner' THEN '500 ml | Cleaning liquid'
+    WHEN i.category_tag = 'container' THEN '1 pc | Storage accessory'
+    WHEN i.category_tag = 'kit' THEN '1 kit | Product making kit'
+    ELSE 'Standard pack'
   END,
-  CASE
-    WHEN i.category_tag = 'soap'
-      THEN 'Step 1: Wet skin. Step 2: Work into rich lather. Step 3: Massage gently for 20-30 seconds. Step 4: Rinse thoroughly. Use once or twice daily.'
-    WHEN i.category_tag = 'cream'
-      THEN 'Apply a small quantity on clean, dry skin and massage until absorbed. Use twice daily or as part of your treatment routine. Patch test before first use.'
-    WHEN i.category_tag = 'powder'
-      THEN 'Mix required quantity with water, hydrosol, gel, or suitable base to form a smooth paste. Apply evenly, leave for 10-15 minutes, then rinse.'
-    WHEN i.category_tag = 'oil'
-      THEN 'Apply required drops on target area and massage gently for 2-3 minutes. Use regularly based on routine and product type.'
-    WHEN i.category_tag = 'cleanser'
-      THEN 'Use on wet skin or hair, lather gently, and rinse completely with clean water. Repeat if needed for deep cleanse.'
-    WHEN i.category_tag = 'additive'
-      THEN 'Use only in recommended formulation percentage. Pre-dissolve or add in correct phase as per product design and stability requirement.'
-    WHEN i.category_tag = 'home-cleaner'
-      THEN 'Dilute as needed or apply directly on target surface. Scrub lightly and rinse/wipe clean. Keep away from eyes and children.'
-    WHEN i.category_tag = 'container'
-      THEN 'Clean and dry container before filling. Use with hygienic handling and close cap tightly after every use.'
-    WHEN i.category_tag = 'kit'
-      THEN 'Follow included process sequence step by step. Measure accurately, maintain hygiene, and store outputs in clean containers.'
-    ELSE
-      'Use as directed in product workflow or daily routine.'
-  END,
+  'Use as directed in product workflow or daily routine.',
   i.image_url,
   i.original_price,
   i.offered_price,
@@ -255,15 +197,9 @@ FROM incoming_assets i
 ON CONFLICT (product_id)
 DO UPDATE SET
   title_en = EXCLUDED.title_en,
-  title_te = EXCLUDED.title_te,
-  description_en = EXCLUDED.description_en,
-  specifications_en = EXCLUDED.specifications_en,
-  usage_en = EXCLUDED.usage_en,
   image_url = EXCLUDED.image_url,
   mrp = EXCLUDED.mrp,
   current_price = EXCLUDED.current_price,
-  shipping_charges = EXCLUDED.shipping_charges,
-  stock_quantity = EXCLUDED.stock_quantity,
   is_active = TRUE,
   updated_at = NOW();
 
