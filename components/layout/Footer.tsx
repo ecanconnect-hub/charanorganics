@@ -170,7 +170,7 @@ export function Footer() {
                             rel="noopener noreferrer"
                             className="border-b border-transparent font-medium text-gray-200 transition-colors hover:border-green-500 hover:text-green-400"
                         >
-                            eCantech Solutions
+                            eCantech Solutions (Yuva Kiran)
                         </a>
                     </div>
                 </div>
