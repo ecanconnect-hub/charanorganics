@@ -32,6 +32,12 @@ export default function AboutPage() {
                         <p className="text-xl text-gray-700 mb-8">
                             Welcome to Charan Organics, your trusted source for pure, handcrafted organic and ayurvedic products.
                         </p>
+                        <p className="text-gray-700 leading-relaxed mb-10">
+                            Our brand operates with proper legal authorization and trademark application under The Trademarks Act, 1999.
+                            The trademark process is officially handled through authorized legal representatives to ensure full compliance
+                            with Indian intellectual property laws. This step reflects our commitment to authenticity, brand protection,
+                            and building customer trust while delivering high-quality organic and personal care products.
+                        </p>
 
                         <h2>Our Story</h2>
                         <p>
