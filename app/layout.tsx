@@ -21,7 +21,7 @@ const instrument = Instrument_Serif({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://charanorganics.com';
+const siteUrl = 'https://charanorganics.com';
 const siteName = 'Charan Organics';
 
 export const metadata: Metadata = {
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     images: [
       {
-        url: '/charan-logo.png',
+        url: `${siteUrl}/charan-logo.png`,
         width: 1200,
         height: 630,
         alt: `${siteName} logo`,
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: `${siteName} | Organic & Ayurvedic Products`,
     description: "Natural and handcrafted wellness products from Charan Organics.",
-    images: ['/charan-logo.png'],
+    images: [`${siteUrl}/charan-logo.png`],
   },
   other: {
     'geo.region': 'IN-TG',

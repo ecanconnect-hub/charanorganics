@@ -7,7 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://charanorganics.com';
+    const baseUrl = 'https://charanorganics.com';
 
     const now = new Date();
     const routes = [

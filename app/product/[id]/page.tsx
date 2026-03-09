@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://charanorganics.com';
+const siteUrl = 'https://charanorganics.com';
 
 async function getProductBySlug(id: string): Promise<ProductRow | null> {
     const { data } = await supabase

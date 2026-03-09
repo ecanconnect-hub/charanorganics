@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://charanorganics.com';
+    const baseUrl = 'https://charanorganics.com';
     const disallow = ['/admin/', '/account/', '/checkout/', '/api/'];
 
     return {
