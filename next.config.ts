@@ -19,6 +19,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: '/api/:path*',
+        headers: [
+          // Allow crawling for JS-rendered pages, but prevent indexing API endpoints.
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           { key: 'Content-Security-Policy', value: contentSecurityPolicy },
