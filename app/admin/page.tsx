@@ -10,8 +10,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
@@ -19,12 +18,15 @@ import { Button } from '@/components/ui/Button';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 
 type ViewType = 'dashboard' | 'orders' | 'products';
+type OrderStatus = 'pending_payment' | 'payment_verification' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+
+const revenueStatuses: OrderStatus[] = ['confirmed', 'processing', 'shipped', 'delivered'];
+const pendingStatuses: OrderStatus[] = ['pending_payment', 'payment_verification'];
 
 export default function AdminDashboard() {
-    const router = useRouter();
     const { user, loading: authLoading } = useAuth();
-    const isAdmin = Boolean(user);
-    const checking = authLoading;
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [accessChecked, setAccessChecked] = useState(false);
     const [currentView, setCurrentView] = useState<ViewType>('dashboard');
     const [stats, setStats] = useState({
         totalOrders: 0,
@@ -40,76 +42,62 @@ export default function AdminDashboard() {
     const [orders, setOrders] = useState<any[]>([]);
     const [recentOrders, setRecentOrders] = useState<any[]>([]);
 
-    const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
         try {
-            const { count: ordersCount } = await (supabase
-                .from('orders' as any) as any)
-                .select('*', { count: 'exact', head: true });
+            const [{ data: ordersData, error: ordersError }, { count: usersCount, error: usersError }] = await Promise.all([
+                (supabase.from('orders' as any) as any).select('status,total_amount,created_at'),
+                (supabase.from('profiles' as any) as any).select('*', { count: 'exact', head: true }),
+            ]);
 
-            const { count: pendingCount } = await (supabase
-                .from('orders' as any) as any)
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'pending');
+            if (ordersError) {
+                throw ordersError;
+            }
+            if (usersError) {
+                throw usersError;
+            }
 
-            const { count: confirmedCount } = await (supabase
-                .from('orders' as any) as any)
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'confirmed');
-
-            const { count: shippedCount } = await (supabase
-                .from('orders' as any) as any)
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'shipped');
-
-            const { count: deliveredCount } = await (supabase
-                .from('orders' as any) as any)
-                .select('*', { count: 'exact', head: true })
-                .eq('status', 'delivered');
-
-            const { count: usersCount } = await (supabase
-                .from('profiles' as any) as any)
-                .select('*', { count: 'exact', head: true });
-
-            const { data: deliveredOrders } = await (supabase
-                .from('orders' as any) as any)
-                .select('total_amount')
-                .eq('status', 'delivered');
-
-            const revenue = deliveredOrders?.reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0) || 0;
+            const orders = (ordersData ?? []) as Array<{
+                status: OrderStatus;
+                total_amount: number | string | null;
+                created_at: string;
+            }>;
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const { count: todayCount } = await (supabase
-                .from('orders' as any) as any)
-                .select('*', { count: 'exact', head: true })
-                .gte('created_at', today.toISOString());
-
             const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            const { data: monthlyOrders } = await (supabase
-                .from('orders' as any) as any)
-                .select('total_amount')
-                .eq('status', 'delivered')
-                .gte('created_at', firstDayOfMonth.toISOString());
 
-            const monthlyRev = monthlyOrders?.reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0) || 0;
+            const totalOrders = orders.length;
+            const pendingOrders = orders.filter((order) => pendingStatuses.includes(order.status)).length;
+            const confirmedOrders = orders.filter((order) => order.status === 'confirmed' || order.status === 'processing').length;
+            const shippedOrders = orders.filter((order) => order.status === 'shipped').length;
+            const deliveredOrders = orders.filter((order) => order.status === 'delivered').length;
+            const todayOrders = orders.filter((order) => new Date(order.created_at) >= today).length;
+
+            const totalRevenue = orders
+                .filter((order) => revenueStatuses.includes(order.status))
+                .reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0);
+
+            const monthlyRevenue = orders
+                .filter((order) => revenueStatuses.includes(order.status) && new Date(order.created_at) >= firstDayOfMonth)
+                .reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0);
 
             setStats({
-                totalOrders: ordersCount || 0,
-                pendingOrders: pendingCount || 0,
-                confirmedOrders: confirmedCount || 0,
-                shippedOrders: shippedCount || 0,
-                deliveredOrders: deliveredCount || 0,
+                totalOrders,
+                pendingOrders,
+                confirmedOrders,
+                shippedOrders,
+                deliveredOrders,
                 totalUsers: usersCount || 0,
-                totalRevenue: revenue,
-                todayOrders: todayCount || 0,
-                monthlyRevenue: monthlyRev,
+                totalRevenue,
+                todayOrders,
+                monthlyRevenue,
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
         }
-    };
+    }, []);
 
-    const fetchRecentOrders = async () => {
+    const fetchRecentOrders = useCallback(async () => {
         try {
             const { data } = await (supabase
                 .from('orders' as any) as any)
@@ -124,9 +112,9 @@ export default function AdminDashboard() {
         } catch (error) {
             console.error('Error fetching orders:', error);
         }
-    };
+    }, []);
 
-    const fetchAllOrders = async () => {
+    const fetchAllOrders = useCallback(async () => {
         try {
             const { data } = await (supabase
                 .from('orders' as any) as any)
@@ -140,7 +128,11 @@ export default function AdminDashboard() {
         } catch (error) {
             console.error('Error fetching all orders:', error);
         }
-    };
+    }, []);
+
+    const refreshDashboard = useCallback(async () => {
+        await Promise.all([fetchStats(), fetchRecentOrders(), fetchAllOrders()]);
+    }, [fetchAllOrders, fetchRecentOrders, fetchStats]);
 
     const updateOrderStatus = async (orderId: string, newStatus: string) => {
         try {
@@ -164,9 +156,7 @@ export default function AdminDashboard() {
                     }
                 }
 
-                fetchStats();
-                fetchRecentOrders();
-                fetchAllOrders();
+                void refreshDashboard();
             } else {
                 console.error('Error updating order:', error);
             }
@@ -176,19 +166,81 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-        if (!authLoading && user) {
-            const timer = setTimeout(() => {
-                void fetchStats();
-                void fetchRecentOrders();
-                void fetchAllOrders();
-            }, 0);
+        let isMounted = true;
 
-            return () => clearTimeout(timer);
-        }
+        const checkAdminRole = async () => {
+            if (authLoading) return;
+
+            if (!user) {
+                if (!isMounted) return;
+                setIsAdmin(false);
+                setAccessChecked(true);
+                return;
+            }
+
+            const { data: profileData, error } = await (supabase
+                .from('profiles' as any) as any)
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (!isMounted) return;
+
+            if (error || profileData?.role !== 'admin') {
+                setIsAdmin(false);
+                setAccessChecked(true);
+                return;
+            }
+
+            setIsAdmin(true);
+            setAccessChecked(true);
+        };
+
+        void checkAdminRole();
+
+        return () => {
+            isMounted = false;
+        };
     }, [user, authLoading]);
 
+    useEffect(() => {
+        if (!authLoading && user && accessChecked && isAdmin) {
+            void refreshDashboard();
 
-    if (authLoading || checking) {
+            const refreshInterval = window.setInterval(() => {
+                void refreshDashboard();
+            }, 15000);
+
+            const handleVisibilityRefresh = () => {
+                if (document.visibilityState === 'visible') {
+                    void refreshDashboard();
+                }
+            };
+
+            window.addEventListener('focus', handleVisibilityRefresh);
+            document.addEventListener('visibilitychange', handleVisibilityRefresh);
+
+            const realtimeChannel = supabase
+                .channel('admin-dashboard-live')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                    void refreshDashboard();
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+                    void fetchStats();
+                })
+                .subscribe();
+
+            return () => {
+                clearInterval(refreshInterval);
+                window.removeEventListener('focus', handleVisibilityRefresh);
+                document.removeEventListener('visibilitychange', handleVisibilityRefresh);
+                void supabase.removeChannel(realtimeChannel);
+            };
+        }
+    }, [user, authLoading, accessChecked, isAdmin, refreshDashboard, fetchStats]);
+
+
+    if (authLoading || !accessChecked) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">

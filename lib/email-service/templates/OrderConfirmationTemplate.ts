@@ -59,7 +59,7 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
                 <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <tr>
                         <td style="padding: 40px 40px 30px; text-align: center;">
-                            <img src="https://res.cloudinary.com/dur6fkyoz/image/upload/v1770221833/cfavicon.ico_wj8cze.png" alt="Charan Organics" width="60" style="margin-bottom: 20px;">
+                            <img src="https://res.cloudinary.com/dur6fkyoz/image/upload/v1773146940/charan-logo_yt3sg3.png" alt="Charan Organics" width="60" style="margin-bottom: 20px;">
                             <h1 style="margin: 0; color: #166534; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">Order Confirmed!</h1>
                             <p style="margin: 10px 0 0; color: #6b7280; font-size: 16px;">Thank you for your purchase via Charan Organics.</p>
                         </td>

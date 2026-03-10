@@ -24,7 +24,10 @@ type LegacyClient = {
 
 const legacyClient = supabase as unknown as LegacyClient;
 
-export function useAdminSecurity(setVerifying?: (verified: boolean) => void) {
+export function useAdminSecurity(
+    setVerifying?: (verified: boolean) => void,
+    setAuthorized?: (allowed: boolean) => void
+) {
     const router = useRouter();
     const warningShownRef = useRef(false);
 
@@ -56,14 +59,15 @@ export function useAdminSecurity(setVerifying?: (verified: boolean) => void) {
                 await new Promise((resolve) => setTimeout(resolve, 600));
                 isAllowed = await verifyAdminAccess();
             }
+            setAuthorized?.(isAllowed);
 
             if (setVerifying) {
                 setVerifying(false);
             }
 
             if (!isAllowed) {
-                // Middleware handles auth protection. Skip client-side hard redirect to avoid
-                // false logout on quick refresh/network blips.
+                // Enforce a hard deny at UI layer too, in case middleware/session state is stale.
+                router.replace('/');
                 return;
             }
 
@@ -122,7 +126,7 @@ export function useAdminSecurity(setVerifying?: (verified: boolean) => void) {
         return () => {
             clearInterval(checkTimeout);
         };
-    }, [handleSessionExpired, setVerifying]);
+    }, [handleSessionExpired, router, setAuthorized, setVerifying]);
 
     return {
         logActivity: logAdminActivity,

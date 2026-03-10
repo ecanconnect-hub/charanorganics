@@ -8,6 +8,18 @@ import { useTranslations } from '@/lib/i18n/context';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
+function getSafeReturnTo(value: string | null): string {
+    if (!value || !value.startsWith('/')) {
+        return '/account';
+    }
+
+    if (value.startsWith('//') || value.startsWith('/\\')) {
+        return '/account';
+    }
+
+    return value;
+}
+
 function LoginPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -21,7 +33,7 @@ function LoginPageContent() {
 
     const verifyPending = searchParams.get('verify') === '1';
     const signupEmail = searchParams.get('email') || '';
-    const returnTo = searchParams.get('returnTo') || '/account';
+    const returnTo = getSafeReturnTo(searchParams.get('returnTo'));
 
     useEffect(() => {
         if (signupEmail) {

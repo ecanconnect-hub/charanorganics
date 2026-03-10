@@ -77,7 +77,7 @@ export default function AboutPage() {
                             feel free to reach out.
                         </p>
                         <p>
-                            <strong>Email:</strong> ecanconnect@gmail.com<br />
+                            <strong>Email:</strong> chinnammadu46@gmail.com<br />
                             <strong>Phone:</strong> +91 824 783 8125<br />
                             <strong>Address:</strong> Hyderabad, Telangana, India
                         </p>

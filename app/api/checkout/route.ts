@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
-import { createGuestOrderToken } from '@/lib/security/guest-order-token';
+import { createGuestOrderToken, createGuestTrackingToken } from '@/lib/security/guest-order-token';
 
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
@@ -254,6 +254,7 @@ export async function POST(req: NextRequest) {
                 orderId: string;
                 reusedExistingOrder: boolean;
                 guestAccessToken?: string;
+                guestTrackingToken?: string;
             } = {
                 success: true,
                 orderId: duplicateOrder.order_id,
@@ -262,6 +263,7 @@ export async function POST(req: NextRequest) {
 
             if (!user) {
                 responsePayload.guestAccessToken = createGuestOrderToken(duplicateOrder.order_id);
+                responsePayload.guestTrackingToken = createGuestTrackingToken(duplicateOrder.order_id);
             }
 
             return NextResponse.json(
@@ -306,6 +308,7 @@ export async function POST(req: NextRequest) {
             success: boolean;
             orderId: string;
             guestAccessToken?: string;
+            guestTrackingToken?: string;
         } = {
             success: true,
             orderId: typedResult.order_id,
@@ -313,6 +316,7 @@ export async function POST(req: NextRequest) {
 
         if (!user) {
             responsePayload.guestAccessToken = createGuestOrderToken(typedResult.order_id);
+            responsePayload.guestTrackingToken = createGuestTrackingToken(typedResult.order_id);
         }
 
         return NextResponse.json(

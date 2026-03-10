@@ -301,8 +301,13 @@ export default function CheckoutPage() {
                     return;
                 }
                 sessionStorage.setItem(`guest_payment_token:${result.orderId}`, result.guestAccessToken);
+                sessionStorage.setItem(
+                    `guest_track_token:${result.orderId}`,
+                    result.guestTrackingToken || result.guestAccessToken
+                );
             } else {
                 sessionStorage.removeItem(`guest_payment_token:${result.orderId}`);
+                sessionStorage.removeItem(`guest_track_token:${result.orderId}`);
             }
 
             router.push(`/payment/${result.orderId}`);

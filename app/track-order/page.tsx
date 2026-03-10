@@ -16,15 +16,17 @@ export default function TrackOrderPage() {
     const router = useRouter();
     const [orderId, setOrderId] = useState('');
     const [phone, setPhone] = useState('');
+    const [pincode, setPincode] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleTrack = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!orderId.trim() || !phone.trim()) return;
+        if (!orderId.trim() || !phone.trim() || !pincode.trim()) return;
 
         setLoading(true);
         const normalizedOrderId = orderId.trim().toUpperCase();
         sessionStorage.setItem(`guest_track_phone:${normalizedOrderId}`, phone.trim());
+        sessionStorage.setItem(`guest_track_pincode:${normalizedOrderId}`, pincode.trim());
         router.push(`/track-order/${encodeURIComponent(normalizedOrderId)}`);
     };
 
@@ -85,6 +87,24 @@ export default function TrackOrderPage() {
                                     />
                                     <p className="text-xs text-gray-400 mt-3 font-medium">
                                         For your privacy, we require your phone number to show order details
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-black uppercase tracking-widest text-gray-400 mb-4">
+                                        Delivery Pincode (for verification)
+                                    </label>
+                                    <Input
+                                        value={pincode}
+                                        onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                                        placeholder="Enter pincode used during checkout"
+                                        required
+                                        maxLength={10}
+                                        type="text"
+                                        className="h-16 text-lg rounded-2xl"
+                                    />
+                                    <p className="text-xs text-gray-400 mt-3 font-medium">
+                                        This helps us prevent unauthorized tracking attempts
                                     </p>
                                 </div>
 

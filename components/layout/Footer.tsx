@@ -16,6 +16,12 @@ export function Footer() {
     const locale = useLocale();
     const currentYear = new Date().getFullYear();
 
+    const latitude = 17.505722;
+    const longitude = 78.498333;
+    const locationText = '17°30\'20.6"N 78°29\'54.0"E';
+    const mapNavigationUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+    const mapPreviewImage = 'https://res.cloudinary.com/dur6fkyoz/image/upload/v1773142658/Screenshot_2026-03-10_170731_eznp7n.png';
+
     const footerLinks = [
         { href: '/terms', label: t('footer.termsConditions') },
         { href: '/shipping', label: t('footer.shippingPolicy') },
@@ -57,7 +63,7 @@ export function Footer() {
     return (
         <footer className="relative border-t border-white/10 bg-[#0B1110] pt-20 pb-8 text-white">
             <div className="container mx-auto px-6 md:px-12">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-16 mb-20">
+                <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-[minmax(280px,1.15fr)_minmax(140px,0.7fr)_minmax(140px,0.7fr)_minmax(170px,0.8fr)_minmax(260px,1fr)] lg:items-start mb-16">
 
                     {/* Column 1: Brand & Newsletter */}
                     <div className="lg:col-span-1 space-y-8">
@@ -152,6 +158,31 @@ export function Footer() {
                                     {social.icon}
                                 </a>
                             ))}
+                        </div>
+                    </div>
+
+                    {/* Column 5: Location Map */}
+                    <div className="lg:pl-2">
+                        <h4 className="mb-3 text-xs font-bold uppercase tracking-widest !text-gray-200">Location</h4>
+                        <p className="mb-3 text-xs text-gray-300">{locationText}</p>
+                        <div className="relative h-44 w-full overflow-hidden rounded-xl border border-white/15 bg-black/20 sm:h-48">
+                            <a
+                                href={mapNavigationUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Open location in Google Maps"
+                                className="group block h-full w-full"
+                            >
+                                <img
+                                    src={mapPreviewImage}
+                                    alt="Charan Organics location map preview"
+                                    loading="lazy"
+                                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                                />
+                            </a>
+                            <span className="pointer-events-none absolute bottom-2 right-2 rounded-full border border-white/20 bg-black/70 px-2.5 py-1 text-[10px] font-semibold text-white">
+                                Open in Maps
+                            </span>
                         </div>
                     </div>
                 </div>

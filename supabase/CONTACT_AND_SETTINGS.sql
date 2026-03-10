@@ -54,16 +54,16 @@ CREATE POLICY "Admins can manage settings"
         )
     );
 
--- Allow everyone to READ public settings (we might need to filter sensitive ones later, but for now assuming most are public config)
--- Actually, better to limit to auth users or specific keys if sensitive.
--- For now, let's keep it restricted to admins for writing, and PUBLIC for reading is risky if we store secrets.
--- Let's make it readable by admins only, and expose specific public configs via API or separate function if needed.
--- Wait, the backend needs to read this to send emails. Backend (Service Role) bypasses RLS.
--- Frontend might need to read "maintenance_mode" etc.
--- Let's allow SELECT for anon for now, but be careful what we store.
-CREATE POLICY "Public can read settings"
+-- Restrict settings read access to admins only.
+-- Backend service-role usage is unaffected because service-role bypasses RLS.
+CREATE POLICY "Admins can read settings"
     ON public.app_settings FOR SELECT
-    USING (true);
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
 
 
 -- 3. Initial Settings Seed

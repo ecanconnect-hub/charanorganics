@@ -236,7 +236,7 @@ export default function HomePage() {
         <div
           className="absolute inset-0 opacity-[0.15] mix-blend-overlay"
           style={{
-            backgroundImage: 'url(https://res.cloudinary.com/dur6fkyoz/image/upload/v1770221833/cfavicon.ico_wj8cze.png)',
+            backgroundImage: 'url(https://res.cloudinary.com/dur6fkyoz/image/upload/v1773146940/charan-logo_yt3sg3.png)',
             backgroundSize: '200px 200px',
             backgroundRepeat: 'repeat'
           }}
@@ -313,7 +313,7 @@ export default function HomePage() {
                 {/* Logo Image */}
                 <div className="w-full h-full flex items-center justify-center p-4 md:p-8">
                   <Image
-                    src="https://res.cloudinary.com/dur6fkyoz/image/upload/v1770221833/cfavicon.ico_wj8cze.png"
+                    src="https://res.cloudinary.com/dur6fkyoz/image/upload/v1773146940/charan-logo_yt3sg3.png"
                     alt="Charan organics - Business Logo"
                     width={400}
                     height={400}

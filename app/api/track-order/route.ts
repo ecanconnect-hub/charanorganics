@@ -5,13 +5,29 @@ import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import type { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
+import { verifyGuestOrderToken } from '@/lib/security/guest-order-token';
 
 const trackOrderSchema = z.object({
     orderId: z.string().min(1),
     phone: z.string().trim().optional(),
+    pincode: z.string().trim().optional(),
+    accessToken: z.string().trim().optional(),
 });
 
+const ORDER_ID_PATTERN = /^ORD-\d{8}-\d{3,}$/;
+
 const normalizePhone = (value: string): string => value.replace(/\D/g, '');
+const normalizePincode = (value: string): string => value.replace(/\D/g, '');
+const maskPhone = (value: string): string => {
+    const digits = normalizePhone(value);
+    if (digits.length <= 4) return '***';
+    return `${'*'.repeat(Math.max(0, digits.length - 4))}${digits.slice(-4)}`;
+};
+const maskPincode = (value: string): string => {
+    const digits = normalizePincode(value);
+    if (digits.length <= 2) return '**';
+    return `${'*'.repeat(Math.max(0, digits.length - 2))}${digits.slice(-2)}`;
+};
 
 export async function POST(request: NextRequest) {
     const { allowed, remaining, resetTime } = await checkRateLimit(request);
@@ -36,6 +52,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
         }
         const normalizedOrderId = parsed.data.orderId.trim().toUpperCase();
+        if (!ORDER_ID_PATTERN.test(normalizedOrderId)) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
 
         const cookieStore = await cookies();
         const authClient = createServerClient(
@@ -65,7 +84,7 @@ export async function POST(request: NextRequest) {
         const { data: order, error: orderError } = await serviceClient
             .from('orders')
             .select('id, order_id, created_at, total_amount, status, shipping_name, shipping_phone, shipping_address, shipping_city, shipping_state, shipping_pincode, user_id')
-            .ilike('order_id', normalizedOrderId)
+            .eq('order_id', normalizedOrderId)
             .single() as { data: any; error: any };
 
         if (orderError || !order) {
@@ -86,8 +105,15 @@ export async function POST(request: NextRequest) {
         const normalizedOrderPhone = normalizePhone(order.shipping_phone || '');
         const normalizedInputPhone = normalizePhone(parsed.data.phone || '');
         const isPhoneVerified = normalizedInputPhone.length >= 10 && normalizedInputPhone === normalizedOrderPhone;
+        const normalizedOrderPincode = normalizePincode(order.shipping_pincode || '');
+        const normalizedInputPincode = normalizePincode(parsed.data.pincode || '');
+        const isPincodeVerified = normalizedInputPincode.length >= 4 && normalizedInputPincode === normalizedOrderPincode;
+        const isTokenVerified =
+            typeof parsed.data.accessToken === 'string' &&
+            verifyGuestOrderToken(parsed.data.accessToken, normalizedOrderId, ['guest_payment', 'guest_tracking']);
+        const isGuestFallbackVerified = isPhoneVerified && isPincodeVerified;
 
-        if (!isOwner && !isAdmin && !isPhoneVerified) {
+        if (!isOwner && !isAdmin && !isTokenVerified && !isGuestFallbackVerified) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
@@ -127,12 +153,19 @@ export async function POST(request: NextRequest) {
             },
         }));
 
+        const hasFullShippingAccess = isOwner || isAdmin || isTokenVerified;
+        const safeOrder = {
+            ...order,
+            total_amount: Number(order.total_amount),
+            shipping_name: hasFullShippingAccess ? order.shipping_name : 'Verified Customer',
+            shipping_phone: hasFullShippingAccess ? order.shipping_phone : maskPhone(order.shipping_phone || ''),
+            shipping_address: hasFullShippingAccess ? order.shipping_address : 'Address hidden for security',
+            shipping_pincode: hasFullShippingAccess ? order.shipping_pincode : maskPincode(order.shipping_pincode || ''),
+        };
+
         return NextResponse.json(
             {
-                order: {
-                    ...order,
-                    total_amount: Number(order.total_amount),
-                },
+                order: safeOrder,
                 items,
             },
             {

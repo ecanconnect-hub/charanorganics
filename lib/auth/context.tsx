@@ -70,6 +70,12 @@ function getSupabaseProjectRef(): string | null {
     }
 }
 
+function getSafeReturnPath(value: string | null): string {
+    if (!value || !value.startsWith('/')) return '/account';
+    if (value.startsWith('//') || value.startsWith('/\\')) return '/account';
+    return value;
+}
+
 function clearLocalSupabaseSession(): void {
     if (typeof window === 'undefined') return;
 
@@ -284,7 +290,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             // Get the current returnTo from URL or default to /account
             const searchParams = new URLSearchParams(window.location.search);
-            const returnTo = searchParams.get('returnTo') || '/account';
+            const returnTo = getSafeReturnPath(searchParams.get('returnTo'));
 
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',

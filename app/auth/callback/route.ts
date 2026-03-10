@@ -7,6 +7,10 @@ function getSafeNextPath(value: string | null): string {
         return '/account';
     }
 
+    if (value.startsWith('//') || value.startsWith('/\\')) {
+        return '/account';
+    }
+
     return value;
 }
 

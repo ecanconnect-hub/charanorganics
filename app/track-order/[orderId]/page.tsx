@@ -54,18 +54,29 @@ export default function TrackOrderPage() {
     const [order, setOrder] = useState<TrackedOrder | null>(null);
     const [loading, setLoading] = useState(true);
     const [phoneInput, setPhoneInput] = useState('');
+    const [pincodeInput, setPincodeInput] = useState('');
     const [verificationLoading, setVerificationLoading] = useState(false);
     const [attemptedWithPhone, setAttemptedWithPhone] = useState(false);
 
-    const fetchOrder = useCallback(async (phoneOverride?: string): Promise<boolean> => {
+    const fetchOrder = useCallback(async (phoneOverride?: string, pincodeOverride?: string): Promise<boolean> => {
         setLoading(true);
 
         const phoneFromSession =
             sessionStorage.getItem(`guest_track_phone:${orderId}`) ||
             sessionStorage.getItem(`guest_track_phone:${orderId.toUpperCase()}`) ||
             '';
+        const pincodeFromSession =
+            sessionStorage.getItem(`guest_track_pincode:${orderId}`) ||
+            sessionStorage.getItem(`guest_track_pincode:${orderId.toUpperCase()}`) ||
+            '';
+        const accessToken =
+            sessionStorage.getItem(`guest_track_token:${orderId}`) ||
+            sessionStorage.getItem(`guest_track_token:${orderId.toUpperCase()}`) ||
+            sessionStorage.getItem(`guest_payment_token:${orderId}`) ||
+            '';
 
         const phone = phoneOverride || phoneFromSession || '';
+        const pincode = pincodeOverride || pincodeFromSession || '';
 
         try {
             const response = await fetch('/api/track-order', {
@@ -73,7 +84,9 @@ export default function TrackOrderPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     orderId,
+                    accessToken: accessToken || undefined,
                     phone: phone || undefined,
+                    pincode: pincode || undefined,
                 }),
             });
 
@@ -81,7 +94,7 @@ export default function TrackOrderPage() {
 
             if (!response.ok || !data?.order) {
                 setOrder(null);
-                if (phoneOverride) {
+                if (phoneOverride || pincodeOverride) {
                     setAttemptedWithPhone(true);
                 }
                 return false;
@@ -90,6 +103,10 @@ export default function TrackOrderPage() {
             if (phone) {
                 sessionStorage.setItem(`guest_track_phone:${orderId}`, phone);
                 sessionStorage.setItem(`guest_track_phone:${orderId.toUpperCase()}`, phone);
+            }
+            if (pincode) {
+                sessionStorage.setItem(`guest_track_pincode:${orderId}`, pincode);
+                sessionStorage.setItem(`guest_track_pincode:${orderId.toUpperCase()}`, pincode);
             }
 
             setAttemptedWithPhone(false);
@@ -114,17 +131,18 @@ export default function TrackOrderPage() {
     const handlePhoneVerify = async (e: React.FormEvent) => {
         e.preventDefault();
         const normalizedPhone = phoneInput.trim();
+        const normalizedPincode = pincodeInput.trim();
 
-        if (!normalizedPhone) {
-            toast.error('Please enter the phone number used in your order.');
+        if (!normalizedPhone || !normalizedPincode) {
+            toast.error('Please enter phone and pincode used in your order.');
             return;
         }
 
         setVerificationLoading(true);
         try {
-            const success = await fetchOrder(normalizedPhone);
+            const success = await fetchOrder(normalizedPhone, normalizedPincode);
             if (!success) {
-                toast.error('Order not found with this phone number.');
+                toast.error('Order not found with this phone and pincode.');
             }
         } finally {
             setVerificationLoading(false);
@@ -165,6 +183,14 @@ export default function TrackOrderPage() {
                             value={phoneInput}
                             onChange={(e) => setPhoneInput(e.target.value)}
                             placeholder="Enter phone number"
+                            className="h-12 rounded-xl"
+                        />
+                        <Input
+                            type="text"
+                            value={pincodeInput}
+                            onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ''))}
+                            placeholder="Enter delivery pincode"
+                            maxLength={10}
                             className="h-12 rounded-xl"
                         />
                         <Button

@@ -43,8 +43,9 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [verifying, setVerifying] = useState(true);
+    const [authorized, setAuthorized] = useState(false);
 
-    useAdminSecurity(setVerifying);
+    useAdminSecurity(setVerifying, setAuthorized);
 
     if (verifying) {
         return (
@@ -63,6 +64,10 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
                 </div>
             </div>
         );
+    }
+
+    if (!authorized) {
+        return null;
     }
 
     return (

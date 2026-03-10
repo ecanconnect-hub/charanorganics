@@ -4,11 +4,12 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 type GuestOrderTokenPayload = {
     orderId: string;
-    purpose: 'guest_payment';
+    purpose: 'guest_payment' | 'guest_tracking';
     exp: number;
 };
 
 const DEFAULT_GUEST_ORDER_TOKEN_TTL_SECONDS = 30 * 60; // 30 minutes
+const DEFAULT_GUEST_TRACKING_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 function getTokenSecret(): string {
     const secret = process.env.GUEST_ORDER_TOKEN_SECRET;
@@ -46,7 +47,25 @@ export function createGuestOrderToken(orderId: string, ttlSeconds = DEFAULT_GUES
     return `${payloadBase64}.${signatureBase64}`;
 }
 
-export function verifyGuestOrderToken(token: string, expectedOrderId: string): boolean {
+export function createGuestTrackingToken(orderId: string, ttlSeconds = DEFAULT_GUEST_TRACKING_TOKEN_TTL_SECONDS): string {
+    const secret = getTokenSecret();
+
+    const payload: GuestOrderTokenPayload = {
+        orderId,
+        purpose: 'guest_tracking',
+        exp: Math.floor(Date.now() / 1000) + ttlSeconds,
+    };
+
+    const payloadBase64 = encodeBase64Url(JSON.stringify(payload));
+    const signatureBase64 = signPayload(payloadBase64, secret);
+    return `${payloadBase64}.${signatureBase64}`;
+}
+
+export function verifyGuestOrderToken(
+    token: string,
+    expectedOrderId: string,
+    allowedPurposes: Array<GuestOrderTokenPayload['purpose']> = ['guest_payment']
+): boolean {
     try {
         const secret = getTokenSecret();
         const [payloadBase64, signatureBase64] = token.split('.');
@@ -70,7 +89,7 @@ export function verifyGuestOrderToken(token: string, expectedOrderId: string): b
         const payload = JSON.parse(decodeBase64Url(payloadBase64)) as GuestOrderTokenPayload;
         const now = Math.floor(Date.now() / 1000);
 
-        if (payload.purpose !== 'guest_payment') {
+        if (!allowedPurposes.includes(payload.purpose)) {
             return false;
         }
 
