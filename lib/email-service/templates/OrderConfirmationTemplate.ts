@@ -160,7 +160,7 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
                         <td style="background-color: #f3f4f6; padding: 30px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
                             <p style="margin: 0; color: #9ca3af; font-size: 12px;">
                                 &copy; ${new Date().getFullYear()} Charan Organics. All rights reserved.<br>
-                                Need help? Contact us at <a href="mailto:ecanconnect@gmail.com" style="color: #166534; text-decoration: none;">ecanconnect@gmail.com</a>
+                                Need help? Contact us at <a href="mailto:chinnammadu46@gmail.com" style="color: #166534; text-decoration: none;">chinnammadu46@gmail.com</a>
                             </p>
                         </td>
                     </tr>

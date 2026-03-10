@@ -10,28 +10,61 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { supabase } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/auth/context';
 
 export default function OrderConfirmationPage() {
     const params = useParams();
     const orderId = params.orderId as string;
+    const { user, loading: authLoading } = useAuth();
     const [order, setOrder] = useState<any>(null);
     const [showEmailModal, setShowEmailModal] = useState(true);
 
     const fetchOrder = useCallback(async () => {
-        const { data } = await supabase
-            .from('orders')
-            .select(`
-                *,
-                order_items (*)
-            `)
-            .eq('order_id', orderId)
-            .single();
+        if (!orderId) return;
 
-        setOrder(data);
-    }, [orderId]);
+        const normalizedOrderId = orderId.toUpperCase();
+        const guestToken =
+            sessionStorage.getItem(`guest_track_token:${orderId}`) ||
+            sessionStorage.getItem(`guest_track_token:${normalizedOrderId}`) ||
+            sessionStorage.getItem(`guest_payment_token:${orderId}`) ||
+            sessionStorage.getItem(`guest_payment_token:${normalizedOrderId}`) ||
+            null;
+
+        const response = await fetch('/api/track-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                orderId: normalizedOrderId,
+                accessToken: user ? undefined : guestToken || undefined,
+            }),
+        });
+
+        if (!response.ok) {
+            setOrder(null);
+            return;
+        }
+
+        const payload = await response.json();
+        const normalizedItems = Array.isArray(payload?.items)
+            ? payload.items.map((item: any) => ({
+                ...item,
+                total_price: Number(item.unit_price || 0) * Number(item.quantity || 0),
+            }))
+            : [];
+
+        setOrder({
+            ...(payload?.order || null),
+            order_items: normalizedItems,
+        });
+    }, [orderId, user]);
 
     useEffect(() => {
+        if (!orderId || authLoading) {
+            return;
+        }
+
         const fetchTimer = setTimeout(() => {
             void fetchOrder();
         }, 0);
@@ -45,7 +78,7 @@ export default function OrderConfirmationPage() {
             clearTimeout(fetchTimer);
             clearTimeout(timer);
         };
-    }, [fetchOrder]);
+    }, [fetchOrder, orderId, authLoading]);
 
     return (
         <main className="section-padding">
