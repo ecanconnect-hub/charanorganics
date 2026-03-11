@@ -105,10 +105,10 @@ export default function OrderConfirmationPage() {
 
                         {/* Message */}
                         <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
-                            Email Sent! 📧
+                            Order Update
                         </h3>
                         <p className="text-gray-600 text-center mb-6">
-                            Order details have been sent to your email address. Please check your inbox for confirmation.
+                            We are processing your order details. You should receive an email confirmation shortly.
                         </p>
 
                         {/* Auto-close indicator */}
@@ -134,7 +134,7 @@ export default function OrderConfirmationPage() {
 
                     <div className="bg-green-50 border border-green-100 rounded-xl p-6 mb-8">
                         <p className="text-green-800 font-medium text-lg mb-2">
-                            Thank you for choosing Charan Organics! 🌿
+                            Thank you for choosing Charan Organics!
                         </p>
                         <p className="text-green-700">
                             We are committed to providing you with the purest, authentic Ayurvedic products. Your trust means the world to us.
@@ -156,15 +156,18 @@ export default function OrderConfirmationPage() {
                                 <div>
                                     <p className="text-sm text-gray-600">Total Amount</p>
                                     <p className="text-xl font-bold text-[rgb(var(--primary))]">
-                                        ₹{order.total_amount.toFixed(2)}
+                                        {'\u20B9'}{order.total_amount.toFixed(2)}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="text-left space-y-4">
                                 <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Items Ordered</p>
-                                {order.order_items?.map((item: any) => (
-                                    <div key={item.id} className="flex justify-between items-center text-sm">
+                                {order.order_items?.map((item: any, index: number) => (
+                                    <div
+                                        key={`${item.product_id || item.product_title_en || 'item'}-${item.variant_label || 'default'}-${index}`}
+                                        className="flex justify-between items-center text-sm"
+                                    >
                                         <div className="flex-1">
                                             <p className="font-bold text-gray-900">{item.product_title_en}</p>
                                             {item.variant_label && (
@@ -172,7 +175,7 @@ export default function OrderConfirmationPage() {
                                             )}
                                             <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                                         </div>
-                                        <p className="font-bold text-gray-900 ml-4">₹{(item.total_price || 0).toFixed(2)}</p>
+                                        <p className="font-bold text-gray-900 ml-4">{'\u20B9'}{(item.total_price || 0).toFixed(2)}</p>
                                     </div>
                                 ))}
                             </div>

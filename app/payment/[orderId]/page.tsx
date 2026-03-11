@@ -205,7 +205,7 @@ export default function PaymentPage() {
             }
 
             try {
-                await fetch('/api/send-order-email', {
+                const emailResponse = await fetch('/api/send-order-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -213,8 +213,17 @@ export default function PaymentPage() {
                         accessToken: accessToken || undefined,
                     }),
                 });
+
+                const emailResult = await emailResponse.json().catch(() => null) as {
+                    emailSent?: boolean;
+                } | null;
+
+                if (!emailResponse.ok || emailResult?.emailSent === false) {
+                    toast('Order placed, but confirmation email could not be sent right now.', { icon: '!' });
+                }
             } catch (emailError) {
                 console.error('Failed to send confirmation email:', emailError);
+                toast('Order placed, but confirmation email could not be sent right now.', { icon: '!' });
             }
 
             localStorage.removeItem('guest_cart');

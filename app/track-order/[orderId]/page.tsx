@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/lib/auth/context';
 
 type TrackedOrderItem = {
     product_title_en: string;
@@ -50,6 +51,7 @@ const steps = [
 export default function TrackOrderPage() {
     const params = useParams();
     const orderId = params.orderId as string;
+    const { user, loading: authLoading } = useAuth();
 
     const [order, setOrder] = useState<TrackedOrder | null>(null);
     const [loading, setLoading] = useState(true);
@@ -61,33 +63,41 @@ export default function TrackOrderPage() {
     const fetchOrder = useCallback(async (phoneOverride?: string, pincodeOverride?: string): Promise<boolean> => {
         setLoading(true);
 
-        const phoneFromSession =
-            sessionStorage.getItem(`guest_track_phone:${orderId}`) ||
-            sessionStorage.getItem(`guest_track_phone:${orderId.toUpperCase()}`) ||
-            '';
-        const pincodeFromSession =
-            sessionStorage.getItem(`guest_track_pincode:${orderId}`) ||
-            sessionStorage.getItem(`guest_track_pincode:${orderId.toUpperCase()}`) ||
-            '';
+        const phoneFromSession = !user
+            ? (sessionStorage.getItem(`guest_track_phone:${orderId}`) ||
+                sessionStorage.getItem(`guest_track_phone:${orderId.toUpperCase()}`) ||
+                '')
+            : '';
+        const pincodeFromSession = !user
+            ? (sessionStorage.getItem(`guest_track_pincode:${orderId}`) ||
+                sessionStorage.getItem(`guest_track_pincode:${orderId.toUpperCase()}`) ||
+                '')
+            : '';
         const accessToken =
             sessionStorage.getItem(`guest_track_token:${orderId}`) ||
             sessionStorage.getItem(`guest_track_token:${orderId.toUpperCase()}`) ||
             sessionStorage.getItem(`guest_payment_token:${orderId}`) ||
             '';
 
-        const phone = phoneOverride || phoneFromSession || '';
-        const pincode = pincodeOverride || pincodeFromSession || '';
+        const phone = !user ? (phoneOverride || phoneFromSession || '') : '';
+        const pincode = !user ? (pincodeOverride || pincodeFromSession || '') : '';
 
         try {
             const response = await fetch('/api/track-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId,
-                    accessToken: accessToken || undefined,
-                    phone: phone || undefined,
-                    pincode: pincode || undefined,
-                }),
+                body: JSON.stringify(
+                    user
+                        ? {
+                            orderId,
+                        }
+                        : {
+                            orderId,
+                            accessToken: accessToken || undefined,
+                            phone: phone || undefined,
+                            pincode: pincode || undefined,
+                        }
+                ),
             });
 
             const data = await response.json();
@@ -100,11 +110,11 @@ export default function TrackOrderPage() {
                 return false;
             }
 
-            if (phone) {
+            if (!user && phone) {
                 sessionStorage.setItem(`guest_track_phone:${orderId}`, phone);
                 sessionStorage.setItem(`guest_track_phone:${orderId.toUpperCase()}`, phone);
             }
-            if (pincode) {
+            if (!user && pincode) {
                 sessionStorage.setItem(`guest_track_pincode:${orderId}`, pincode);
                 sessionStorage.setItem(`guest_track_pincode:${orderId.toUpperCase()}`, pincode);
             }
@@ -121,12 +131,12 @@ export default function TrackOrderPage() {
         } finally {
             setLoading(false);
         }
-    }, [orderId]);
+    }, [orderId, user]);
 
     useEffect(() => {
-        if (!orderId) return;
+        if (!orderId || authLoading) return;
         void fetchOrder();
-    }, [orderId, fetchOrder]);
+    }, [orderId, fetchOrder, authLoading]);
 
     const handlePhoneVerify = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -170,6 +180,22 @@ export default function TrackOrderPage() {
     }
 
     if (!order) {
+        if (user) {
+            return (
+                <div className="min-h-screen flex items-center justify-center px-4">
+                    <div className="text-center max-w-md w-full bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+                        <p className="text-xl text-gray-700 mb-2">Order not found</p>
+                        <p className="text-sm text-gray-500 mb-5">
+                            This order is not linked to your account, or it may not exist.
+                        </p>
+                        <Link href="/account/orders">
+                            <Button variant="primary">Go to My Orders</Button>
+                        </Link>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="min-h-screen flex items-center justify-center px-4">
                 <div className="text-center max-w-md w-full bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">

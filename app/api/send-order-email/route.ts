@@ -19,6 +19,28 @@ const sendOrderEmailSchema = z.object({
     accessToken: z.string().trim().optional(),
 });
 
+const emailSchema = z.string().email();
+
+const parseAdminNotificationEmail = (value: unknown): string | null => {
+    if (typeof value !== 'string') return null;
+
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    // Handle accidentally double-stringified values.
+    try {
+        const parsedValue = JSON.parse(trimmed);
+        if (typeof parsedValue === 'string' && parsedValue.trim()) {
+            return parsedValue.trim();
+        }
+    } catch {
+        // Value is already a plain string.
+    }
+
+    const normalized = trimmed.replace(/^"+|"+$/g, '').trim();
+    return normalized || null;
+};
+
 export async function POST(request: NextRequest) {
     const { allowed, remaining, resetTime } = await checkRateLimit(request);
     if (!allowed) {
@@ -162,27 +184,67 @@ export async function POST(request: NextRequest) {
         const emailHtml = OrderConfirmationTemplate(emailOrderData, emailItems);
 
         // Send email to customer
-        await emailService.sendEmail(
+        const customerEmailResult = await emailService.sendEmail(
             recipientEmail, // Use the resolved email
             `Order Confirmation #${orderData.order_id}`,
             emailHtml
         );
 
+        if (!customerEmailResult.success) {
+            console.error('Failed to send customer confirmation email:', customerEmailResult.error);
+        }
+
         // Also send notification to admin
-        const adminEmail = process.env.EMAIL_USER || 'ecanconnect@gmail.com';
-        try {
-            await emailService.sendEmail(
-                adminEmail,
-                `New Order Payment Submitted - #${orderData.order_id}`,
-                emailHtml
-            );
-        } catch (adminEmailError) {
-            // Don't fail if admin email fails
-            console.error('Failed to send admin notification:', adminEmailError);
+        let adminEmail = process.env.EMAIL_USER || 'ecanconnect@gmail.com';
+        const { data: adminEmailSetting, error: adminEmailSettingError } = await (supabase
+            .from('app_settings' as any) as any)
+            .select('value')
+            .eq('key', 'order_notification_email')
+            .maybeSingle();
+
+        if (adminEmailSettingError) {
+            console.error('Failed to fetch order notification email setting:', adminEmailSettingError);
+        } else {
+            const configuredAdminEmail = parseAdminNotificationEmail(adminEmailSetting?.value);
+            if (configuredAdminEmail && emailSchema.safeParse(configuredAdminEmail).success) {
+                adminEmail = configuredAdminEmail;
+            }
+        }
+
+        const customerEmailErrorMessage = !customerEmailResult.success
+            ? (customerEmailResult.error instanceof Error
+                ? customerEmailResult.error.message
+                : String(customerEmailResult.error))
+            : '';
+        const smtpAuthFailure = /smtp authentication|invalid login|badcredentials|eauth|credentials/i
+            .test(customerEmailErrorMessage);
+
+        let adminNotificationSent = false;
+        if (!smtpAuthFailure) {
+            try {
+                const adminEmailResult = await emailService.sendEmail(
+                    adminEmail,
+                    `New Order Payment Submitted - #${orderData.order_id}`,
+                    emailHtml
+                );
+                adminNotificationSent = adminEmailResult.success;
+                if (!adminEmailResult.success) {
+                    console.error('Failed to send admin notification:', adminEmailResult.error);
+                }
+            } catch (adminEmailError) {
+                // Don't fail if admin email fails
+                console.error('Failed to send admin notification:', adminEmailError);
+            }
+        } else {
+            console.error('Skipping admin notification due to SMTP authentication failure.');
         }
 
         return NextResponse.json(
-            { success: true },
+            {
+                success: true,
+                emailSent: customerEmailResult.success,
+                adminNotificationSent,
+            },
             {
                 headers: {
                     'X-RateLimit-Remaining': remaining.toString(),

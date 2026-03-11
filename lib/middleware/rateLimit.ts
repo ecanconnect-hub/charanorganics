@@ -30,7 +30,7 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
     '/api/payment/submit': { windowMs: 10 * 60 * 1000, maxRequests: 8 }, // 8 payment submits per 10 minutes
     '/api/payment/details': { windowMs: 5 * 60 * 1000, maxRequests: 20 }, // 20 payment detail lookups per 5 minutes
     '/api/send-order-email': { windowMs: 10 * 60 * 1000, maxRequests: 5 }, // 5 email triggers per 10 minutes
-    '/api/track-order': { windowMs: 5 * 60 * 1000, maxRequests: 8 }, // 8 tracking checks per 5 minutes
+    '/api/track-order': { windowMs: 5 * 60 * 1000, maxRequests: 20 }, // 20 tracking checks per 5 minutes
     '/api/orders': { windowMs: 60 * 1000, maxRequests: 10 }, // 10 orders per minute
     '/api/cart': { windowMs: 60 * 1000, maxRequests: 30 }, // 30 cart operations per minute
     '/api/products': { windowMs: 60 * 1000, maxRequests: 60 }, // 60 product requests per minute
