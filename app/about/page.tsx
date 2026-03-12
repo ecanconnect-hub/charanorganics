@@ -71,6 +71,31 @@ export default function AboutPage() {
                             <li>Delivered with love and attention to detail</li>
                         </ul>
 
+                        <h2>Follow Us for Daily Updates</h2>
+                        <p>
+                            Stay connected with Charan Organics for daily product updates, behind-the-scenes content,
+                            and natural wellness tips.
+                        </p>
+                        <p>
+                            <strong>Instagram:</strong>{' '}
+                            <a
+                                href="https://www.instagram.com/charan_organics_cosmetics/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                @charan_organics_cosmetics
+                            </a>
+                            <br />
+                            <strong>YouTube:</strong>{' '}
+                            <a
+                                href="https://youtube.com/@charanorganicsoapsvlogs?si=B2L-khPUbmEIjsyn"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                @charanorganicsoapsvlogs
+                            </a>
+                        </p>
+
                         <h2>Contact Us</h2>
                         <p>
                             We would love to hear from you! Whether you have questions about our products or just want to say hello,
