@@ -152,6 +152,63 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" href="/charan-logo.png" />
         <link rel="apple-touch-icon" href="/charan-logo.png" />
+        <Script id="strip-fdprocessedid" strategy="beforeInteractive">
+          {`
+            (function () {
+              var ATTR = 'fdprocessedid';
+
+              function cleanTree(root) {
+                if (!root || !root.querySelectorAll) return;
+                var nodes = root.querySelectorAll('[' + ATTR + ']');
+                for (var i = 0; i < nodes.length; i += 1) {
+                  nodes[i].removeAttribute(ATTR);
+                }
+              }
+
+              function cleanNode(node) {
+                if (!node || node.nodeType !== 1) return;
+                if (node.hasAttribute && node.hasAttribute(ATTR)) {
+                  node.removeAttribute(ATTR);
+                }
+                cleanTree(node);
+              }
+
+              cleanTree(document);
+
+              try {
+                var observer = new MutationObserver(function (mutations) {
+                  for (var i = 0; i < mutations.length; i += 1) {
+                    var mutation = mutations[i];
+                    if (mutation.type === 'attributes' && mutation.target) {
+                      cleanNode(mutation.target);
+                    }
+                    if (mutation.addedNodes && mutation.addedNodes.length) {
+                      for (var j = 0; j < mutation.addedNodes.length; j += 1) {
+                        cleanNode(mutation.addedNodes[j]);
+                      }
+                    }
+                  }
+                });
+
+                observer.observe(document.documentElement, {
+                  subtree: true,
+                  childList: true,
+                  attributes: true,
+                  attributeFilter: [ATTR],
+                });
+
+                window.addEventListener('load', function () {
+                  cleanTree(document);
+                  setTimeout(function () {
+                    observer.disconnect();
+                  }, 2000);
+                });
+              } catch (e) {
+                // Ignore cleanup observer failures.
+              }
+            })();
+          `}
+        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}

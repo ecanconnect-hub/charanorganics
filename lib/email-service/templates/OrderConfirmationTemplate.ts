@@ -16,7 +16,17 @@ const toAmount = (value: unknown, fallback = 0): number => {
 
 const inr = (value: unknown): string => `&#8377;${toAmount(value).toFixed(2)}`;
 
-export const OrderConfirmationTemplate = (order: any, items: any[]) => {
+type OrderConfirmationTemplateOptions = {
+    includePromotion?: boolean;
+};
+
+export const OrderConfirmationTemplate = (
+    order: any,
+    items: any[],
+    options: OrderConfirmationTemplateOptions = {}
+) => {
+    const { includePromotion = true } = options;
+
     const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', {
         year: 'numeric',
         month: 'long',
@@ -54,8 +64,60 @@ export const OrderConfirmationTemplate = (order: any, items: any[]) => {
 </head>
 <body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
     <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+        ${includePromotion
+            ? `
         <tr>
-            <td align="center" style="padding: 40px 0;">
+            <td align="center" style="padding: 20px 0 12px;">
+                <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border: 1px solid #bfdbfe; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(30, 64, 175, 0.12);">
+                    <tr>
+                        <td style="background-color: #581DD8; background-image: linear-gradient(135deg, #4D3792 0%, #554FC8 55%, #3A4B87 100%);">
+                            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td style="padding: 14px 20px;">
+                                        <p style="margin: 0; color: #dbeafe; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700;">
+                                            Partner Note
+                                        </p>
+                                        <p style="margin: 6px 0 0; color: #ffffff; font-size: 16px; font-weight: 700;">
+                                            Website & App Services by eCantech Solutions
+                                        </p>
+                                    </td>
+                                    <td align="right" style="padding: 14px 20px;">
+                                        <span style="display: inline-block; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; padding: 6px 10px; color: #ffffff; font-size: 12px; font-weight: 700;">
+                                            From &#8377;5,000
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 18px 20px; background-color: #f8fbff;">
+                            <p style="margin: 0; color: #2F2B5F; font-size: 14px; line-height: 1.65;">
+                                Need a modern website or app for your business? We build clean, fast and reliable products with quality support.
+                            </p>
+                            <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin-top: 14px;">
+                                <tr>
+                                    <td style="padding-right: 8px; padding-bottom: 6px;">
+                                        <a href="https://ecantechesolutions.vercel.app/" style="display: inline-block; background-color: #B720EA; color: #ffffff; text-decoration: none; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 9px 14px;">
+                                            View Portfolio
+                                        </a>
+                                    </td>
+                                    <td style="padding-bottom: 6px;">
+                                        <a href="https://wa.me/918897337784" style="display: inline-block; background-color: #20D456; color: #0f172a; text-decoration: none; font-size: 12px; font-weight: 700; border-radius: 999px; border: 1px solid #cbd5e1; padding: 9px 14px;">
+                                            WhatsApp: +91 88973 37784
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        `
+            : ''}
+        <tr>
+            <td align="center" style="padding: ${includePromotion ? '12px 0 40px' : '40px 0'};">
                 <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <tr>
                         <td style="padding: 40px 40px 30px; text-align: center;">
