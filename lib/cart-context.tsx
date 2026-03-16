@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { CartItem, getGuestCart, getUserCart, addToGuestCart, addToUserCart, removeFromGuestCart, removeFromUserCart, saveGuestCart, updateGuestCartQuantity, updateUserCartQuantity } from '@/lib/utils/cart';
+import { CartItem, getGuestCart, getUserCart, addToGuestCart, addToUserCart, removeFromGuestCart, removeFromUserCart, saveGuestCart, updateGuestCartQuantity, updateUserCartQuantity, migrateGuestCartToUser } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/auth/context';
 
 interface CartContextType {
@@ -73,6 +73,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (!silent) setIsLoading(true);
         try {
             if (userId) {
+                // If the user had items as a guest, merge them into the user cart on login.
+                await migrateGuestCartToUser(userId);
                 const userItems = await getUserCart(userId);
                 setItems(userItems);
                 hasShownNetworkWarningRef.current = false;

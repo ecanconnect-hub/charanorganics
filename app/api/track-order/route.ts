@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
                     'X-RateLimit-Remaining': '0',
                     'X-RateLimit-Reset': resetTime.toISOString(),
                     'Retry-After': Math.ceil((resetTime.getTime() - Date.now()) / 1000).toString(),
+                    'Cache-Control': 'no-store',
                 },
             }
         );
@@ -49,11 +50,17 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const parsed = trackOrderSchema.safeParse(body);
         if (!parsed.success) {
-            return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'Invalid request' },
+                { status: 400, headers: { 'Cache-Control': 'no-store' } }
+            );
         }
         const normalizedOrderId = parsed.data.orderId.trim().toUpperCase();
         if (!ORDER_ID_PATTERN.test(normalizedOrderId)) {
-            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+            return NextResponse.json(
+                { error: 'Order not found' },
+                { status: 404, headers: { 'Cache-Control': 'no-store' } }
+            );
         }
 
         const cookieStore = await cookies();
@@ -88,7 +95,10 @@ export async function POST(request: NextRequest) {
             .single() as { data: any; error: any };
 
         if (orderError || !order) {
-            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+            return NextResponse.json(
+                { error: 'Order not found' },
+                { status: 404, headers: { 'Cache-Control': 'no-store' } }
+            );
         }
 
         let isAdmin = false;
@@ -114,7 +124,10 @@ export async function POST(request: NextRequest) {
         const isGuestFallbackVerified = isPhoneVerified && isPincodeVerified;
 
         if (!isOwner && !isAdmin && !isTokenVerified && !isGuestFallbackVerified) {
-            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+            return NextResponse.json(
+                { error: 'Order not found' },
+                { status: 404, headers: { 'Cache-Control': 'no-store' } }
+            );
         }
 
         const { data: orderItems, error: orderItemsError } = await serviceClient
@@ -124,7 +137,10 @@ export async function POST(request: NextRequest) {
 
         if (orderItemsError) {
             console.error('Track order items fetch error:', orderItemsError);
-            return NextResponse.json({ error: 'Failed to load order details' }, { status: 500 });
+            return NextResponse.json(
+                { error: 'Failed to load order details' },
+                { status: 500, headers: { 'Cache-Control': 'no-store' } }
+            );
         }
 
         const productIds = Array.from(
@@ -153,13 +169,20 @@ export async function POST(request: NextRequest) {
             },
         }));
 
-        const hasFullShippingAccess = isOwner || isAdmin || isTokenVerified;
+        // Privacy-first: a guest token is enough to track status/items, but not enough to reveal PII.
+        // To reveal full delivery details, require either:
+        // - Owner/admin session, or
+        // - Guest verification via phone + pincode.
+        const hasFullShippingAccess = isOwner || isAdmin || isGuestFallbackVerified;
         const safeOrder = {
             ...order,
             total_amount: Number(order.total_amount),
+            can_view_shipping: hasFullShippingAccess,
             shipping_name: hasFullShippingAccess ? order.shipping_name : 'Verified Customer',
             shipping_phone: hasFullShippingAccess ? order.shipping_phone : maskPhone(order.shipping_phone || ''),
             shipping_address: hasFullShippingAccess ? order.shipping_address : 'Address hidden for security',
+            shipping_city: hasFullShippingAccess ? order.shipping_city : 'Hidden',
+            shipping_state: hasFullShippingAccess ? order.shipping_state : 'Hidden',
             shipping_pincode: hasFullShippingAccess ? order.shipping_pincode : maskPincode(order.shipping_pincode || ''),
         };
 
@@ -172,11 +195,15 @@ export async function POST(request: NextRequest) {
                 headers: {
                     'X-RateLimit-Remaining': remaining.toString(),
                     'X-RateLimit-Reset': resetTime.toISOString(),
+                    'Cache-Control': 'no-store',
                 },
             }
         );
     } catch (error) {
         console.error('Track order API error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500, headers: { 'Cache-Control': 'no-store' } }
+        );
     }
 }

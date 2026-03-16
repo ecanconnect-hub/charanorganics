@@ -8,6 +8,7 @@ import { useTranslations } from '@/lib/i18n/context';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { motion } from 'framer-motion';
+import { getEmailTypoSuggestion, isProbablyValidEmail, normalizeEmail } from '@/lib/utils/email';
 
 export default function SignupPage() {
     const router = useRouter();
@@ -16,6 +17,7 @@ export default function SignupPage() {
 
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
+    const [confirmEmail, setConfirmEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
@@ -33,6 +35,26 @@ export default function SignupPage() {
         e.preventDefault();
         setError('');
 
+        const normalizedEmail = normalizeEmail(email);
+        const normalizedConfirmEmail = normalizeEmail(confirmEmail);
+        const typoSuggestion = getEmailTypoSuggestion(normalizedEmail);
+
+        if (!isProbablyValidEmail(normalizedEmail)) {
+            const suggestion = getEmailTypoSuggestion(normalizedEmail);
+            setError(suggestion ? `Please enter a valid email. Did you mean ${suggestion}?` : 'Please enter a valid email address');
+            return;
+        }
+
+        if (typoSuggestion && typoSuggestion !== normalizedEmail) {
+            setError(`Did you mean ${typoSuggestion}?`);
+            return;
+        }
+
+        if (normalizedEmail !== normalizedConfirmEmail) {
+            setError('Email addresses do not match');
+            return;
+        }
+
         if (password !== confirmPassword) {
             setError('Passwords do not match');
             return;
@@ -46,8 +68,10 @@ export default function SignupPage() {
         setLoading(true);
 
         try {
-            await signUp(email, password, fullName);
-            router.push(`/login?verify=1&email=${encodeURIComponent(email)}`);
+            await signUp(normalizedEmail, password, fullName);
+            // Security: don't expose email in URL — use sessionStorage pre-fill instead
+            try { sessionStorage.setItem('prefill_login_email', normalizedEmail); } catch {}
+            router.push('/login');
         } catch (err: any) {
             setError(err.message || 'Failed to create account');
         } finally {
@@ -150,6 +174,16 @@ export default function SignupPage() {
                             className="h-12 bg-gray-50 border-gray-200 focus:bg-white transition-all rounded-xl"
                         />
 
+                        <Input
+                            type="email"
+                            label={t('confirmEmail')}
+                            value={confirmEmail}
+                            onChange={(e) => setConfirmEmail(e.target.value)}
+                            required
+                            disabled={loading}
+                            className="h-12 bg-gray-50 border-gray-200 focus:bg-white transition-all rounded-xl"
+                        />
+ 
                         <Input
                             type="password"
                             label={t('password')}

@@ -86,7 +86,10 @@ export default function PaymentPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                if (response.status === 403) {
+                const tokenUsed = guestAccessToken || accessToken || '';
+                const isGuestTokenAttempt = !user && !!tokenUsed;
+
+                if (response.status === 403 || (isGuestTokenAttempt && response.status === 404)) {
                     const message = 'Payment session expired. Please return to checkout.';
                     setLoadError(message);
                     toast.error(message);
@@ -171,7 +174,7 @@ export default function PaymentPage() {
         setUploading(true);
 
         try {
-            let publicUrl = '';
+            let screenshotRef = '';
 
             if (screenshot) {
                 const fileExt = screenshot.name.split('.').pop()?.toLowerCase();
@@ -183,9 +186,7 @@ export default function PaymentPage() {
                     .upload(filePath, screenshot);
 
                 if (uploadError) throw uploadError;
-
-                const { data } = supabase.storage.from('payments').getPublicUrl(filePath);
-                publicUrl = data.publicUrl;
+                screenshotRef = filePath;
             }
 
             const submitResponse = await fetch('/api/payment/submit', {
@@ -195,7 +196,8 @@ export default function PaymentPage() {
                     orderId,
                     accessToken: accessToken || undefined,
                     utr: utrNumber || undefined,
-                    screenshotUrl: publicUrl || undefined,
+                    // Send the bucket-relative object path (not a public URL).
+                    screenshotUrl: screenshotRef || undefined,
                 }),
             });
 

@@ -189,17 +189,29 @@ export default function OrderConfirmationPage() {
                             <li>We&apos;ll verify your payment within 24 hours</li>
                             <li>You&apos;ll receive an email confirmation once verified</li>
                             <li>Your order will be shipped within 2-3 business days</li>
-                            <li>Track your order status in your account</li>
+                            <li>
+                                {user
+                                    ? 'Track your order status in your account'
+                                    : 'Track your order using Order ID, phone number, and pincode'}
+                            </li>
                         </ol>
                     </div>
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-4">
-                        <Link href="/account/orders" className="flex-1">
-                            <Button variant="primary" size="lg" fullWidth>
-                                View My Orders
-                            </Button>
-                        </Link>
+                        {user ? (
+                            <Link href="/account/orders" className="flex-1">
+                                <Button variant="primary" size="lg" fullWidth>
+                                    View My Orders
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Link href={`/track-order/${encodeURIComponent(orderId.toUpperCase())}`} className="flex-1">
+                                <Button variant="primary" size="lg" fullWidth>
+                                    Track This Order
+                                </Button>
+                            </Link>
+                        )}
                         <Link href="/shop" className="flex-1">
                             <Button variant="outline" size="lg" fullWidth>
                                 Continue Shopping

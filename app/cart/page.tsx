@@ -35,6 +35,8 @@ export default function CartPage() {
     const locale = useLocale();
     const { items: cartItems, updateQuantity, removeItem, isLoading } = useCart();
     const cleanupInProgressRef = useRef(false);
+    const supportWhatsappPhone = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || '';
+    const supportWhatsappDigits = supportWhatsappPhone.replace(/\D/g, '');
 
     const subtotal = cartItems.reduce((sum, item) => {
         const price = toFiniteNumber(item.product?.current_price);
@@ -73,6 +75,54 @@ export default function CartPage() {
 
         void cleanupUnavailableItems();
     }, [removeItem, unavailableItems]);
+
+    const handleWhatsappCart = () => {
+        try {
+            if (!supportWhatsappDigits) {
+                toast.error('WhatsApp support is not configured.');
+                return;
+            }
+
+            if (cartItems.length === 0) {
+                toast.error('Your cart is empty.');
+                return;
+            }
+
+            const lines: string[] = [];
+            lines.push('Hi Charan Organics, I need help placing an order for these items:');
+            lines.push('');
+
+            for (const item of cartItems) {
+                const product = item.product;
+                const title = locale === 'en'
+                    ? product?.title_en
+                    : resolveLocalizedText(product?.title_en, product?.title_te);
+                const safeTitle = title || product?.title_en || 'Product';
+
+                const unitPrice = toFiniteNumber(product?.current_price);
+                const qty = item.quantity;
+                const lineTotal = unitPrice === null ? null : unitPrice * qty;
+                const variantLabel = item.variant_label ? ` (${item.variant_label})` : '';
+
+                lines.push(
+                    `- ${safeTitle}${variantLabel} x${qty}${lineTotal === null ? '' : ` - Rs.${lineTotal.toFixed(0)}`}`
+                );
+            }
+
+            lines.push('');
+            lines.push(`Subtotal: Rs.${subtotal.toFixed(0)}`);
+            lines.push(`Shipping: Rs.${shipping.toFixed(0)}`);
+            lines.push(`Total: Rs.${total.toFixed(0)}`);
+            lines.push('');
+            lines.push(`From: ${window.location.origin}`);
+
+            const href = `https://wa.me/${supportWhatsappDigits}?text=${encodeURIComponent(lines.join('\n'))}`;
+            window.open(href, '_blank', 'noopener,noreferrer');
+        } catch (error) {
+            console.error('WhatsApp cart error:', error);
+            toast.error('Unable to start WhatsApp');
+        }
+    };
 
     return (
         <main className="section-padding min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -234,7 +284,26 @@ export default function CartPage() {
                                     {hasUnavailablePricing ? 'Fix Cart Items' : 'Checkout'}
                                     <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                                 </Button>
+                                <p className="mt-2 text-xs text-gray-500 font-medium text-center">
+                                    Guest checkout available (no login required).
+                                </p>
 
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    fullWidth
+                                    className="mt-3 rounded-xl h-12 font-semibold text-base"
+                                    disabled={!supportWhatsappDigits}
+                                    onClick={handleWhatsappCart}
+                                >
+                                    WhatsApp Order / Help
+                                </Button>
+                                {!supportWhatsappDigits && (
+                                    <p className="mt-2 text-xs text-gray-500 font-medium text-center">
+                                        WhatsApp support not configured
+                                    </p>
+                                )}
+ 
                                 {hasUnavailablePricing ? (
                                     <p className="mt-2 text-xs text-amber-700 font-medium">
                                         Fixing unavailable item prices...

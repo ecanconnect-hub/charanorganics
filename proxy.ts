@@ -111,7 +111,8 @@ export async function proxy(req: NextRequest) {
         }
     }
 
-    if (pathname.startsWith('/account') || pathname.startsWith('/checkout')) {
+    // Allow guest checkout. Account pages still require login.
+    if (pathname.startsWith('/account')) {
         if (!user) {
             const url = req.nextUrl.clone();
             url.pathname = '/login';

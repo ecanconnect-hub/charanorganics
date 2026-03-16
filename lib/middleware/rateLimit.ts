@@ -31,6 +31,7 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
     '/api/payment/details': { windowMs: 5 * 60 * 1000, maxRequests: 20 }, // 20 payment detail lookups per 5 minutes
     '/api/send-order-email': { windowMs: 10 * 60 * 1000, maxRequests: 5 }, // 5 email triggers per 10 minutes
     '/api/track-order': { windowMs: 5 * 60 * 1000, maxRequests: 20 }, // 20 tracking checks per 5 minutes
+    '/api/report-issue': { windowMs: 15 * 60 * 1000, maxRequests: 5 }, // 5 issue reports per 15 minutes
     '/api/orders': { windowMs: 60 * 1000, maxRequests: 10 }, // 10 orders per minute
     '/api/cart': { windowMs: 60 * 1000, maxRequests: 30 }, // 30 cart operations per minute
     '/api/products': { windowMs: 60 * 1000, maxRequests: 60 }, // 60 product requests per minute
@@ -45,29 +46,30 @@ const FAIL_CLOSED_ENDPOINT_PREFIXES = [
     '/api/payment/submit',
     '/api/send-order-email',
     '/api/track-order',
+    '/api/report-issue',
 ];
 
 /**
  * Get client identifier (IP address or user ID)
  */
 const getClientIdentifier = (request: NextRequest): string => {
-    // Try to get user ID from auth header
-    const authHeader = request.headers.get('authorization');
-    if (authHeader) {
-        // Extract user ID from JWT if available
-        // For now, we'll use IP address
-    }
-
-    // Get IP address
-    const forwarded = request.headers.get('x-forwarded-for');
-    const ipFromForwarded = forwarded ? forwarded.split(',')[0]?.trim() : null;
-    const ipFromRealIp = request.headers.get('x-real-ip')?.trim() || null;
+    // SECURITY: Prefer request.ip (Vercel-injected, cannot be spoofed by end users).
+    // Fall back to X-Real-IP then the LAST entry of X-Forwarded-For.
+    // Never use the FIRST X-Forwarded-For value as primary — easily spoofed.
     const ipFromRequest = (() => {
         const candidate = (request as { ip?: string }).ip;
-        return typeof candidate === 'string' && candidate.trim() ? candidate : null;
+        return typeof candidate === 'string' && candidate.trim() ? candidate.trim() : null;
     })();
-    const ip = ipFromForwarded || ipFromRealIp || ipFromRequest || 'unknown';
 
+    const ipFromRealIp = request.headers.get('x-real-ip')?.trim() || null;
+
+    // Use LAST x-forwarded-for entry (hardest for attacker to fake)
+    const forwarded = request.headers.get('x-forwarded-for');
+    const ipFromForwarded = forwarded
+        ? forwarded.split(',').map((s) => s.trim()).filter(Boolean).at(-1) ?? null
+        : null;
+
+    const ip = ipFromRequest || ipFromRealIp || ipFromForwarded || 'unknown';
     return ip;
 };
 

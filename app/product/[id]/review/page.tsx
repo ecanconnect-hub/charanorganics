@@ -39,14 +39,46 @@ export default function SubmitReviewPage() {
     }, [user, productId]);
 
     const fetchProduct = async () => {
-        const { data } = await supabase
+        setLoading(true);
+
+        const { data, error } = await supabase
             .from('products')
             .select('id, title_en, title_te, product_id')
             .eq('product_id', productId)
             .single();
 
-        if (data) setProduct(data);
-        setLoading(false);
+        if (error || !data) {
+            console.error('Failed to load product for review:', error);
+            toast.error('Product not found');
+            router.push('/shop');
+            return;
+        }
+
+        setProduct(data);
+
+        // Defense-in-depth: block direct access unless the order is delivered.
+        try {
+            const { data: purchaseData, error: purchaseError } = await (supabase
+                .from('order_items' as any) as any)
+                .select('id, orders!inner(status, user_id)')
+                .eq('product_id', data.id)
+                .eq('orders.user_id', user?.id)
+                .eq('orders.status', 'delivered')
+                .limit(1);
+
+            if (purchaseError) {
+                // If this fails due to RLS or schema changes, the DB insert policy will still protect reviews.
+                console.warn('Purchase verification check failed:', purchaseError);
+            }
+
+            if (!purchaseError && (!purchaseData || purchaseData.length === 0)) {
+                toast.error('Only customers with delivered orders can write a review.');
+                router.push(`/product/${productId}`);
+                return;
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +106,12 @@ export default function SubmitReviewPage() {
             router.push(`/product/${productId}`);
         } catch (error: any) {
             console.error('Error submitting review:', error);
-            toast.error(error.message || 'Failed to submit review');
+            const message = String(error?.message || '');
+            if (message.toLowerCase().includes('row-level security')) {
+                toast.error('Only customers with delivered orders can write a review.');
+            } else {
+                toast.error(message || 'Failed to submit review');
+            }
         } finally {
             setSubmitting(false);
         }

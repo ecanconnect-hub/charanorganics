@@ -401,14 +401,35 @@ export const clearUserCart = async (userId: string): Promise<boolean> => {
 /**
  * Migrate guest cart to user cart after login
  */
-export const migrateGuestCartToUser = async (userId: string): Promise<void> => {
+export const migrateGuestCartToUser = async (
+    userId: string
+): Promise<{ migrated: number; failed: number }> => {
     const guestCart = getGuestCart();
 
-    for (const item of guestCart) {
-        await addToUserCart(userId, item.product_id, item.variant_id, item.quantity);
+    if (!userId || guestCart.length === 0) {
+        return { migrated: 0, failed: 0 };
     }
 
-    clearGuestCart();
+    let migrated = 0;
+    const failedItems: CartItem[] = [];
+
+    for (const item of guestCart) {
+        const ok = await addToUserCart(userId, item.product_id, item.variant_id, item.quantity);
+        if (ok) {
+            migrated += 1;
+        } else {
+            // Keep items locally so the user doesn't lose their cart due to transient failures.
+            failedItems.push(item);
+        }
+    }
+
+    if (failedItems.length === 0) {
+        clearGuestCart();
+    } else {
+        saveGuestCart(failedItems);
+    }
+
+    return { migrated, failed: failedItems.length };
 };
 
 /**

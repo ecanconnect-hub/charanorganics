@@ -36,6 +36,7 @@ type SelectedPayment = PaymentWithOrder & {
 };
 
 const formatCurrency = (value: number) => `Rs. ${(value || 0).toFixed(2)}`;
+const isHttpUrl = (value: string) => /^https?:\/\//i.test(value);
 
 export default function AdminPaymentsPage() {
     const router = useRouter();
@@ -46,6 +47,7 @@ export default function AdminPaymentsPage() {
     const [selectedPayment, setSelectedPayment] = useState<SelectedPayment | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
+    const [screenshotUrlsByPaymentId, setScreenshotUrlsByPaymentId] = useState<Record<string, string>>({});
 
     useEffect(() => {
         void checkAdmin();
@@ -76,6 +78,7 @@ export default function AdminPaymentsPage() {
 
     const fetchPayments = async () => {
         setLoading(true);
+        setScreenshotUrlsByPaymentId({});
 
         let query = supabase
             .from('payments')
@@ -113,6 +116,49 @@ export default function AdminPaymentsPage() {
 
         const typedPayments = (data ?? []) as unknown as PaymentWithOrder[];
         setPayments(typedPayments);
+
+        const resolvedDirectUrls: Record<string, string> = {};
+        const signedUrlCandidates = typedPayments.filter((payment) => {
+            const ref = payment.payment_screenshot_url;
+            if (!ref) return false;
+            if (isHttpUrl(ref)) {
+                resolvedDirectUrls[payment.id] = ref;
+                return false;
+            }
+            return true;
+        });
+
+        if (Object.keys(resolvedDirectUrls).length > 0) {
+            setScreenshotUrlsByPaymentId(resolvedDirectUrls);
+        }
+
+        if (signedUrlCandidates.length > 0) {
+            const entries = await Promise.all(
+                signedUrlCandidates.map(async (payment) => {
+                    const ref = payment.payment_screenshot_url;
+                    if (!ref) return null;
+
+                    const { data: signedData, error: signedError } = await supabase.storage
+                        .from('payments')
+                        .createSignedUrl(ref, 60 * 60);
+
+                    if (signedError || !signedData?.signedUrl) {
+                        return null;
+                    }
+
+                    return [payment.id, signedData.signedUrl] as const;
+                })
+            );
+
+            const resolvedSignedUrls = Object.fromEntries(
+                entries.filter((entry): entry is readonly [string, string] => Array.isArray(entry))
+            );
+
+            if (Object.keys(resolvedSignedUrls).length > 0) {
+                setScreenshotUrlsByPaymentId((prev) => ({ ...prev, ...resolvedSignedUrls }));
+            }
+        }
+
         setLoading(false);
     };
 
@@ -286,10 +332,12 @@ export default function AdminPaymentsPage() {
                             className="relative block aspect-video w-full bg-gray-100"
                             onClick={() => void openPaymentDetails(payment)}
                         >
-                            {payment.payment_screenshot_url ? (
-                                <Image src={payment.payment_screenshot_url} alt="Payment screenshot" fill unoptimized className="object-cover" />
+                            {payment.payment_screenshot_url && screenshotUrlsByPaymentId[payment.id] ? (
+                                <Image src={screenshotUrlsByPaymentId[payment.id]} alt="Payment screenshot" fill unoptimized className="object-cover" />
                             ) : (
-                                <div className="flex h-full items-center justify-center text-sm text-gray-400">No screenshot</div>
+                                <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                                    {payment.payment_screenshot_url ? 'Screenshot unavailable' : 'No screenshot'}
+                                </div>
                             )}
                         </button>
 
@@ -378,9 +426,9 @@ export default function AdminPaymentsPage() {
                         <div>
                             <p className="mb-2 text-sm font-semibold text-gray-700">Payment Screenshot</p>
                             <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
-                                {selectedPayment.payment_screenshot_url ? (
+                                {selectedPayment.payment_screenshot_url && screenshotUrlsByPaymentId[selectedPayment.id] ? (
                                     <Image
-                                        src={selectedPayment.payment_screenshot_url}
+                                        src={screenshotUrlsByPaymentId[selectedPayment.id]}
                                         alt="Payment Screenshot"
                                         width={1000}
                                         height={700}
@@ -388,7 +436,9 @@ export default function AdminPaymentsPage() {
                                         className="h-auto w-full"
                                     />
                                 ) : (
-                                    <div className="py-16 text-center text-sm text-gray-500">No screenshot uploaded</div>
+                                    <div className="py-16 text-center text-sm text-gray-500">
+                                        {selectedPayment.payment_screenshot_url ? 'Screenshot unavailable' : 'No screenshot uploaded'}
+                                    </div>
                                 )}
                             </div>
                         </div>

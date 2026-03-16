@@ -1,7 +1,7 @@
 /**
  * Checkout Page
  * 
- * Requires login, collect shipping address, create order
+ * Guest or logged-in checkout: collect shipping address and create order.
  */
 
 'use client';
@@ -14,12 +14,24 @@ import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
+import { migrateGuestCartToUser } from '@/lib/utils/cart';
+import { getEmailTypoSuggestion, isProbablyValidEmail, normalizeEmail } from '@/lib/utils/email';
 import toast from 'react-hot-toast';
 
 type ProfilePolicyRow = Pick<Database['public']['Tables']['profiles']['Row'], 'privacy_policy_accepted'>;
 
-const hasFiniteNumber = (value: unknown): value is number =>
-    typeof value === 'number' && Number.isFinite(value);
+type GuestSavedAddress = {
+    fullName: string;
+    phone: string;
+    email: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    state: string;
+    pincode: string;
+};
+
+const GUEST_ADDRESS_STORAGE_KEY = 'guest_checkout_address_v1';
 
 const toFiniteNumber = (value: unknown): number | null => {
     if (typeof value === 'number' && Number.isFinite(value)) {
@@ -47,19 +59,113 @@ export default function CheckoutPage() {
     // Address fields
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
     const [addressLine1, setAddressLine1] = useState('');
     const [addressLine2, setAddressLine2] = useState('');
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
     const [pincode, setPincode] = useState('');
+    const [saveAddressOnDevice, setSaveAddressOnDevice] = useState(false);
+    const [hasSavedGuestAddress, setHasSavedGuestAddress] = useState(false);
+
+    const supportWhatsappPhone = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || '';
+    const supportWhatsappDigits = supportWhatsappPhone.replace(/\D/g, '');
+
+    const loadGuestSavedAddress = () => {
+        try {
+            const raw = localStorage.getItem(GUEST_ADDRESS_STORAGE_KEY);
+            if (!raw) {
+                setHasSavedGuestAddress(false);
+                return;
+            }
+
+            const parsed = JSON.parse(raw) as Partial<GuestSavedAddress> | null;
+            if (!parsed || typeof parsed !== 'object') {
+                localStorage.removeItem(GUEST_ADDRESS_STORAGE_KEY);
+                setHasSavedGuestAddress(false);
+                setSaveAddressOnDevice(false);
+                return;
+            }
+
+            const normalize = (value: unknown, maxLen: number) =>
+                typeof value === 'string' ? value.slice(0, maxLen) : '';
+
+            const saved: GuestSavedAddress = {
+                fullName: normalize(parsed.fullName, 100),
+                phone: normalize(parsed.phone, 20),
+                email: normalize(parsed.email, 254),
+                addressLine1: normalize(parsed.addressLine1, 200),
+                addressLine2: normalize(parsed.addressLine2, 200),
+                city: normalize(parsed.city, 100),
+                state: normalize(parsed.state, 100),
+                pincode: normalize(parsed.pincode, 12),
+            };
+
+            const formIsEmpty = [fullName, phone, email, addressLine1, addressLine2, city, state, pincode].every(
+                (value) => !value
+            );
+
+            setHasSavedGuestAddress(true);
+            setSaveAddressOnDevice(true);
+
+            if (formIsEmpty) {
+                setFullName(saved.fullName);
+                setPhone(saved.phone);
+                setEmail(saved.email);
+                setAddressLine1(saved.addressLine1);
+                setAddressLine2(saved.addressLine2);
+                setCity(saved.city);
+                setState(saved.state);
+                setPincode(saved.pincode);
+            }
+        } catch (error) {
+            console.warn('Failed to load saved guest address:', error);
+            setHasSavedGuestAddress(false);
+            setSaveAddressOnDevice(false);
+        }
+    };
+
+    const persistGuestSavedAddress = () => {
+        const address: GuestSavedAddress = {
+            fullName,
+            phone,
+            email: normalizeEmail(email),
+            addressLine1,
+            addressLine2,
+            city,
+            state,
+            pincode,
+        };
+
+        try {
+            localStorage.setItem(GUEST_ADDRESS_STORAGE_KEY, JSON.stringify(address));
+            setHasSavedGuestAddress(true);
+        } catch (error) {
+            console.warn('Failed to save guest address:', error);
+        }
+    };
+
+    const clearGuestSavedAddress = () => {
+        try {
+            localStorage.removeItem(GUEST_ADDRESS_STORAGE_KEY);
+        } catch (error) {
+            console.warn('Failed to clear saved guest address:', error);
+        } finally {
+            setHasSavedGuestAddress(false);
+            setSaveAddressOnDevice(false);
+            toast.success('Saved address cleared.');
+        }
+    };
 
     useEffect(() => {
         const initialization = async () => {
             if (user) {
+                await migrateGuestCartToUser(user.id);
                 await fetchCart();
                 await fetchSavedAddresses();
                 await loadSavedAddress();
             } else if (!authLoading) {
+                loadGuestSavedAddress();
                 await fetchGuestCart();
             }
         };
@@ -158,6 +264,8 @@ export default function CheckoutPage() {
 
                 return [{
                     ...item,
+                    variant: variant ?? null,
+                    variant_label: variant?.label ?? null,
                     product: {
                         ...product,
                         current_price: resolvedPrice,
@@ -223,6 +331,21 @@ export default function CheckoutPage() {
         e.preventDefault();
         if (loading) return;
 
+        if (!user) {
+            const normalized = normalizeEmail(email);
+            if (!isProbablyValidEmail(normalized)) {
+                const suggestion = getEmailTypoSuggestion(normalized);
+                toast.error(suggestion ? `Please enter a valid email. Did you mean ${suggestion}?` : 'Please enter a valid email address.');
+                return;
+            }
+
+            const typoSuggestion = getEmailTypoSuggestion(normalized);
+            if (typoSuggestion && typoSuggestion !== normalized) {
+                toast.error(`Did you mean ${typoSuggestion}?`);
+                return;
+            }
+        }
+
         setLoading(true);
         setPolicyBlocked(false);
 
@@ -247,9 +370,14 @@ export default function CheckoutPage() {
                 }
             }
 
+            if (!user && saveAddressOnDevice) {
+                persistGuestSavedAddress();
+            }
+
             const payload: any = {
                 fullName,
                 phone,
+                email: !user ? normalizeEmail(email) : undefined,
                 addressLine1,
                 addressLine2,
                 city,
@@ -333,6 +461,61 @@ export default function CheckoutPage() {
     const shipping = subtotal >= 2000 ? 0 : calculatedShipping;
     const total = subtotal + shipping;
 
+    const handleWhatsappOrder = () => {
+        try {
+            if (!supportWhatsappDigits) {
+                toast.error('WhatsApp support is not configured.');
+                return;
+            }
+
+            if (cartItems.length === 0) {
+                toast.error('Your cart is empty.');
+                return;
+            }
+
+            const lines: string[] = [];
+            lines.push('Hi Charan Organics, I want to place an order.');
+            lines.push('');
+            lines.push('Items:');
+
+            for (const item of cartItems) {
+                const title = item?.product?.title_en || 'Product';
+                const variantLabel = item?.variant?.label || item?.variant_label || '';
+                const unitPrice = toFiniteNumber(item?.product?.current_price);
+                const qty = typeof item?.quantity === 'number' ? item.quantity : 1;
+                const lineTotal = unitPrice === null ? null : unitPrice * qty;
+
+                lines.push(
+                    `- ${title}${variantLabel ? ` (${variantLabel})` : ''} x${qty}${lineTotal === null ? '' : ` - Rs.${lineTotal.toFixed(0)}`}`
+                );
+            }
+
+            lines.push('');
+            lines.push(`Subtotal: Rs.${subtotal.toFixed(0)}`);
+            lines.push(`Shipping: Rs.${shipping.toFixed(0)}`);
+            lines.push(`Total: Rs.${total.toFixed(0)}`);
+            lines.push('');
+            lines.push('Delivery Address:');
+            if (fullName) lines.push(`Name: ${fullName}`);
+            if (phone) lines.push(`Phone: ${phone}`);
+            if (addressLine1 || addressLine2) {
+                lines.push(`Address: ${[addressLine1, addressLine2].filter(Boolean).join(', ')}`);
+            }
+            if (city || state) {
+                lines.push(`City/State: ${[city, state].filter(Boolean).join(', ')}`);
+            }
+            if (pincode) lines.push(`Pincode: ${pincode}`);
+            lines.push('');
+            lines.push(`From: ${window.location.origin}`);
+
+            const href = `https://wa.me/${supportWhatsappDigits}?text=${encodeURIComponent(lines.join('\n'))}`;
+            window.open(href, '_blank', 'noopener,noreferrer');
+        } catch (error) {
+            console.error('WhatsApp order error:', error);
+            toast.error('Unable to start WhatsApp');
+        }
+    };
+
     return (
         <div className="bg-background py-12">
             {/* Safe top spacing to avoid header overlap */}
@@ -354,6 +537,42 @@ export default function CheckoutPage() {
                     </div>
                 ) : (
                     <form onSubmit={handlePlaceOrder}>
+                        {!user && (
+                            <div className="mb-8 bg-white rounded-[2.5rem] p-6 border border-gray-100 shadow-sm">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">Checkout Options</p>
+                                        <p className="text-lg font-black text-gray-900">Continue as Guest</p>
+                                        <p className="text-sm text-gray-600 font-medium leading-relaxed">
+                                            No account required. You can place your order now. Login to use saved addresses and view order history.
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <Link href="/login?returnTo=/checkout" className="block">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="h-12 rounded-2xl font-bold"
+                                            >
+                                                Login
+                                            </Button>
+                                        </Link>
+                                        <Link href="/signup" className="block">
+                                            <Button
+                                                type="button"
+                                                variant="primary"
+                                                className="h-12 rounded-2xl font-black"
+                                            >
+                                                Create Account
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                </div>
+                                <p className="mt-4 text-xs text-gray-500 font-medium">
+                                    Guest orders can be tracked using your Order ID, phone number, and pincode.
+                                </p>
+                            </div>
+                        )}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* Shipping Address */}
                             <div className="lg:col-span-2">
@@ -411,6 +630,21 @@ export default function CheckoutPage() {
                                             required
                                             className="rounded-xl h-14"
                                         />
+
+                                        {!user && (
+                                            <div className="md:col-span-2">
+                                                <Input
+                                                    label="Email"
+                                                    type="email"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    required
+                                                    placeholder="name@example.com"
+                                                    helperText="Order confirmation and updates will be sent to this email."
+                                                    className="rounded-xl h-14"
+                                                />
+                                            </div>
+                                        )}
                                         <div className="md:col-span-2">
                                             <Input
                                                 label="Address Line 1"
@@ -471,6 +705,35 @@ export default function CheckoutPage() {
                                             className="rounded-xl h-14"
                                         />
                                     </div>
+
+                                    {!user && (
+                                        <div className="mt-8 pt-6 border-t border-gray-100">
+                                            <div className="flex items-start gap-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={saveAddressOnDevice}
+                                                    onChange={(e) => setSaveAddressOnDevice(e.target.checked)}
+                                                    className="w-5 h-5 mt-0.5 text-green-600 border-gray-300 rounded-lg focus:ring-green-500 transition-all cursor-pointer"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-bold text-gray-900">Save this address on this device</p>
+                                                    <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                                                        For faster checkout next time. Saved only in this browser.
+                                                    </p>
+                                                </div>
+                                                {hasSavedGuestAddress && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        className="rounded-xl text-xs font-bold whitespace-nowrap px-3 py-2"
+                                                        onClick={clearGuestSavedAddress}
+                                                    >
+                                                        Clear
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -490,6 +753,9 @@ export default function CheckoutPage() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="font-bold text-gray-900 text-xs line-clamp-1">{item.product?.title_en}</p>
+                                                    {item.variant_label && (
+                                                        <p className="text-[10px] font-bold text-gray-500 mt-0.5">Size: {item.variant_label}</p>
+                                                    )}
                                                     <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mt-0.5">Qty: {item.quantity}</p>
                                                 </div>
                                                 <p className="font-black text-gray-900 text-sm">₹{(item.product?.current_price * item.quantity).toFixed(0)}</p>
@@ -536,14 +802,31 @@ export default function CheckoutPage() {
                                         fullWidth
                                         isLoading={loading}
                                         className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-green-900/20"
-                                    >
-                                        Confirm Order
-                                    </Button>
+                                     >
+                                         Confirm Order
+                                     </Button>
 
-                                    {policyBlocked && (
-                                        <div className="mt-4 rounded-xl bg-amber-100/90 border border-amber-300 px-4 py-3">
-                                            <p className="text-xs font-bold text-amber-900 mb-2">
-                                                Please accept policy in Account Security to continue.
+                                     <Button
+                                         type="button"
+                                         variant="outline"
+                                         size="md"
+                                         fullWidth
+                                         disabled={!supportWhatsappDigits}
+                                         onClick={handleWhatsappOrder}
+                                         className="mt-3 h-12 rounded-2xl font-black uppercase tracking-widest text-[11px]"
+                                     >
+                                         WhatsApp Order / Help
+                                     </Button>
+                                     {!supportWhatsappDigits && (
+                                         <p className="mt-2 text-center text-[11px] text-white/70 font-medium">
+                                             WhatsApp support not configured
+                                         </p>
+                                     )}
+ 
+                                     {policyBlocked && (
+                                         <div className="mt-4 rounded-xl bg-amber-100/90 border border-amber-300 px-4 py-3">
+                                             <p className="text-xs font-bold text-amber-900 mb-2">
+                                                 Please accept policy in Account Security to continue.
                                             </p>
                                             <Link href="/account/security" className="inline-block">
                                                 <Button

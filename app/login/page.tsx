@@ -31,13 +31,21 @@ function LoginPageContent() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const verifyPending = searchParams.get('verify') === '1';
     const signupEmail = searchParams.get('email') || '';
     const returnTo = getSafeReturnTo(searchParams.get('returnTo'));
 
     useEffect(() => {
-        if (signupEmail) {
-            setEmail(signupEmail);
+        // Support email pre-fill from URL param (legacy) and sessionStorage (preferred, no URL exposure)
+        const storedEmail = (() => {
+            try {
+                const val = sessionStorage.getItem('prefill_login_email');
+                if (val) sessionStorage.removeItem('prefill_login_email');
+                return val || '';
+            } catch { return ''; }
+        })();
+        const prefill = signupEmail || storedEmail;
+        if (prefill) {
+            setEmail(prefill);
         }
     }, [signupEmail]);
 
@@ -131,17 +139,6 @@ function LoginPageContent() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <p className="text-red-600 text-sm font-medium">{error}</p>
-                        </div>
-                    )}
-
-                    {verifyPending && (
-                        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
-                            <svg className="w-5 h-5 text-amber-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p className="text-amber-800 text-sm font-medium">
-                                Account created. Please check your email and click the confirmation link, then login.
-                            </p>
                         </div>
                     )}
 

@@ -147,7 +147,8 @@ CREATE TABLE IF NOT EXISTS public.cart_items (
 CREATE TABLE IF NOT EXISTS public.orders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     order_id TEXT UNIQUE NOT NULL, -- Human-readable like 'ORD-20260120-001'
-    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    -- Nullable to support guest checkout (guest orders have no profile row)
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     
     -- Shipping details (snapshot at order time)
     shipping_name TEXT NOT NULL,

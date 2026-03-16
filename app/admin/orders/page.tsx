@@ -69,6 +69,7 @@ const formatDate = (value: string | null, includeTime = false) => {
     return new Date(value).toLocaleString('en-IN', options);
 };
 const formatStatusLabel = (status: string) => status.replace(/_/g, ' ').toUpperCase();
+const isHttpUrl = (value: string) => /^https?:\/\//i.test(value);
 
 export default function AdminOrdersPage() {
     const router = useRouter();
@@ -82,6 +83,7 @@ export default function AdminOrdersPage() {
     const [selectedOrder, setSelectedOrder] = useState<SelectedOrder | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [isExportingPdf, setIsExportingPdf] = useState(false);
+    const [resolvedPaymentScreenshotUrl, setResolvedPaymentScreenshotUrl] = useState<string | null>(null);
 
     useEffect(() => {
         void checkAdmin();
@@ -228,6 +230,8 @@ export default function AdminOrdersPage() {
     };
 
     const viewOrderDetails = async (order: OrderListRecord) => {
+        setResolvedPaymentScreenshotUrl(null);
+
         const { data: orderItemsData } = await supabase
             .from('order_items')
             .select(`
@@ -254,6 +258,20 @@ export default function AdminOrdersPage() {
         const orderItems = (orderItemsData ?? []) as unknown as OrderItemWithProduct[];
         const orderHistory = (orderHistoryData ?? []) as unknown as OrderHistoryWithProfile[];
         const paymentRows = (paymentRowsData ?? []) as PaymentMini[];
+
+        const screenshotRef = paymentRows[0]?.payment_screenshot_url || '';
+        if (screenshotRef) {
+            if (isHttpUrl(screenshotRef)) {
+                setResolvedPaymentScreenshotUrl(screenshotRef);
+            } else {
+                const { data: signedData, error: signedError } = await supabase.storage
+                    .from('payments')
+                    .createSignedUrl(screenshotRef, 60 * 60);
+                if (!signedError && signedData?.signedUrl) {
+                    setResolvedPaymentScreenshotUrl(signedData.signedUrl);
+                }
+            }
+        }
 
         setSelectedOrder({
             ...order,
@@ -650,7 +668,15 @@ export default function AdminOrdersPage() {
                 )}
             </div>
 
-            <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Order Full Details" size="xl">
+            <Modal
+                isOpen={showModal}
+                onClose={() => {
+                    setShowModal(false);
+                    setResolvedPaymentScreenshotUrl(null);
+                }}
+                title="Order Full Details"
+                size="xl"
+            >
                 {selectedOrder && (
                     <div className="space-y-6">
                         <div className="flex justify-end">
@@ -722,16 +748,18 @@ export default function AdminOrdersPage() {
                                     {selectedOrder.payment[0].rejection_reason && (
                                         <p className="text-xs text-red-700">Rejection reason: {selectedOrder.payment[0].rejection_reason}</p>
                                     )}
-                                    {selectedOrder.payment[0].payment_screenshot_url && (
+                                    {selectedOrder.payment[0].payment_screenshot_url && resolvedPaymentScreenshotUrl ? (
                                         <Image
-                                            src={selectedOrder.payment[0].payment_screenshot_url}
+                                            src={resolvedPaymentScreenshotUrl}
                                             alt="Payment proof"
                                             width={900}
                                             height={500}
                                             unoptimized
                                             className="h-auto w-full rounded-lg border border-green-200"
                                         />
-                                    )}
+                                    ) : selectedOrder.payment[0].payment_screenshot_url ? (
+                                        <p className="text-xs text-gray-600">Screenshot unavailable</p>
+                                    ) : null}
                                 </div>
                             ) : (
                                 <p className="text-sm text-gray-600">No payment submitted yet.</p>

@@ -12,6 +12,13 @@ type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
 const checkoutSchema = z.object({
     fullName: z.string().min(2).max(100),
     phone: z.string().min(10).max(15).regex(/^\+?[\d\s-]+$/, "Invalid phone format"),
+    email: z
+        .string()
+        .trim()
+        .max(254)
+        .email("Invalid email address")
+        .refine((value) => !/[\r\n]/.test(value), "Invalid email address")
+        .optional(),
     addressLine1: z.string().min(5).max(200),
     addressLine2: z.string().max(200).optional(),
     city: z.string().min(2).max(100),
@@ -21,7 +28,7 @@ const checkoutSchema = z.object({
         product_id: z.string().uuid(),
         variant_id: z.string().uuid().optional().nullable(),
         quantity: z.number().int().positive().max(100),
-    })).min(1).optional(),
+    })).min(1).max(50).optional(),
 });
 
 // Server-side Supabase Client
@@ -130,6 +137,7 @@ export async function POST(req: NextRequest) {
                     'X-RateLimit-Remaining': '0',
                     'X-RateLimit-Reset': resetTime.toISOString(),
                     'Retry-After': Math.ceil((resetTime.getTime() - Date.now()) / 1000).toString(),
+                    'Cache-Control': 'no-store',
                 },
             }
         );
@@ -153,12 +161,31 @@ export async function POST(req: NextRequest) {
         if (!validation.success) {
             return NextResponse.json(
                 { error: 'Invalid input', details: validation.error.format() },
-                { status: 400 }
+                { status: 400, headers: { 'Cache-Control': 'no-store' } }
             );
         }
 
-        const { fullName, phone, addressLine1, addressLine2, city, state, pincode, cartItems: validatedCartItems } = validation.data;
+        const { fullName, phone, email, addressLine1, addressLine2, city, state, pincode, cartItems: validatedCartItems } = validation.data;
         const guestCartItems = validatedCartItems; // Safe verified source
+
+        // Email is required for guest checkout to send confirmation/updates.
+        const normalizedBodyEmail = typeof email === 'string' ? email.trim().toLowerCase() : null;
+        const normalizedUserEmail = typeof user?.email === 'string' ? user.email.trim().toLowerCase() : null;
+        const resolvedEmail = normalizedUserEmail || normalizedBodyEmail;
+
+        if (!user && !resolvedEmail) {
+            return NextResponse.json(
+                { error: 'Email is required for guest checkout' },
+                {
+                    status: 400,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
+        }
 
         // 4. Fetch Cart Items (Trusted Source)
         let cartToProcess: any[] = [];
@@ -174,7 +201,17 @@ export async function POST(req: NextRequest) {
                 .eq('user_id', user.id);
 
             if (cartError || !dbItems || dbItems.length === 0) {
-                return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
+                return NextResponse.json(
+                    { error: 'Cart is empty' },
+                    {
+                        status: 400,
+                        headers: {
+                            'X-RateLimit-Remaining': remaining.toString(),
+                            'X-RateLimit-Reset': resetTime.toISOString(),
+                            'Cache-Control': 'no-store',
+                        },
+                    }
+                );
             }
             cartToProcess = (dbItems as any[]).map(item => ({
                 ...item,
@@ -185,7 +222,17 @@ export async function POST(req: NextRequest) {
         } else {
             // Guest Flow: Fetch products and variants from DB
             if (!guestCartItems || !Array.isArray(guestCartItems) || guestCartItems.length === 0) {
-                return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
+                return NextResponse.json(
+                    { error: 'Cart is empty' },
+                    {
+                        status: 400,
+                        headers: {
+                            'X-RateLimit-Remaining': remaining.toString(),
+                            'X-RateLimit-Reset': resetTime.toISOString(),
+                            'Cache-Control': 'no-store',
+                        },
+                    }
+                );
             }
 
             const productIds = Array.from(new Set(guestCartItems.map((item: any) => item.product_id)));
@@ -197,7 +244,17 @@ export async function POST(req: NextRequest) {
             ]);
 
             if (!products || products.length === 0) {
-                return NextResponse.json({ error: 'Products not found' }, { status: 400 });
+                return NextResponse.json(
+                    { error: 'Products not found' },
+                    {
+                        status: 400,
+                        headers: {
+                            'X-RateLimit-Remaining': remaining.toString(),
+                            'X-RateLimit-Reset': resetTime.toISOString(),
+                            'Cache-Control': 'no-store',
+                        },
+                    }
+                );
             }
 
             cartToProcess = guestCartItems.map((item: any) => {
@@ -249,6 +306,16 @@ export async function POST(req: NextRequest) {
         });
 
         if (duplicateOrder) {
+            if (resolvedEmail) {
+                const { error: emailUpdateError } = await (adminDb
+                    .from('orders') as any)
+                    .update({ email: resolvedEmail })
+                    .eq('id', duplicateOrder.id);
+                if (emailUpdateError) {
+                    console.error('Failed to persist order email for duplicate order:', emailUpdateError);
+                }
+            }
+
             const responsePayload: {
                 success: boolean;
                 orderId: string;
@@ -272,6 +339,7 @@ export async function POST(req: NextRequest) {
                     headers: {
                         'X-RateLimit-Remaining': remaining.toString(),
                         'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
                     },
                 }
             );
@@ -297,10 +365,30 @@ export async function POST(req: NextRequest) {
             if (rpcError.message.includes('Insufficient stock')) {
                 errorMessage = rpcError.message;
             }
-            return NextResponse.json({ error: errorMessage }, { status: 400 });
+            return NextResponse.json(
+                { error: errorMessage },
+                {
+                    status: 400,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
         }
 
         const typedResult = rpcResult as { success: boolean, order_id: string, id: string };
+
+        if (resolvedEmail) {
+            const { error: emailUpdateError } = await (adminDb
+                .from('orders') as any)
+                .update({ email: resolvedEmail })
+                .eq('id', typedResult.id);
+            if (emailUpdateError) {
+                console.error('Failed to persist order email:', emailUpdateError);
+            }
+        }
 
         // Email will be sent AFTER payment proof submission, not here
 
@@ -325,6 +413,7 @@ export async function POST(req: NextRequest) {
                 headers: {
                     'X-RateLimit-Remaining': remaining.toString(),
                     'X-RateLimit-Reset': resetTime.toISOString(),
+                    'Cache-Control': 'no-store',
                 },
             }
         );
@@ -333,7 +422,7 @@ export async function POST(req: NextRequest) {
         console.error('Checkout API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
-            { status: 500 }
+            { status: 500, headers: { 'Cache-Control': 'no-store' } }
         );
     }
 }

@@ -1,0 +1,1532 @@
+﻿[
+    {
+        "product_id":  "BC017",
+        "title_en":  "Aloe Vera Gel",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "gm",
+        "current_price":  90.00,
+        "mrp":  119.00
+    },
+    {
+        "product_id":  "BC091",
+        "title_en":  "Aloe Vera Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  50.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC038",
+        "title_en":  "Amla Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  80.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC073",
+        "title_en":  "Arjuna Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC026",
+        "title_en":  "Arrowroot Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  400.00
+    },
+    {
+        "product_id":  "BC016",
+        "title_en":  "Ashwagandha Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC096",
+        "title_en":  "Avarampoo",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC008",
+        "title_en":  "Avocado Butter",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  75.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC089",
+        "title_en":  "Avocado Oil",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  150.00,
+        "mrp":  188.00
+    },
+    {
+        "product_id":  "BC131",
+        "title_en":  "Badam Charcoal",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  75.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC167",
+        "title_en":  "Badam Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "HP001",
+        "title_en":  "Banana Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  100.00,
+        "mrp":  650.00
+    },
+    {
+        "product_id":  "BC022",
+        "title_en":  "Beeswax",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  70.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC061",
+        "title_en":  "Beetroot Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC132",
+        "title_en":  "Bentonite Clay",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  300.00
+    },
+    {
+        "product_id":  "BC123",
+        "title_en":  "Bergamot Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC103",
+        "title_en":  "Bhringraj Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC019",
+        "title_en":  "Bhringraj Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC166",
+        "title_en":  "Bhringraj Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC034",
+        "title_en":  "Black Sesame Oil",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  150.00,
+        "mrp":  188.00
+    },
+    {
+        "product_id":  "BC042",
+        "title_en":  "Brahmi Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC023",
+        "title_en":  "Calendula Oil",
+        "is_active":  true,
+        "unit_value":  20.00,
+        "unit_type":  "ml",
+        "current_price":  70.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC122",
+        "title_en":  "Camphor Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC099",
+        "title_en":  "CAPB",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  70.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC033",
+        "title_en":  "Castor Oil",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  150.00,
+        "mrp":  188.00
+    },
+    {
+        "product_id":  "EO005",
+        "title_en":  "Cedarwood Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  249.00
+    },
+    {
+        "product_id":  "BC009",
+        "title_en":  "Cetyl Alcohol",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  70.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC115",
+        "title_en":  "Chamomile Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC133",
+        "title_en":  "Charcoal Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC152",
+        "title_en":  "Charcoal Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC054",
+        "title_en":  "Cinnamon Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC124",
+        "title_en":  "Clary Sage Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC021",
+        "title_en":  "Coco Betaine",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  70.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC013",
+        "title_en":  "Coco Glucoside",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "gm",
+        "current_price":  200.00,
+        "mrp":  269.00
+    },
+    {
+        "product_id":  "BC007",
+        "title_en":  "Cocoa Butter",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  75.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC032",
+        "title_en":  "Coconut Oil",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  150.00,
+        "mrp":  188.00
+    },
+    {
+        "product_id":  "BC020",
+        "title_en":  "Corn Starch",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC113",
+        "title_en":  "Cucumber Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC095",
+        "title_en":  "Curry Leaves Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "BC046",
+        "title_en":  "Custard Apple Seeds Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  70.00,
+        "mrp":  88.00
+    },
+    {
+        "product_id":  "BC168",
+        "title_en":  "D-Tan Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC018",
+        "title_en":  "Dalchini Chekka",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  59.00
+    },
+    {
+        "product_id":  "BC150",
+        "title_en":  "Dark Neck Removal Cream",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  180.00,
+        "mrp":  200.00
+    },
+    {
+        "product_id":  "BC036",
+        "title_en":  "De-Mineralized Water",
+        "is_active":  true,
+        "unit_value":  1.00,
+        "unit_type":  "l",
+        "current_price":  50.00,
+        "mrp":  63.00
+    },
+    {
+        "product_id":  "BC134",
+        "title_en":  "Dead Sea Mud",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  300.00
+    },
+    {
+        "product_id":  "BC029",
+        "title_en":  "Decyl Glucoside",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "gm",
+        "current_price":  120.00,
+        "mrp":  239.00
+    },
+    {
+        "product_id":  "BC010",
+        "title_en":  "Emulsifying Wax (E-Wax)",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  70.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC014",
+        "title_en":  "Essential Oil (Lavender)",
+        "is_active":  false,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  200.00,
+        "mrp":  269.00
+    },
+    {
+        "product_id":  "BC154",
+        "title_en":  "Facial Body Lotion",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  180.00,
+        "mrp":  200.00
+    },
+    {
+        "product_id":  "BC043",
+        "title_en":  "Fenugreek Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  250.00
+    },
+    {
+        "product_id":  "BC084",
+        "title_en":  "Flax Seeds Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "BC156",
+        "title_en":  "Foot Cream",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  180.00,
+        "mrp":  200.00
+    },
+    {
+        "product_id":  "BC119",
+        "title_en":  "Frankincense Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC081",
+        "title_en":  "Gaddi Chamanthi Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC126",
+        "title_en":  "Geranium Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC129",
+        "title_en":  "German Chamomile Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC116",
+        "title_en":  "Ginger Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC160",
+        "title_en":  "Goat Milk Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC153",
+        "title_en":  "Gold Facial bombs",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC077",
+        "title_en":  "Gond Katira",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  70.00,
+        "mrp":  88.00
+    },
+    {
+        "product_id":  "BC012",
+        "title_en":  "Grape Seed Oil",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  100.00,
+        "mrp":  139.00
+    },
+    {
+        "product_id":  "BC148",
+        "title_en":  "Grape Shape Hand Wash Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC135",
+        "title_en":  "Green Clay",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  300.00
+    },
+    {
+        "product_id":  "BC109",
+        "title_en":  "Green Tea Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC136",
+        "title_en":  "Hartal Works Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  150.00,
+        "mrp":  1000.00
+    },
+    {
+        "product_id":  "BC037",
+        "title_en":  "Henna Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC094",
+        "title_en":  "Hibiscus Leaves Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "BC039",
+        "title_en":  "Hibiscus Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  80.00,
+        "mrp":  600.00
+    },
+    {
+        "product_id":  "BC051",
+        "title_en":  "Honey",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "gm",
+        "current_price":  100.00,
+        "mrp":  125.00
+    },
+    {
+        "product_id":  "BC137",
+        "title_en":  "Indigo Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC003",
+        "title_en":  "Iscaguard PEG",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  150.00,
+        "mrp":  199.00
+    },
+    {
+        "product_id":  "EO002",
+        "title_en":  "Jasmine Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  249.00
+    },
+    {
+        "product_id":  "BC108",
+        "title_en":  "Jasmine Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC080",
+        "title_en":  "Jatamansi Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  150.00,
+        "mrp":  500.00
+    },
+    {
+        "product_id":  "BC005",
+        "title_en":  "Jojoba Oil",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  180.00,
+        "mrp":  239.00
+    },
+    {
+        "product_id":  "BC097",
+        "title_en":  "Kalonji Seeds",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "BC048",
+        "title_en":  "Kaolin Clay",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  200.00
+    },
+    {
+        "product_id":  "BC138",
+        "title_en":  "Karakkaya Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC059",
+        "title_en":  "Kasturi Pasupu",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  400.00
+    },
+    {
+        "product_id":  "811",
+        "title_en":  "Kids Special Softening ",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC155",
+        "title_en":  "Kumkumadi Thailam",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  250.00,
+        "mrp":  278.00
+    },
+    {
+        "product_id":  "BC074",
+        "title_en":  "Kuppintaaku Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "BC139",
+        "title_en":  "Kuppipakku Powder",
+        "is_active":  false,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC064",
+        "title_en":  "Lavender Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  269.00
+    },
+    {
+        "product_id":  "BC071",
+        "title_en":  "Lemon Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  269.00
+    },
+    {
+        "product_id":  "BC063",
+        "title_en":  "Lemon Peel Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  120.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC120",
+        "title_en":  "Lemongrass Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC112",
+        "title_en":  "Licorice Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC056",
+        "title_en":  "Licorice Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC140",
+        "title_en":  "Limestone",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  70.00,
+        "mrp":  500.00
+    },
+    {
+        "product_id":  "BC110",
+        "title_en":  "Lotus Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC141",
+        "title_en":  "Lotus Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  75.00,
+        "mrp":  400.00
+    },
+    {
+        "product_id":  "BC220",
+        "title_en":  "Mango Butter",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "gm",
+        "current_price":  180.00,
+        "mrp":  220.00
+    },
+    {
+        "product_id":  "BC055",
+        "title_en":  "Manjistha Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC165",
+        "title_en":  "Manjistha Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC085",
+        "title_en":  "Maredu Gujju Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  70.00,
+        "mrp":  88.00
+    },
+    {
+        "product_id":  "BC001",
+        "title_en":  "Marula Oil",
+        "is_active":  true,
+        "unit_value":  10.00,
+        "unit_type":  "ml",
+        "current_price":  100.00,
+        "mrp":  139.00
+    },
+    {
+        "product_id":  "BC104",
+        "title_en":  "Moringa Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC142",
+        "title_en":  "Moringa Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  50.00,
+        "mrp":  400.00
+    },
+    {
+        "product_id":  "BC047",
+        "title_en":  "Multani Mitti",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  200.00
+    },
+    {
+        "product_id":  "BC164",
+        "title_en":  "Multani Mitti Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC105",
+        "title_en":  "Neem Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC045",
+        "title_en":  "Neem Leaves Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "HP003",
+        "title_en":  "Neem Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  250.00
+    },
+    {
+        "product_id":  "BC002",
+        "title_en":  "Olive Oil",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  150.00,
+        "mrp":  199.00
+    },
+    {
+        "product_id":  "HP002",
+        "title_en":  "Orange Peel Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC143",
+        "title_en":  "Papaya Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC163",
+        "title_en":  "Papaya Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC125",
+        "title_en":  "Patchouli Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC035",
+        "title_en":  "Pearly Shampoo Base",
+        "is_active":  true,
+        "unit_value":  1.00,
+        "unit_type":  "kg",
+        "current_price":  450.00,
+        "mrp":  500.00
+    },
+    {
+        "product_id":  "BC072",
+        "title_en":  "Peppermint Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  269.00
+    },
+    {
+        "product_id":  "BC111",
+        "title_en":  "Pomegranate Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC075",
+        "title_en":  "Pomegranate Seeds Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  150.00,
+        "mrp":  167.00
+    },
+    {
+        "product_id":  "BC027",
+        "title_en":  "Potato Starch",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC015",
+        "title_en":  "Ratanjot",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC058",
+        "title_en":  "Red Sandal Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  150.00,
+        "mrp":  1000.00
+    },
+    {
+        "product_id":  "BC161",
+        "title_en":  "Red Sandal Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC076",
+        "title_en":  "Red Toor Dal",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  50.00,
+        "mrp":  63.00
+    },
+    {
+        "product_id":  "BC090",
+        "title_en":  "Red Wine",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "ml",
+        "current_price":  100.00,
+        "mrp":  125.00
+    },
+    {
+        "product_id":  "BC149",
+        "title_en":  "Red Wine Gel",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  180.00,
+        "mrp":  200.00
+    },
+    {
+        "product_id":  "BC087",
+        "title_en":  "Reetha Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "BC041",
+        "title_en":  "Reetha Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  50.00,
+        "mrp":  250.00
+    },
+    {
+        "product_id":  "BC092",
+        "title_en":  "Rice Flour",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  59.00
+    },
+    {
+        "product_id":  "BC028",
+        "title_en":  "Rice Starch",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC128",
+        "title_en":  "Roman Chamomile Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC049",
+        "title_en":  "Rose Clay",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  300.00
+    },
+    {
+        "product_id":  "EO001",
+        "title_en":  "Rose Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  249.00
+    },
+    {
+        "product_id":  "BC114",
+        "title_en":  "Rose Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC093",
+        "title_en":  "Rose Petal Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  80.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC100",
+        "title_en":  "Rosemary Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  249.00
+    },
+    {
+        "product_id":  "BC102",
+        "title_en":  "Rosemary Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC078",
+        "title_en":  "Rosemary Leaves",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  100.00,
+        "mrp":  650.00
+    },
+    {
+        "product_id":  "BC083",
+        "title_en":  "Sambar Onion Powder",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "BC130",
+        "title_en":  "Sandal Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC057",
+        "title_en":  "Sandal Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  75.00,
+        "mrp":  550.00
+    },
+    {
+        "product_id":  "BC098",
+        "title_en":  "SCI Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  150.00,
+        "mrp":  199.00
+    },
+    {
+        "product_id":  "BC144",
+        "title_en":  "Shankapushpi",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  70.00,
+        "mrp":  500.00
+    },
+    {
+        "product_id":  "BC229",
+        "title_en":  "Shea Butter",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "gm",
+        "current_price":  180.00,
+        "mrp":  220.00
+    },
+    {
+        "product_id":  "BC040",
+        "title_en":  "Shikakai Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  250.00
+    },
+    {
+        "product_id":  "BC159",
+        "title_en":  "Skin Allergy Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC162",
+        "title_en":  "Skin Whitening Soap (Blue \u0026 Orange)",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "810",
+        "title_en":  "Skin whitening soaps",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC025",
+        "title_en":  "Soap Base (Melt \u0026 Pour)",
+        "is_active":  true,
+        "unit_value":  1.00,
+        "unit_type":  "kg",
+        "current_price":  330.00,
+        "mrp":  439.00
+    },
+    {
+        "product_id":  "BC011",
+        "title_en":  "Sorbitol",
+        "is_active":  false,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  100.00,
+        "mrp":  139.00
+    },
+    {
+        "product_id":  "BC030",
+        "title_en":  "Steam Distilled Rose Water",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  90.00,
+        "mrp":  119.00
+    },
+    {
+        "product_id":  "BC151",
+        "title_en":  "Sunscreen Cream",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  180.00,
+        "mrp":  200.00
+    },
+    {
+        "product_id":  "BC006",
+        "title_en":  "Sweet Almond Oil",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  269.00
+    },
+    {
+        "product_id":  "BC117",
+        "title_en":  "Sweet Marjoram Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC082",
+        "title_en":  "Tangedu Aakula Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  75.00
+    },
+    {
+        "product_id":  "BC127",
+        "title_en":  "Tangerine Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "EO003",
+        "title_en":  "Tea Tree Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  249.00
+    },
+    {
+        "product_id":  "BC107",
+        "title_en":  "Tea Tree Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC118",
+        "title_en":  "Thamala Paulu Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC121",
+        "title_en":  "Thyme Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  223.00
+    },
+    {
+        "product_id":  "BC145",
+        "title_en":  "Tomato Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  300.00
+    },
+    {
+        "product_id":  "BC044",
+        "title_en":  "Triphala Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC106",
+        "title_en":  "Tulasi Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC060",
+        "title_en":  "Tulasi Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  250.00
+    },
+    {
+        "product_id":  "BC101",
+        "title_en":  "Turmeric Extract",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  300.00,
+        "mrp":  334.00
+    },
+    {
+        "product_id":  "BC146",
+        "title_en":  "Ubtan Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  75.00,
+        "mrp":  350.00
+    },
+    {
+        "product_id":  "BC157",
+        "title_en":  "Ubtan Soap",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC158",
+        "title_en":  "Ubtan Soap (Square Shape)",
+        "is_active":  true,
+        "unit_value":  null,
+        "unit_type":  null,
+        "current_price":  100.00,
+        "mrp":  112.00
+    },
+    {
+        "product_id":  "BC079",
+        "title_en":  "Vattiveru Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  450.00
+    },
+    {
+        "product_id":  "BC031",
+        "title_en":  "Vegetable Glycerin",
+        "is_active":  true,
+        "unit_value":  100.00,
+        "unit_type":  "ml",
+        "current_price":  100.00,
+        "mrp":  139.00
+    },
+    {
+        "product_id":  "BC052",
+        "title_en":  "Vitamin E Capsules",
+        "is_active":  true,
+        "unit_value":  10.00,
+        "unit_type":  "pcs",
+        "current_price":  100.00,
+        "mrp":  125.00
+    },
+    {
+        "product_id":  "BC147",
+        "title_en":  "Walnut Shell Powder",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  40.00,
+        "mrp":  250.00
+    },
+    {
+        "product_id":  "BC070",
+        "title_en":  "Wintergreen Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  269.00
+    },
+    {
+        "product_id":  "BC024",
+        "title_en":  "Witch Hazel",
+        "is_active":  true,
+        "unit_value":  20.00,
+        "unit_type":  "ml",
+        "current_price":  70.00,
+        "mrp":  99.00
+    },
+    {
+        "product_id":  "BC004",
+        "title_en":  "Xanthan Gum",
+        "is_active":  true,
+        "unit_value":  50.00,
+        "unit_type":  "gm",
+        "current_price":  60.00,
+        "mrp":  79.00
+    },
+    {
+        "product_id":  "EO004",
+        "title_en":  "Ylang Ylang Essential Oil",
+        "is_active":  true,
+        "unit_value":  15.00,
+        "unit_type":  "ml",
+        "current_price":  200.00,
+        "mrp":  249.00
+    }
+]

@@ -9,6 +9,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/client';
+import { getEmailTypoSuggestion, isProbablyValidEmail, normalizeEmail } from '@/lib/utils/email';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -200,11 +201,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const signIn = async (email: string, password: string) => {
         try {
+            const normalizedEmail = normalizeEmail(email);
+            if (!isProbablyValidEmail(normalizedEmail)) {
+                throw new Error('Please enter a valid email address');
+            }
+
             // Brute-force check (best effort; continue gracefully if function isn't deployed)
             try {
                 const { data: isBlocked } = await supabase.rpc(
                     'check_brute_force' as never,
-                    { p_email: email } as never
+                    { p_email: normalizedEmail } as never
                 );
                 if (isBlocked) {
                     toast.error('Too many failed attempts. Account temporarily locked.');
@@ -218,7 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             const { error } = await supabase.auth.signInWithPassword({
-                email,
+                email: normalizedEmail,
                 password,
             });
 
@@ -229,7 +235,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     normalizedMessage.includes('email_not_confirmed') ||
                     normalizedMessage.includes('confirm your email')
                 ) {
-                    throw new Error('Email not verified. Please check your inbox and confirm your email before logging in.');
+                    throw new Error('Unable to sign in. Please contact support if this continues.');
                 }
 
                 // Log failure for security monitoring (optional)
@@ -237,7 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     await supabase
                         .from('login_security_events' as never)
                         .insert({
-                            email,
+                            email: normalizedEmail,
                             event_type: 'failed_login'
                         } as never);
                 } catch (logError) {
@@ -257,8 +263,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const signUp = async (email: string, password: string, fullName: string) => {
         try {
+            const normalizedEmail = normalizeEmail(email);
+            if (!isProbablyValidEmail(normalizedEmail)) {
+                throw new Error('Please enter a valid email address');
+            }
+
+            const typoSuggestion = getEmailTypoSuggestion(normalizedEmail);
+            if (typoSuggestion && typoSuggestion !== normalizedEmail) {
+                throw new Error(`Did you mean ${typoSuggestion}?`);
+            }
+
             const { error } = await supabase.auth.signUp({
-                email,
+                email: normalizedEmail,
                 password,
                 options: {
                     data: {
@@ -278,7 +294,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Profile is now created automatically via database trigger (handle_new_user)
             // No manual insert needed here anymore
 
-            toast.success('Account created! Please check your email to verify.');
+            toast.success('Account created successfully.');
         } catch (error: unknown) {
             toast.error(getErrorMessage(error) || 'Failed to sign up');
             throw error;

@@ -90,6 +90,20 @@ WITH CHECK (
     AND (auth.uid()::text = (storage.foldername(name))[1])
 );
 
+-- 4. Allow guests to upload ONLY into guest-uploads/ with strict extension + filename checks
+DROP POLICY IF EXISTS "Payments - Guest Upload" ON storage.objects;
+CREATE POLICY "Payments - Guest Upload"
+ON storage.objects FOR INSERT
+TO public
+WITH CHECK (
+    bucket_id = 'payments'
+    AND auth.role() = 'anon'
+    AND (storage.foldername(name))[1] = 'guest-uploads'
+    AND array_length(storage.foldername(name), 1) = 1
+    AND (LOWER(storage.extension(name)) IN ('jpg', 'jpeg', 'png', 'webp'))
+    AND storage.filename(name) ~ E'^ORD-[0-9]{8}-[0-9]{3,}-[0-9]{13}\\.(jpg|jpeg|png|webp)$'
+);
+
 -- V. SECURE GUEST TRACKING (RPC)
 -- This function allows guests to track orders ONLY if they provide the correct phone number.
 -- Using SECURITY DEFINER to bypass RLS for this specific, controlled logic.

@@ -13,10 +13,11 @@ import { OrderConfirmationTemplate } from '@/lib/email-service/templates/OrderCo
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
 import { verifyGuestOrderToken } from '@/lib/security/guest-order-token';
+import { ORDER_ID_PATTERN, normalizeOrderId } from '@/lib/security/order-id';
 
 const sendOrderEmailSchema = z.object({
-    orderId: z.string().min(1),
-    accessToken: z.string().trim().optional(),
+    orderId: z.string().trim().min(1).max(64),
+    accessToken: z.string().trim().max(4096).optional(),
 });
 
 const emailSchema = z.string().email();
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
                     'X-RateLimit-Remaining': '0',
                     'X-RateLimit-Reset': resetTime.toISOString(),
                     'Retry-After': Math.ceil((resetTime.getTime() - Date.now()) / 1000).toString(),
+                    'Cache-Control': 'no-store',
                 },
             }
         );
@@ -61,10 +63,28 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const parsed = sendOrderEmailSchema.safeParse(body);
         if (!parsed.success) {
-            return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'Order ID is required' },
+                { status: 400, headers: { 'Cache-Control': 'no-store' } }
+            );
         }
 
-        const { orderId, accessToken } = parsed.data;
+        const normalizedOrderId = normalizeOrderId(parsed.data.orderId);
+        if (!ORDER_ID_PATTERN.test(normalizedOrderId)) {
+            return NextResponse.json(
+                { error: 'Order not found' },
+                {
+                    status: 404,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
+        }
+
+        const accessToken = parsed.data.accessToken;
 
         const cookieStore = await cookies();
         const authClient = createServerClient(
@@ -117,18 +137,39 @@ export async function POST(request: NextRequest) {
                     payment_screenshot_url
                 )
             `)
-            .eq('order_id', orderId)
+            .eq('order_id', normalizedOrderId)
             .single() as { data: any, error: any };
 
         if (orderError || !orderData) {
             console.error('Order fetch error:', orderError);
-            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+            return NextResponse.json(
+                { error: 'Order not found' },
+                {
+                    status: 404,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
         }
 
         const isOwner = !!user && orderData.user_id === user.id;
-        const isTokenVerified = !!accessToken && verifyGuestOrderToken(accessToken, orderId);
+        const isTokenVerified = !!accessToken && verifyGuestOrderToken(accessToken, normalizedOrderId);
         if (!isAdmin && !isOwner && !isTokenVerified) {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            // Avoid leaking whether an order exists for guessable order IDs.
+            return NextResponse.json(
+                { error: 'Order not found' },
+                {
+                    status: 404,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
         }
 
         // Get user email - Try order record first, then profile
@@ -147,8 +188,18 @@ export async function POST(request: NextRequest) {
         }
 
         if (!recipientEmail) {
-            console.error('No email found for order:', orderId);
-            return NextResponse.json({ error: 'No email found linked to this order' }, { status: 400 });
+            console.error('No email found for order:', normalizedOrderId);
+            return NextResponse.json(
+                { error: 'No email found linked to this order' },
+                {
+                    status: 400,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
         }
 
         // Prepare email data
@@ -181,9 +232,7 @@ export async function POST(request: NextRequest) {
             unit_price: item.unit_price
         }));
 
-        const customerEmailHtml = OrderConfirmationTemplate(emailOrderData, emailItems, {
-            includePromotion: true,
-        });
+        const customerEmailHtml = OrderConfirmationTemplate(emailOrderData, emailItems);
 
         // Send email to customer
         const customerEmailResult = await emailService.sendEmail(
@@ -224,9 +273,7 @@ export async function POST(request: NextRequest) {
         let adminNotificationSent = false;
         if (!smtpAuthFailure) {
             try {
-                const adminEmailHtml = OrderConfirmationTemplate(emailOrderData, emailItems, {
-                    includePromotion: false,
-                });
+                const adminEmailHtml = OrderConfirmationTemplate(emailOrderData, emailItems);
                 const adminEmailResult = await emailService.sendEmail(
                     adminEmail,
                     `New Order Payment Submitted - #${orderData.order_id}`,
@@ -254,6 +301,7 @@ export async function POST(request: NextRequest) {
                 headers: {
                     'X-RateLimit-Remaining': remaining.toString(),
                     'X-RateLimit-Reset': resetTime.toISOString(),
+                    'Cache-Control': 'no-store',
                 },
             }
         );
@@ -262,7 +310,7 @@ export async function POST(request: NextRequest) {
         console.error('Send email API error:', error);
         return NextResponse.json(
             { error: 'Failed to send email' },
-            { status: 500 }
+            { status: 500, headers: { 'Cache-Control': 'no-store' } }
         );
     }
 }

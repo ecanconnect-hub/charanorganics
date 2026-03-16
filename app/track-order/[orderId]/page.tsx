@@ -29,6 +29,7 @@ type TrackedOrder = {
     created_at: string;
     total_amount: number;
     status: string;
+    can_view_shipping?: boolean;
     shipping_name: string;
     shipping_phone: string;
     shipping_address: string;
@@ -77,6 +78,7 @@ export default function TrackOrderPage() {
             sessionStorage.getItem(`guest_track_token:${orderId}`) ||
             sessionStorage.getItem(`guest_track_token:${orderId.toUpperCase()}`) ||
             sessionStorage.getItem(`guest_payment_token:${orderId}`) ||
+            sessionStorage.getItem(`guest_payment_token:${orderId.toUpperCase()}`) ||
             '';
 
         const phone = !user ? (phoneOverride || phoneFromSession || '') : '';
@@ -366,6 +368,45 @@ export default function TrackOrderPage() {
                                     {order.shipping_address}<br />
                                     {order.shipping_city}, {order.shipping_state} - {order.shipping_pincode}
                                 </p>
+
+                                {user ? null : order.can_view_shipping ? null : (
+                                    <div className="pt-4 mt-4 border-t border-gray-100">
+                                        <p className="text-xs text-gray-500 mb-4">
+                                            For privacy, delivery details are hidden. Verify with the phone number and pincode used during checkout to view full address.
+                                        </p>
+                                        <form onSubmit={handlePhoneVerify} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <Input
+                                                type="tel"
+                                                value={phoneInput}
+                                                onChange={(e) => setPhoneInput(e.target.value)}
+                                                placeholder="Phone number"
+                                                className="h-12 rounded-xl"
+                                            />
+                                            <Input
+                                                type="text"
+                                                value={pincodeInput}
+                                                onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ''))}
+                                                placeholder="Pincode"
+                                                maxLength={10}
+                                                className="h-12 rounded-xl"
+                                            />
+                                            <div className="sm:col-span-2">
+                                                <Button
+                                                    type="submit"
+                                                    variant="primary"
+                                                    fullWidth
+                                                    isLoading={verificationLoading}
+                                                    className="h-12 rounded-xl"
+                                                >
+                                                    Verify to View Address
+                                                </Button>
+                                            </div>
+                                        </form>
+                                        {attemptedWithPhone ? (
+                                            <p className="text-xs text-red-600 mt-3">Could not verify this order with that phone number.</p>
+                                        ) : null}
+                                    </div>
+                                )}
                             </div>
                         </div>
 

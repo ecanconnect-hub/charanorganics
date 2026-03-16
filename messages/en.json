@@ -72,6 +72,7 @@
     },
     "product": {
         "addToCart": "Add to Cart",
+        "buyNow": "Buy Now",
         "viewDetails": "View Details",
         "mrp": "MRP",
         "price": "Price",
@@ -119,6 +120,7 @@
         "signInTitle": "Welcome Back!",
         "signInSubtitle": "Please sign in to continue",
         "emailAddress": "Email Address",
+        "confirmEmail": "Confirm Email",
         "newToCompany": "New to Charan Organics?",
         "createAccount": "Create Account",
         "backToHome": "Back to Home",

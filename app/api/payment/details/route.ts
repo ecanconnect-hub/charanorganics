@@ -6,10 +6,11 @@ import { z } from 'zod';
 import type { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
 import { verifyGuestOrderToken } from '@/lib/security/guest-order-token';
+import { ORDER_ID_PATTERN, normalizeOrderId } from '@/lib/security/order-id';
 
 const detailsSchema = z.object({
-    orderId: z.string().min(1),
-    accessToken: z.string().trim().optional(),
+    orderId: z.string().trim().min(1).max(64),
+    accessToken: z.string().trim().max(4096).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
                     'X-RateLimit-Remaining': '0',
                     'X-RateLimit-Reset': resetTime.toISOString(),
                     'Retry-After': Math.ceil((resetTime.getTime() - Date.now()) / 1000).toString(),
+                    'Cache-Control': 'no-store',
                 },
             }
         );
@@ -32,7 +34,25 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const parsed = detailsSchema.safeParse(body);
         if (!parsed.success) {
-            return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+            return NextResponse.json(
+                { error: 'Invalid request' },
+                { status: 400, headers: { 'Cache-Control': 'no-store' } }
+            );
+        }
+
+        const normalizedOrderId = normalizeOrderId(parsed.data.orderId);
+        if (!ORDER_ID_PATTERN.test(normalizedOrderId)) {
+            return NextResponse.json(
+                { error: 'Order not found' },
+                {
+                    status: 404,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
         }
 
         const cookieStore = await cookies();
@@ -63,11 +83,21 @@ export async function POST(request: NextRequest) {
         const { data: order, error } = await serviceClient
             .from('orders')
             .select('id, order_id, total_amount, status, user_id')
-            .eq('order_id', parsed.data.orderId)
+            .eq('order_id', normalizedOrderId)
             .single() as { data: any; error: any };
 
         if (error || !order) {
-            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+            return NextResponse.json(
+                { error: 'Order not found' },
+                {
+                    status: 404,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
         }
 
         let isAdmin = false;
@@ -83,14 +113,35 @@ export async function POST(request: NextRequest) {
         const isOwner = !!user && order.user_id === user.id;
         const isTokenVerified =
             typeof parsed.data.accessToken === 'string' &&
-            verifyGuestOrderToken(parsed.data.accessToken, parsed.data.orderId);
+            verifyGuestOrderToken(parsed.data.accessToken, normalizedOrderId);
 
         if (!isOwner && !isAdmin && !isTokenVerified) {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            // Avoid leaking whether an order exists for guessable order IDs.
+            return NextResponse.json(
+                { error: 'Order not found' },
+                {
+                    status: 404,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
         }
 
         if (order.status !== 'pending_payment') {
-            return NextResponse.json({ error: 'Order is not awaiting payment' }, { status: 409 });
+            return NextResponse.json(
+                { error: 'Order is not awaiting payment' },
+                {
+                    status: 409,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
         }
 
         return NextResponse.json({
@@ -102,10 +153,14 @@ export async function POST(request: NextRequest) {
             headers: {
                 'X-RateLimit-Remaining': remaining.toString(),
                 'X-RateLimit-Reset': resetTime.toISOString(),
+                'Cache-Control': 'no-store',
             },
         });
     } catch (error) {
         console.error('Payment details API error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500, headers: { 'Cache-Control': 'no-store' } }
+        );
     }
 }

@@ -12,6 +12,8 @@ import { resolveLocalizedText } from '@/lib/i18n/localized';
 export function CartDrawer() {
     const { isOpen, closeCart, items, removeItem, updateQuantity } = useCart();
     const locale = useLocale();
+    const supportWhatsappPhone = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || '';
+    const supportWhatsappDigits = supportWhatsappPhone.replace(/\D/g, '');
 
     // Calculate subtotal
     // Note: This needs product details. For guest users we might need a separate fetch.
@@ -20,6 +22,48 @@ export function CartDrawer() {
         const price = item.product?.current_price || 0;
         return sum + (price * item.quantity);
     }, 0);
+
+    const handleWhatsappCart = () => {
+        try {
+            if (!supportWhatsappDigits) {
+                return;
+            }
+
+            if (items.length === 0) {
+                return;
+            }
+
+            const lines: string[] = [];
+            lines.push('Hi Charan Organics, I need help placing an order for these items:');
+            lines.push('');
+
+            for (const item of items) {
+                const product = item.product;
+                const title = locale === 'en'
+                    ? product?.title_en
+                    : resolveLocalizedText(product?.title_en, product?.title_te);
+                const safeTitle = title || product?.title_en || 'Product';
+                const variantLabel = item.variant_label ? ` (${item.variant_label})` : '';
+                const unitPrice = typeof product?.current_price === 'number' ? product.current_price : null;
+                const lineTotal = unitPrice === null ? null : unitPrice * item.quantity;
+
+                lines.push(
+                    `- ${safeTitle}${variantLabel} x${item.quantity}${lineTotal === null ? '' : ` - Rs.${lineTotal.toFixed(0)}`}`
+                );
+            }
+
+            lines.push('');
+            lines.push(`Subtotal: Rs.${subtotal.toFixed(0)}`);
+            lines.push('');
+            lines.push(`From: ${window.location.origin}`);
+
+            const href = `https://wa.me/${supportWhatsappDigits}?text=${encodeURIComponent(lines.join('\n'))}`;
+            window.open(href, '_blank', 'noopener,noreferrer');
+            closeCart();
+        } catch (error) {
+            console.error('WhatsApp cart error:', error);
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -147,8 +191,25 @@ export function CartDrawer() {
                                     <Link href="/checkout" className="block w-full" onClick={closeCart}>
                                         <Button variant="primary" fullWidth className="h-12 shadow-lg shadow-green-200">Checkout Now</Button>
                                     </Link>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        fullWidth
+                                        className="h-12"
+                                        disabled={!supportWhatsappDigits || items.length === 0}
+                                        onClick={handleWhatsappCart}
+                                    >
+                                        WhatsApp Order / Help
+                                    </Button>
                                 </div>
-                                <p className="text-center text-[11px] text-gray-400 mt-4">Shipping and taxes calculated at checkout</p>
+                                {!supportWhatsappDigits && (
+                                    <p className="text-center text-[11px] text-gray-400 mt-3">
+                                        WhatsApp support not configured
+                                    </p>
+                                )}
+                                <p className="text-center text-[11px] text-gray-400 mt-4">
+                                    Guest checkout available (no login required). Shipping and taxes calculated at checkout.
+                                </p>
                             </div>
                         )}
                     </motion.div>

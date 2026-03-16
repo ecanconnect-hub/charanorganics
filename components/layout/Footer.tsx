@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Footer Component - PREMIUM REDESIGN
  *
  * Clean, industry-standard footer layout with clear hierarchy,
@@ -147,6 +147,15 @@ export function Footer() {
                             <li><Link href="/about" className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">Our Story</Link></li>
                             <li><Link href="/contact" className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">Contact Us</Link></li>
                             <li><Link href="/track-order" className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">Track Order</Link></li>
+                            <li><Link href="/user-manual" className="inline-block text-sm text-gray-200/90 transition-all hover:translate-x-1 hover:text-white">📖 User Manual</Link></li>
+                            <li>
+                                <Link
+                                    href="/contact?type=report"
+                                    className="inline-block text-sm text-red-400/90 hover:text-red-300 transition-all hover:translate-x-1"
+                                >
+                                    🚨 Report Issue
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
@@ -204,6 +213,7 @@ export function Footer() {
                         </div>
                     </div>
                 </div>
+
 
                 {/* Bottom Bar - Professional Credit */}
                 <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-xs text-gray-400 md:flex-row">
@@ -268,9 +278,10 @@ export function Footer() {
 
             {/* Minimal Decorative Element */}
             <div className="absolute bottom-0 right-0 opacity-[0.03] pointer-events-none select-none overflow-hidden">
-                <span className="text-[150px] leading-none text-white">ðŸŒ¿</span>
+                <span className="text-[150px] leading-none text-white">🌿</span>
             </div>
+
+
         </footer>
     );
 }
-
