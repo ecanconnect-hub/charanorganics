@@ -61,7 +61,7 @@ export default function SubmitReviewPage() {
             const { data: purchaseData, error: purchaseError } = await (supabase
                 .from('order_items' as any) as any)
                 .select('id, orders!inner(status, user_id)')
-                .eq('product_id', data.id)
+                .eq('product_id', (data as any).id)
                 .eq('orders.user_id', user?.id)
                 .eq('orders.status', 'delivered')
                 .limit(1);
