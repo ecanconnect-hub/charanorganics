@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { motion } from 'framer-motion';
@@ -27,11 +28,15 @@ interface ProductCardProps {
         current_price: number;
         unit_value?: number;
         unit_type?: string;
+        has_variants?: boolean;
+        variant_min_price?: number | null;
+        variant_max_price?: number | null;
     };
 }
 
 export function ProductCard({ product }: ProductCardProps) {
     const { addItem } = useCart();
+    const router = useRouter();
     const locale = useLocale();
     const [isAdding, setIsAdding] = useState(false);
     const [imageError, setImageError] = useState(false);
@@ -39,17 +44,30 @@ export function ProductCard({ product }: ProductCardProps) {
     const title = locale === 'en'
         ? product.title_en
         : resolveLocalizedText(product.title_en, product.title_te);
+
+    const hasVariants = Boolean(product.has_variants);
     const normalizedCurrentPrice = Number.isFinite(product.current_price) ? product.current_price : 0;
     const normalizedMrp = Number.isFinite(product.mrp) ? product.mrp : 0;
+    const normalizedVariantMinPrice =
+        typeof product.variant_min_price === 'number' && Number.isFinite(product.variant_min_price)
+            ? product.variant_min_price
+            : null;
+    const displayedCurrentPrice = hasVariants && normalizedVariantMinPrice !== null ? normalizedVariantMinPrice : normalizedCurrentPrice;
     const fallbackMrp = normalizedCurrentPrice > 0 ? normalizedCurrentPrice / 0.9 : normalizedCurrentPrice;
-    const effectiveMrp = normalizedMrp > normalizedCurrentPrice ? normalizedMrp : fallbackMrp;
-    const discount = effectiveMrp > normalizedCurrentPrice && normalizedCurrentPrice > 0
-        ? Math.max(1, Math.round(((effectiveMrp - normalizedCurrentPrice) / effectiveMrp) * 100))
+    const effectiveMrp = normalizedMrp > displayedCurrentPrice ? normalizedMrp : fallbackMrp;
+    const discount = !hasVariants && effectiveMrp > displayedCurrentPrice && displayedCurrentPrice > 0
+        ? Math.max(1, Math.round(((effectiveMrp - displayedCurrentPrice) / effectiveMrp) * 100))
         : 0;
 
-    const handleAddToCart = async (e: React.MouseEvent) => {
+    const handlePrimaryAction = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (hasVariants) {
+            router.push(`/product/${product.product_id}`);
+            return;
+        }
+
         setIsAdding(true);
 
         try {
@@ -117,18 +135,22 @@ export function ProductCard({ product }: ProductCardProps) {
                     </h3>
 
                     {/* Variant / Size - Muted & Minimal */}
-                    {product.unit_value && product.unit_type && (
+                    {hasVariants ? (
+                        <div className="text-[13px] md:text-[12px] text-gray-400 font-medium uppercase tracking-[0.05em] mb-2 md:mb-3">
+                            Multiple sizes
+                        </div>
+                    ) : product.unit_value && product.unit_type ? (
                         <div className="text-[13px] md:text-[12px] text-gray-400 font-medium uppercase tracking-[0.05em] mb-2 md:mb-3">
                             {product.unit_value} {product.unit_type}
                         </div>
-                    )}
+                    ) : null}
 
                     {/* Pricing - Bold & Prominent */}
                     <div className="flex items-center gap-2 mb-3 md:mb-5">
                         <span className="text-[20px] md:text-[20px] font-black text-[#1A1A1A]">
-                            {'\u20B9'}{normalizedCurrentPrice.toFixed(0)}
+                            {hasVariants ? 'From ' : ''}{'\u20B9'}{displayedCurrentPrice.toFixed(0)}
                         </span>
-                        {effectiveMrp > normalizedCurrentPrice && (
+                        {!hasVariants && effectiveMrp > displayedCurrentPrice && (
                             <span className="text-[14px] md:text-[14px] text-gray-300 line-through decoration-gray-300">
                                 {'\u20B9'}{effectiveMrp.toFixed(0)}
                             </span>
@@ -142,10 +164,10 @@ export function ProductCard({ product }: ProductCardProps) {
                             size="sm"
                             fullWidth
                             isLoading={isAdding}
-                            onClick={handleAddToCart}
+                            onClick={handlePrimaryAction}
                             className="rounded-xl font-bold text-[12px] md:text-[12px] uppercase tracking-widest h-[40px] md:h-[44px] shadow-[0_4px_12px_rgba(var(--primary),0.2)] hover:shadow-[0_8px_20px_rgba(var(--primary),0.35)] transition-all duration-300 active:scale-[0.98]"
                         >
-                            {isAdding ? 'Adding...' : 'Add to Cart'}
+                            {hasVariants ? 'Select Size' : isAdding ? 'Adding...' : 'Add to Cart'}
                         </Button>
                     </div>
                 </div>

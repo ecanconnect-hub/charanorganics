@@ -213,7 +213,15 @@ export default function CartPage() {
 
                                             {/* Controls */}
                                             <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
-                                                <div className="inline-flex items-center rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
+                                                <button
+                                                    onClick={() => removeItem(item.product_id, item.variant_id)}
+                                                    className="order-1 md:order-2 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 bg-white hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all border border-gray-200 hover:border-red-200"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                    Remove
+                                                </button>
+
+                                                <div className="order-2 md:order-1 inline-flex items-center rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
                                                     <button
                                                         onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity - 1)}
                                                         className="w-8 h-8 flex items-center justify-center rounded-lg text-base font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:scale-95 transition-all disabled:opacity-30"
@@ -229,14 +237,6 @@ export default function CartPage() {
                                                         +
                                                     </button>
                                                 </div>
-
-                                                <button
-                                                    onClick={() => removeItem(item.product_id, item.variant_id)}
-                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 bg-white hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all border border-gray-200 hover:border-red-200"
-                                                >
-                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                    Remove
-                                                </button>
                                             </div>
                                         </div>
                                     </div>

@@ -13,6 +13,60 @@ import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth/context';
 import { ProductCard } from '@/components/product/ProductCard';
 
+function toFiniteNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+}
+
+async function attachVariantMeta(products: any[]): Promise<any[]> {
+    const ids = products.map((p) => p?.id).filter((id): id is string => typeof id === 'string' && id.length > 0);
+    if (ids.length === 0) return products;
+
+    try {
+        const { data: variants, error } = await (supabase
+            .from('product_variants' as any) as any)
+            .select('product_id, price, enabled')
+            .in('product_id', ids)
+            .eq('enabled', true);
+
+        if (error || !variants) return products;
+
+        const ranges = new Map<string, { min: number | null; max: number | null; has: boolean }>();
+
+        (variants as any[]).forEach((v) => {
+            const productId = v?.product_id;
+            if (typeof productId !== 'string' || productId.length === 0) return;
+
+            const price = toFiniteNumber(v?.price);
+            const current = ranges.get(productId) || { min: null, max: null, has: false };
+            current.has = true;
+
+            if (price !== null) {
+                current.min = current.min === null ? price : Math.min(current.min, price);
+                current.max = current.max === null ? price : Math.max(current.max, price);
+            }
+
+            ranges.set(productId, current);
+        });
+
+        return products.map((p) => {
+            const meta = ranges.get(p.id);
+            return {
+                ...p,
+                has_variants: meta?.has ?? false,
+                variant_min_price: meta?.min ?? null,
+                variant_max_price: meta?.max ?? null,
+            };
+        });
+    } catch {
+        return products;
+    }
+}
+
 export function RecentlyBrowsed() {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -47,7 +101,8 @@ export function RecentlyBrowsed() {
                         ?.map((item: any) => item.product)
                         .filter((p: any) => p && p.is_active) || [];
 
-                    setProducts(recentProducts);
+                    const recentProductsWithMeta = await attachVariantMeta(recentProducts);
+                    setProducts(recentProductsWithMeta);
                 } else {
                     // Fetch from localStorage
                     try {
@@ -60,7 +115,8 @@ export function RecentlyBrowsed() {
                                 .in('id', browsedIds.slice(0, 4))
                                 .eq('is_active', true);
 
-                            setProducts(data || []);
+                            const recentProductsWithMeta = await attachVariantMeta(data || []);
+                            setProducts(recentProductsWithMeta);
                         }
                     } catch {
                         setProducts([]);

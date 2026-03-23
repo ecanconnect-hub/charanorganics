@@ -7,12 +7,17 @@ type Product = Database['public']['Tables']['products']['Row'] & {
     is_best_seller?: boolean;
     is_new?: boolean;
 };
+type ProductWithVariantMeta = Product & {
+    has_variants?: boolean;
+    variant_min_price?: number | null;
+    variant_max_price?: number | null;
+};
 type Section = Database['public']['Tables']['sections']['Row'] & {
     image_url: string | null;
     product_count?: number;
 };
 type ProductSection = Database['public']['Tables']['product_sections']['Row'];
-type SectionWithProducts = Section & { products: Product[] };
+type SectionWithProducts = Section & { products: ProductWithVariantMeta[] };
 
 const MAX_PRODUCTS_PER_SLIDER = 10;
 
@@ -79,6 +84,57 @@ function getErrorMessage(error: unknown): string {
     }
 
     return 'Unknown error';
+}
+
+function toFiniteNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    return null;
+}
+
+async function getVariantMetaMap(productIds: string[]): Promise<Map<string, { min: number | null; max: number | null; has: boolean }>> {
+    const ids = productIds.filter((id) => typeof id === 'string' && id.length > 0);
+    if (ids.length === 0) return new Map();
+
+    try {
+        const { data: variants, error } = await supabase
+            .from('product_variants')
+            .select('product_id, price')
+            .in('product_id', ids)
+            .eq('enabled', true);
+
+        if (error || !variants) {
+            return new Map();
+        }
+
+        const ranges = new Map<string, { min: number | null; max: number | null; has: boolean }>();
+        (variants as Array<{ product_id: string; price: unknown }>).forEach((variant) => {
+            if (!variant?.product_id) return;
+            const price = toFiniteNumber(variant.price);
+            const current = ranges.get(variant.product_id) || { min: null, max: null, has: false };
+
+            current.has = true;
+            if (price !== null) {
+                current.min = current.min === null ? price : Math.min(current.min, price);
+                current.max = current.max === null ? price : Math.max(current.max, price);
+            }
+
+            ranges.set(variant.product_id, current);
+        });
+
+        return ranges;
+    } catch {
+        return new Map();
+    }
 }
 
 export async function GET() {
@@ -183,11 +239,35 @@ export async function GET() {
             : allActiveProducts.filter((product) => !bestSellerIds.has(product.id));
         const newArrivals = newArrivalsSource.slice(0, MAX_PRODUCTS_PER_SLIDER);
 
+        const variantMetaIds = new Set<string>();
+        sectionsWithProducts.forEach((section) => section.products.forEach((product) => variantMetaIds.add(product.id)));
+        bestSellers.forEach((product) => variantMetaIds.add(product.id));
+        newArrivals.forEach((product) => variantMetaIds.add(product.id));
+
+        const variantMeta = await getVariantMetaMap([...variantMetaIds]);
+        const withMeta = (product: Product): ProductWithVariantMeta => {
+            const meta = variantMeta.get(product.id);
+            return {
+                ...product,
+                has_variants: meta?.has ?? false,
+                variant_min_price: meta?.min ?? null,
+                variant_max_price: meta?.max ?? null,
+            };
+        };
+
+        const sectionsWithProductsWithMeta: SectionWithProducts[] = sectionsWithProducts.map((section) => ({
+            ...section,
+            products: section.products.map((product) => withMeta(product)),
+        }));
+
+        const bestSellersWithMeta = bestSellers.map((product) => withMeta(product));
+        const newArrivalsWithMeta = newArrivals.map((product) => withMeta(product));
+
         return NextResponse.json({
             sections: sectionsWithCounts,
-            sectionsWithProducts,
-            bestSellers,
-            newArrivals,
+            sectionsWithProducts: sectionsWithProductsWithMeta,
+            bestSellers: bestSellersWithMeta,
+            newArrivals: newArrivalsWithMeta,
         });
     } catch (error: unknown) {
         const message = getErrorMessage(error);

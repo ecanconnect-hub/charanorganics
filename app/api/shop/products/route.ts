@@ -9,6 +9,11 @@ type Product = Database['public']['Tables']['products']['Row'] & {
 };
 type Section = Database['public']['Tables']['sections']['Row'];
 type ProductSection = Database['public']['Tables']['product_sections']['Row'];
+type ProductWithVariantMeta = Product & {
+    has_variants?: boolean;
+    variant_min_price?: number | null;
+    variant_max_price?: number | null;
+};
 
 const TYPO_REPLACEMENTS: Record<string, string> = {
     hiar: 'hair',
@@ -160,6 +165,66 @@ function sanitizeSort(value: string | null): 'default' | 'price_asc' | 'price_de
         return value;
     }
     return 'default';
+}
+
+function toFiniteNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) {
+            return parsed;
+        }
+    }
+
+    return null;
+}
+
+async function attachVariantMeta(items: Product[]): Promise<ProductWithVariantMeta[]> {
+    const ids = items.map((product) => product.id).filter((id): id is string => Boolean(id));
+    if (ids.length === 0) return items as ProductWithVariantMeta[];
+
+    try {
+        const { data: variants, error } = await supabase
+            .from('product_variants')
+            .select('product_id, price')
+            .in('product_id', ids)
+            .eq('enabled', true);
+
+        if (error || !variants) {
+            return items as ProductWithVariantMeta[];
+        }
+
+        const ranges = new Map<string, { min: number | null; max: number | null; has: boolean }>();
+
+        (variants as Array<{ product_id: string; price: unknown }>).forEach((variant) => {
+            if (!variant?.product_id) return;
+            const price = toFiniteNumber(variant.price);
+            const current = ranges.get(variant.product_id) || { min: null, max: null, has: false };
+
+            current.has = true;
+            if (price !== null) {
+                current.min = current.min === null ? price : Math.min(current.min, price);
+                current.max = current.max === null ? price : Math.max(current.max, price);
+            }
+
+            ranges.set(variant.product_id, current);
+        });
+
+        return items.map((product) => {
+            const range = ranges.get(product.id);
+            return {
+                ...product,
+                has_variants: range?.has ?? false,
+                variant_min_price: range?.min ?? null,
+                variant_max_price: range?.max ?? null,
+            };
+        });
+    } catch {
+        return items as ProductWithVariantMeta[];
+    }
 }
 
 export async function GET(req: NextRequest) {
@@ -356,10 +421,15 @@ export async function GET(req: NextRequest) {
             recommendedProducts = (recommended || []) as Product[];
         }
 
+        const [productsWithMeta, recommendedWithMeta] = await Promise.all([
+            attachVariantMeta(products),
+            attachVariantMeta(recommendedProducts),
+        ]);
+
         return NextResponse.json({
-            products,
+            products: productsWithMeta,
             totalCount,
-            recommendedProducts,
+            recommendedProducts: recommendedWithMeta,
         });
     } catch (error: unknown) {
         const message = getErrorMessage(error);

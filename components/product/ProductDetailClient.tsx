@@ -649,6 +649,15 @@ function RelatedProducts({ currentProductId, category }: { currentProductId: str
     const [loading, setLoading] = useState(true);
     const locale = useLocale();
 
+    const toFiniteNumber = (value: unknown): number | null => {
+        if (typeof value === 'number' && Number.isFinite(value)) return value;
+        if (typeof value === 'string' && value.trim() !== '') {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : null;
+        }
+        return null;
+    };
+
     useEffect(() => {
         async function fetchRelated() {
             setLoading(true);
@@ -668,7 +677,52 @@ function RelatedProducts({ currentProductId, category }: { currentProductId: str
                 const { data, error } = await query;
 
                 if (!error && data) {
-                    setRelatedProducts(data);
+                    const products = data as any[];
+                    const ids = products
+                        .map((p) => p?.id)
+                        .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+                    let productsWithMeta = products;
+
+                    if (ids.length > 0) {
+                        const { data: variantData, error: variantsError } = await (supabase
+                            .from('product_variants' as any) as any)
+                            .select('product_id, price, enabled')
+                            .in('product_id', ids)
+                            .eq('enabled', true);
+
+                        if (!variantsError && variantData) {
+                            const ranges = new Map<string, { min: number | null; max: number | null; has: boolean }>();
+
+                            (variantData as any[]).forEach((v) => {
+                                const productId = v?.product_id;
+                                if (typeof productId !== 'string' || productId.length === 0) return;
+
+                                const price = toFiniteNumber(v?.price);
+                                const current = ranges.get(productId) || { min: null, max: null, has: false };
+                                current.has = true;
+
+                                if (price !== null) {
+                                    current.min = current.min === null ? price : Math.min(current.min, price);
+                                    current.max = current.max === null ? price : Math.max(current.max, price);
+                                }
+
+                                ranges.set(productId, current);
+                            });
+
+                            productsWithMeta = products.map((p) => {
+                                const meta = ranges.get(p.id);
+                                return {
+                                    ...p,
+                                    has_variants: meta?.has ?? false,
+                                    variant_min_price: meta?.min ?? null,
+                                    variant_max_price: meta?.max ?? null,
+                                };
+                            });
+                        }
+                    }
+
+                    setRelatedProducts(productsWithMeta);
                 }
             } catch (error) {
                 console.error('Error fetching related products:', error);
