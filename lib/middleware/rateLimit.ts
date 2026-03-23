@@ -9,7 +9,7 @@
 import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { getServiceSupabase } from '@/lib/supabase/server-admin';
 
 interface RateLimitConfig {
     windowMs: number; // Time window in milliseconds

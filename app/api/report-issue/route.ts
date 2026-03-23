@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
+import { enforceSecureJsonPostRequest } from '@/lib/security/request-guards';
 
 const reportSchema = z.object({
     issueType: z.enum([
@@ -39,6 +40,11 @@ const reportSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+    const requestGuardResponse = enforceSecureJsonPostRequest(request);
+    if (requestGuardResponse) {
+        return requestGuardResponse;
+    }
+
     // Rate limit: 5 reports per 15 minutes
     const { allowed, remaining, resetTime } = await checkRateLimit(request);
     if (!allowed) {

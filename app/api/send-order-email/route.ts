@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
 import { verifyGuestOrderToken } from '@/lib/security/guest-order-token';
 import { ORDER_ID_PATTERN, normalizeOrderId } from '@/lib/security/order-id';
+import { enforceSecureJsonPostRequest } from '@/lib/security/request-guards';
 
 const sendOrderEmailSchema = z.object({
     orderId: z.string().trim().min(1).max(64),
@@ -43,6 +44,11 @@ const parseAdminNotificationEmail = (value: unknown): string | null => {
 };
 
 export async function POST(request: NextRequest) {
+    const requestGuardResponse = enforceSecureJsonPostRequest(request);
+    if (requestGuardResponse) {
+        return requestGuardResponse;
+    }
+
     const { allowed, remaining, resetTime } = await checkRateLimit(request);
     if (!allowed) {
         return NextResponse.json(

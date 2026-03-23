@@ -169,7 +169,7 @@ export default function CartPage() {
                                 const lineTotal = hasUnitPrice ? unitPrice * item.quantity : null;
 
                                 return (
-                                    <div key={itemKey} className="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-gray-100 flex gap-4 md:gap-5 group hover:shadow-md hover:border-gray-200 transition-all duration-200">
+                                    <div key={itemKey} className="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-gray-100 grid grid-cols-[6rem_minmax(0,1fr)] md:grid-cols-[7rem_minmax(0,1fr)] gap-4 md:gap-5 group hover:shadow-md hover:border-gray-200 transition-all duration-200">
                                         {/* Image */}
                                         <Link
                                             href={productHref}
@@ -189,10 +189,10 @@ export default function CartPage() {
                                         </Link>
 
                                         {/* Details */}
-                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                        <div className="min-w-0 flex flex-col justify-between">
                                             <div>
                                                 <div className="flex justify-between items-start gap-3 mb-2">
-                                                    <Link href={productHref}>
+                                                    <Link href={productHref} className="min-w-0">
                                                         <h3 className="text-lg font-semibold leading-snug text-gray-900 group-hover:text-green-700 transition-colors">
                                                             {title || 'Product unavailable'}
                                                         </h3>
@@ -211,32 +211,33 @@ export default function CartPage() {
                                                 </p>
                                             </div>
 
-                                            {/* Controls */}
-                                            <div className="flex items-center justify-start md:justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
-                                                <button
-                                                    onClick={() => removeItem(item.product_id, item.variant_id)}
-                                                    className="order-1 md:order-2 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 bg-white hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all border border-gray-200 hover:border-red-200"
-                                                >
-                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                    Remove
-                                                </button>
+                                        </div>
 
-                                                <div className="order-2 md:order-1 inline-flex items-center rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
-                                                    <button
-                                                        onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity - 1)}
-                                                        className="w-8 h-8 flex items-center justify-center rounded-lg text-base font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:scale-95 transition-all disabled:opacity-30"
-                                                        disabled={item.quantity <= 1}
-                                                    >
-                                                        -
-                                                    </button>
-                                                    <span className="w-8 text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
-                                                    <button
-                                                        onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity + 1)}
-                                                        className="w-8 h-8 flex items-center justify-center rounded-lg text-base font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:scale-95 transition-all"
-                                                    >
-                                                        +
-                                                    </button>
-                                                </div>
+                                        {/* Controls */}
+                                        <div className="col-span-2 md:col-start-2 md:col-span-1 flex items-center justify-start gap-3 mt-1 md:mt-4 pt-4 border-t border-gray-100">
+                                            <button
+                                                onClick={() => removeItem(item.product_id, item.variant_id)}
+                                                className="order-1 md:order-2 md:ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 bg-white hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all border border-gray-200 hover:border-red-200"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                Remove
+                                            </button>
+
+                                            <div className="order-2 md:order-1 inline-flex items-center rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
+                                                <button
+                                                    onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity - 1)}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg text-base font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:scale-95 transition-all disabled:opacity-30"
+                                                    disabled={item.quantity <= 1}
+                                                >
+                                                    -
+                                                </button>
+                                                <span className="w-8 text-center text-sm font-semibold text-gray-900">{item.quantity}</span>
+                                                <button
+                                                    onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity + 1)}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg text-base font-semibold text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:scale-95 transition-all"
+                                                >
+                                                    +
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
 import { createGuestOrderToken, createGuestTrackingToken } from '@/lib/security/guest-order-token';
+import { enforceSecureJsonPostRequest } from '@/lib/security/request-guards';
 
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
@@ -126,6 +127,11 @@ const findRecentDuplicateOrder = async ({
 };
 
 export async function POST(req: NextRequest) {
+    const requestGuardResponse = enforceSecureJsonPostRequest(req);
+    if (requestGuardResponse) {
+        return requestGuardResponse;
+    }
+
     // 1. Rate Limiting
     const { allowed, remaining, resetTime } = await checkRateLimit(req);
     if (!allowed) {

@@ -143,6 +143,7 @@ export default function HomePage() {
                     alt="Organic Ayurvedic Products"
                     width={800}
                     height={800}
+                    priority
                     sizes="(max-width: 1024px) 90vw, 35vw"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                   />

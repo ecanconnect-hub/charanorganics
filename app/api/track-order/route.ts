@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
 import { verifyGuestOrderToken } from '@/lib/security/guest-order-token';
+import { enforceSecureJsonPostRequest } from '@/lib/security/request-guards';
 
 const trackOrderSchema = z.object({
     orderId: z.string().min(1),
@@ -30,6 +31,11 @@ const maskPincode = (value: string): string => {
 };
 
 export async function POST(request: NextRequest) {
+    const requestGuardResponse = enforceSecureJsonPostRequest(request);
+    if (requestGuardResponse) {
+        return requestGuardResponse;
+    }
+
     const { allowed, remaining, resetTime } = await checkRateLimit(request);
     if (!allowed) {
         return NextResponse.json(
