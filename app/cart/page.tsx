@@ -212,7 +212,7 @@ export default function CartPage() {
                                             </div>
 
                                             {/* Controls */}
-                                            <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
+                                            <div className="flex items-center justify-start md:justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
                                                 <button
                                                     onClick={() => removeItem(item.product_id, item.variant_id)}
                                                     className="order-1 md:order-2 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 bg-white hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all border border-gray-200 hover:border-red-200"
