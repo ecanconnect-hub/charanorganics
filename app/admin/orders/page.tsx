@@ -6,7 +6,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
@@ -73,9 +73,7 @@ const isHttpUrl = (value: string) => /^https?:\/\//i.test(value);
 
 export default function AdminOrdersPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const { user } = useAuth();
-    const orderQuery = searchParams.get('order');
 
     const [orders, setOrders] = useState<OrderListRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -86,7 +84,22 @@ export default function AdminOrdersPage() {
     const [showModal, setShowModal] = useState(false);
     const [isExportingPdf, setIsExportingPdf] = useState(false);
     const [resolvedPaymentScreenshotUrl, setResolvedPaymentScreenshotUrl] = useState<string | null>(null);
+    const [orderQuery, setOrderQuery] = useState<string | null>(null);
     const [handledOrderQuery, setHandledOrderQuery] = useState<string | null>(null);
+
+    useEffect(() => {
+        const syncOrderQuery = () => {
+            const nextOrderQuery = new URLSearchParams(window.location.search).get('order');
+            setOrderQuery(nextOrderQuery);
+        };
+
+        syncOrderQuery();
+        window.addEventListener('popstate', syncOrderQuery);
+
+        return () => {
+            window.removeEventListener('popstate', syncOrderQuery);
+        };
+    }, []);
 
     useEffect(() => {
         void checkAdmin();
@@ -293,13 +306,10 @@ export default function AdminOrdersPage() {
         if (!orderQuery) {
             return;
         }
-
-        const nextParams = new URLSearchParams(searchParams.toString());
-        nextParams.delete('order');
-        const nextQuery = nextParams.toString();
-
-        router.replace(nextQuery ? `/admin/orders?${nextQuery}` : '/admin/orders', { scroll: false });
-    }, [orderQuery, router, searchParams]);
+        setOrderQuery(null);
+        setHandledOrderQuery(null);
+        router.replace('/admin/orders', { scroll: false });
+    }, [orderQuery, router]);
 
     useEffect(() => {
         if (!orderQuery) {
