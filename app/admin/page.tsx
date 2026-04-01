@@ -104,7 +104,7 @@ export default function AdminDashboard() {
           *,
           profile:profiles (full_name, email)
         `)
-                .in('status', pendingStatuses)
+                .eq('status', 'payment_verification')
                 .order('created_at', { ascending: false })
                 .limit(10);
 
@@ -383,7 +383,7 @@ export default function AdminDashboard() {
                         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900">Quick Payment Review</h3>
-                                <p className="text-sm text-gray-500">Only orders waiting for payment proof or admin verification.</p>
+                                <p className="text-sm text-gray-500">Only orders with submitted payment proof waiting for admin verification.</p>
                             </div>
                             <Link
                                 href="/admin/payments"
