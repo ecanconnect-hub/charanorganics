@@ -24,14 +24,22 @@ type CartLikeItem = {
     variant_label?: string | null;
 };
 
-export const SHIPPING_RATE_PER_KG = 80;
 export const SHIPPING_POLICY_LINES = [
-    'Up to 1 kg: Rs.80',
-    'Up to 2 kg: Rs.160',
-    'Up to 3 kg: Rs.240',
-    'Up to 4 kg: Rs.320',
-    '5 kg and above: Rs.300',
+    '0 to 1 kg: Rs.80',
+    '1.1 to 2 kg: Rs.160',
+    '2.1 to 3 kg: Rs.240',
+    '3.1 to 4 kg: Rs.280',
+    'More than 4 kg: Rs.300',
 ];
+
+function getShippingChargeForBillableWeight(billableWeightKg: number): number {
+    if (!Number.isFinite(billableWeightKg) || billableWeightKg <= 0) return 0;
+    if (billableWeightKg <= 1) return 80;
+    if (billableWeightKg <= 2) return 160;
+    if (billableWeightKg <= 3) return 240;
+    if (billableWeightKg <= 4) return 280;
+    return 300;
+}
 
 const SIZE_PATTERN = /(\d+(?:\.\d+)?|\d+\s*\/\s*\d+)\s*(kg|kgs?|kilograms?|gm|gms?|grams?|g|ml|l|ltr|litre|liter|liters?|litres?|pcs?|pieces?)\b/i;
 
@@ -154,10 +162,7 @@ export function calculateWeightBasedShipping(items: CartLikeItem[]) {
     }, 0);
 
     const billableWeightKg = totalUnits > 0 ? Math.max(1, Math.ceil(totalActualWeightKg)) : 0;
-    const shippingCharge =
-        billableWeightKg >= 5
-            ? 300
-            : billableWeightKg * SHIPPING_RATE_PER_KG;
+    const shippingCharge = getShippingChargeForBillableWeight(billableWeightKg);
 
     return {
         totalActualWeightKg,

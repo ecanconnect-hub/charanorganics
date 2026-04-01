@@ -105,10 +105,10 @@ export default function OrderConfirmationPage() {
 
                         {/* Message */}
                         <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
-                            Order Update
+                            Payment Update
                         </h3>
                         <p className="text-gray-600 text-center mb-6">
-                            We are processing your order details. You should receive an email confirmation shortly.
+                            We received your payment details. You should receive a payment review email shortly.
                         </p>
 
                         {/* Auto-close indicator */}
@@ -129,7 +129,7 @@ export default function OrderConfirmationPage() {
                     </div>
 
                     <h1 className="text-3xl font-bold text-[rgb(var(--foreground))] mb-4">
-                        Order Placed Successfully!
+                        Payment Submitted Successfully!
                     </h1>
 
                     <div className="bg-green-50 border border-green-100 rounded-xl p-6 mb-8">
@@ -142,7 +142,7 @@ export default function OrderConfirmationPage() {
                     </div>
 
                     <p className="text-gray-600 mb-8">
-                        We have received your order details. We will now verify your payment proof and confirm your order shortly.
+                        We have received your payment details. Your order is now waiting for payment verification by our team.
                     </p>
 
                     {/* Order Details */}

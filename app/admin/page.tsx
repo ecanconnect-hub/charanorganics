@@ -14,7 +14,6 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
-import { Button } from '@/components/ui/Button';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 
 type ViewType = 'dashboard' | 'orders' | 'products';
@@ -105,6 +104,7 @@ export default function AdminDashboard() {
           *,
           profile:profiles (full_name, email)
         `)
+                .in('status', pendingStatuses)
                 .order('created_at', { ascending: false })
                 .limit(10);
 
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
                                         <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
                                             {stats.pendingOrders}
                                         </div>
-                                        <span className="font-semibold text-gray-900">Pending</span>
+                                        <span className="font-semibold text-gray-900">Payment Queue</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
@@ -378,16 +378,19 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    {/* Recent Orders */}
+                    {/* Quick Payment Review */}
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-gray-900">Recent Orders</h3>
-                            <button
-                                onClick={() => setCurrentView('orders')}
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Quick Payment Review</h3>
+                                <p className="text-sm text-gray-500">Only orders waiting for payment proof or admin verification.</p>
+                            </div>
+                            <Link
+                                href="/admin/payments"
                                 className="text-indigo-600 hover:text-indigo-700 font-semibold text-sm"
                             >
-                                View All →
-                            </button>
+                                Open Payments →
+                            </Link>
                         </div>
                         <div className="overflow-x-auto">
                             {/* Mobile Card View */}
@@ -401,10 +404,9 @@ export default function AdminDashboard() {
                                                     {order.order_id}
                                                 </span>
                                             </div>
-                                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                                order.status === 'shipped' ? 'bg-indigo-100 text-indigo-800' :
-                                                    order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                                                        'bg-yellow-100 text-yellow-800'
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${order.status === 'payment_verification'
+                                                ? 'bg-blue-100 text-blue-800'
+                                                : 'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                 {order.status}
                                             </span>
@@ -424,6 +426,17 @@ export default function AdminDashboard() {
                                                     {new Date(order.created_at).toLocaleDateString()}
                                                 </span>
                                             </div>
+                                            <div className="pt-2">
+                                                <Link
+                                                    href={order.status === 'payment_verification' ? '/admin/payments' : '/admin/orders'}
+                                                    className={`block w-full rounded-lg px-3 py-2 text-center text-xs font-bold ${order.status === 'payment_verification'
+                                                        ? 'bg-green-600 text-white hover:bg-green-700'
+                                                        : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'
+                                                        }`}
+                                                >
+                                                    {order.status === 'payment_verification' ? 'Verify Payment' : 'View Waiting Order'}
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -438,6 +451,7 @@ export default function AdminDashboard() {
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Amount</th>
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Status</th>
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Date</th>
+                                        <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -455,16 +469,26 @@ export default function AdminDashboard() {
                                                 <span className="font-bold text-gray-900">₹{order.total_amount.toFixed(2)}</span>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                                    order.status === 'shipped' ? 'bg-indigo-100 text-indigo-800' :
-                                                        order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                                                            'bg-yellow-100 text-yellow-800'
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'payment_verification'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-yellow-100 text-yellow-800'
                                                     }`}>
                                                     {order.status.toUpperCase()}
                                                 </span>
                                             </td>
                                             <td className="py-4 px-6 text-sm text-gray-600">
                                                 {new Date(order.created_at).toLocaleDateString()}
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <Link
+                                                    href={order.status === 'payment_verification' ? '/admin/payments' : '/admin/orders'}
+                                                    className={`inline-flex rounded-lg px-3 py-2 text-xs font-bold ${order.status === 'payment_verification'
+                                                        ? 'bg-green-600 text-white hover:bg-green-700'
+                                                        : 'border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'
+                                                        }`}
+                                                >
+                                                    {order.status === 'payment_verification' ? 'Verify Payment' : 'View Waiting Order'}
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}

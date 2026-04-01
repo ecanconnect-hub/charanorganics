@@ -238,12 +238,14 @@ export async function POST(request: NextRequest) {
             unit_price: item.unit_price
         }));
 
-        const customerEmailHtml = OrderConfirmationTemplate(emailOrderData, emailItems);
+        const customerEmailHtml = OrderConfirmationTemplate(emailOrderData, emailItems, {
+            includePromotion: true,
+        });
 
         // Send email to customer
         const customerEmailResult = await emailService.sendEmail(
             recipientEmail, // Use the resolved email
-            `Order Confirmation #${orderData.order_id}`,
+            `Payment Submitted - Order #${orderData.order_id}`,
             customerEmailHtml
         );
 
@@ -279,7 +281,9 @@ export async function POST(request: NextRequest) {
         let adminNotificationSent = false;
         if (!smtpAuthFailure) {
             try {
-                const adminEmailHtml = OrderConfirmationTemplate(emailOrderData, emailItems);
+                const adminEmailHtml = OrderConfirmationTemplate(emailOrderData, emailItems, {
+                    includePromotion: false,
+                });
                 const adminEmailResult = await emailService.sendEmail(
                     adminEmail,
                     `New Order Payment Submitted - #${orderData.order_id}`,

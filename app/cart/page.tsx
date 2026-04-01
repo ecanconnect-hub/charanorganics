@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
 import { useCart } from '@/lib/cart-context';
+import { calculateWeightBasedShipping } from '@/lib/utils/shipping';
 import toast from 'react-hot-toast';
 
 const toFiniteNumber = (value: unknown): number | null => {
@@ -43,11 +44,8 @@ export default function CartPage() {
         return price !== null ? sum + price * item.quantity : sum;
     }, 0);
 
-    const shippingCandidates = cartItems
-        .map((item) => toFiniteNumber(item.product?.shipping_charges))
-        .filter((value): value is number => value !== null);
-    const maxShipping = shippingCandidates.length > 0 ? Math.max(...shippingCandidates) : 0;
-    const shipping = subtotal >= 2000 ? 0 : maxShipping;
+    const shippingSummary = calculateWeightBasedShipping(cartItems);
+    const shipping = shippingSummary.shippingCharge;
     const total = subtotal + shipping;
     const unavailableItems = useMemo(
         () => cartItems.filter((item) => toFiniteNumber(item.product?.current_price) === null),
@@ -111,6 +109,8 @@ export default function CartPage() {
 
             lines.push('');
             lines.push(`Subtotal: Rs.${subtotal.toFixed(0)}`);
+            lines.push(`Actual Weight: ${shippingSummary.formattedActualWeight}`);
+            lines.push(`Billable Weight: ${shippingSummary.formattedBillableWeight}`);
             lines.push(`Shipping: Rs.${shipping.toFixed(0)}`);
             lines.push(`Total: Rs.${total.toFixed(0)}`);
             lines.push('');
@@ -260,11 +260,11 @@ export default function CartPage() {
                                     </div>
                                     <div className="flex justify-between text-sm font-medium text-gray-500">
                                         <span>Shipping</span>
-                                        <span className="text-base font-semibold text-gray-900">
-                                            {subtotal >= 2000 ? (
-                                                <span className="text-green-600 font-semibold text-xs uppercase tracking-[0.14em]">Free Shipping</span>
-                                            ) : `₹${shipping.toFixed(2)}`}
-                                        </span>
+                                        <span className="text-base font-semibold text-gray-900">₹{shipping.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm font-medium text-gray-500">
+                                        <span>Billable Weight</span>
+                                        <span className="text-base font-semibold text-gray-900">{shippingSummary.formattedBillableWeight}</span>
                                     </div>
                                     <div className="pt-5 mt-5 border-t border-gray-200 flex justify-between items-end">
                                         <div>

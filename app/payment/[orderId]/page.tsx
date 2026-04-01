@@ -230,7 +230,7 @@ export default function PaymentPage() {
 
             localStorage.removeItem('guest_cart');
             sessionStorage.removeItem(`guest_payment_token:${orderId}`);
-            toast.success('Payment details submitted! We will verify and confirm your order soon.');
+            toast.success('Payment details submitted! Your order is now waiting for payment review.');
             router.push(`/order-confirmation/${orderId}`);
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Check connection';
@@ -282,7 +282,7 @@ export default function PaymentPage() {
                         className={`flex items-center gap-2 transition-colors ${step >= 2 ? 'text-green-600' : 'text-gray-400'} hover:text-green-700`}
                     >
                         <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 transition-all ${step >= 2 ? 'bg-green-600 border-green-600 text-white' : 'bg-white border-gray-200'}`}>2</span>
-                        <span className="font-black uppercase tracking-widest text-[10px] italic">Confirm</span>
+                        <span className="font-black uppercase tracking-widest text-[10px] italic">Submit Proof</span>
                     </button>
                 </div>
 
@@ -290,7 +290,7 @@ export default function PaymentPage() {
                     <div className="bg-gray-900 p-8 text-center text-white">
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">Checkout Verification</p>
                         <h1 className="text-2xl font-black tracking-tight uppercase italic mb-2">
-                            {step === 1 ? 'Complete Payment' : 'Confirm Proof'}
+                            {step === 1 ? 'Complete Payment' : 'Submit Proof'}
                         </h1>
                         <div className="flex justify-center items-center gap-6 mt-4">
                             <div className="text-left">
@@ -373,7 +373,7 @@ export default function PaymentPage() {
                                         onClick={() => setStep(2)}
                                         className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-green-900/20"
                                     >
-                                        I have paid, Proceed to Confirm
+                                        I have paid, Proceed to Submit Proof
                                     </Button>
                                 </div>
 
@@ -448,7 +448,7 @@ export default function PaymentPage() {
                                         isLoading={uploading}
                                         className="h-16 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-green-900/20"
                                     >
-                                        Verify & Complete Order
+                                        Submit Payment Proof
                                     </Button>
                                 </div>
                             </div>
