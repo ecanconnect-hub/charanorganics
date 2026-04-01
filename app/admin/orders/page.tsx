@@ -5,8 +5,8 @@
 
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
@@ -73,7 +73,9 @@ const isHttpUrl = (value: string) => /^https?:\/\//i.test(value);
 
 export default function AdminOrdersPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user } = useAuth();
+    const orderQuery = searchParams.get('order');
 
     const [orders, setOrders] = useState<OrderListRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -84,6 +86,7 @@ export default function AdminOrdersPage() {
     const [showModal, setShowModal] = useState(false);
     const [isExportingPdf, setIsExportingPdf] = useState(false);
     const [resolvedPaymentScreenshotUrl, setResolvedPaymentScreenshotUrl] = useState<string | null>(null);
+    const [handledOrderQuery, setHandledOrderQuery] = useState<string | null>(null);
 
     useEffect(() => {
         void checkAdmin();
@@ -229,7 +232,7 @@ export default function AdminOrdersPage() {
         }
     };
 
-    const viewOrderDetails = async (order: OrderListRecord) => {
+    const viewOrderDetails = useCallback(async (order: OrderListRecord) => {
         setResolvedPaymentScreenshotUrl(null);
 
         const { data: orderItemsData } = await supabase
@@ -281,7 +284,43 @@ export default function AdminOrdersPage() {
         });
 
         setShowModal(true);
-    };
+    }, []);
+
+    const closeOrderModal = useCallback(() => {
+        setShowModal(false);
+        setResolvedPaymentScreenshotUrl(null);
+
+        if (!orderQuery) {
+            return;
+        }
+
+        const nextParams = new URLSearchParams(searchParams.toString());
+        nextParams.delete('order');
+        const nextQuery = nextParams.toString();
+
+        router.replace(nextQuery ? `/admin/orders?${nextQuery}` : '/admin/orders', { scroll: false });
+    }, [orderQuery, router, searchParams]);
+
+    useEffect(() => {
+        if (!orderQuery) {
+            if (handledOrderQuery !== null) {
+                setHandledOrderQuery(null);
+            }
+            return;
+        }
+
+        if (orders.length === 0 || handledOrderQuery === orderQuery) {
+            return;
+        }
+
+        const matchedOrder = orders.find((order) => order.id === orderQuery || order.order_id === orderQuery);
+        if (!matchedOrder) {
+            return;
+        }
+
+        setHandledOrderQuery(orderQuery);
+        void viewOrderDetails(matchedOrder);
+    }, [handledOrderQuery, orderQuery, orders, viewOrderDetails]);
 
     const downloadOrderDetailsPdf = async (order: SelectedOrder) => {
         setIsExportingPdf(true);
@@ -670,10 +709,7 @@ export default function AdminOrdersPage() {
 
             <Modal
                 isOpen={showModal}
-                onClose={() => {
-                    setShowModal(false);
-                    setResolvedPaymentScreenshotUrl(null);
-                }}
+                onClose={closeOrderModal}
                 title="Order Full Details"
                 size="xl"
             >

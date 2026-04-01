@@ -448,9 +448,18 @@ export default function AdminDashboard() {
                                         <div className="flex justify-between items-start mb-3 border-b border-gray-200 pb-2">
                                             <div>
                                                 <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block mb-1">Order ID</span>
-                                                <span className="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
-                                                    {payment.order?.order_id || 'Unknown'}
-                                                </span>
+                                                {payment.order?.id ? (
+                                                    <Link
+                                                        href={`/admin/orders?order=${payment.order.id}`}
+                                                        className="inline-flex whitespace-nowrap rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 font-mono text-xs font-bold text-indigo-700 hover:bg-indigo-100"
+                                                    >
+                                                        {payment.order.order_id}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="inline-flex whitespace-nowrap rounded-md border border-gray-200 bg-gray-100 px-3 py-1 font-mono text-xs font-bold text-gray-600">
+                                                        Unknown
+                                                    </span>
+                                                )}
                                             </div>
                                             <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${getPaymentStatusClasses(payment.status)}`}>
                                                 Payment: {payment.status}
@@ -498,7 +507,7 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Desktop Table View */}
-                            <table className="w-full hidden md:table">
+                            <table className="hidden w-full min-w-[980px] md:table">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Order ID</th>
@@ -521,9 +530,18 @@ export default function AdminDashboard() {
                                     {recentProofOrders.slice(0, 5).map((payment) => (
                                         <tr key={payment.id} className="hover:bg-gray-50">
                                             <td className="py-4 px-6">
-                                                <span className="font-mono text-xs font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">
-                                                    {payment.order?.order_id || 'Unknown'}
-                                                </span>
+                                                {payment.order?.id ? (
+                                                    <Link
+                                                        href={`/admin/orders?order=${payment.order.id}`}
+                                                        className="inline-flex whitespace-nowrap rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 font-mono text-xs font-bold text-indigo-700 hover:bg-indigo-100"
+                                                    >
+                                                        {payment.order.order_id}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="inline-flex whitespace-nowrap rounded-md border border-gray-200 bg-gray-100 px-3 py-1 font-mono text-xs font-bold text-gray-600">
+                                                        Unknown
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="py-4 px-6">
                                                 <p className="font-semibold text-gray-900 text-sm">{payment.order?.profile?.full_name || 'N/A'}</p>
