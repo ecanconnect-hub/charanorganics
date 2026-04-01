@@ -5,6 +5,7 @@ import { Database } from '@/lib/supabase/database.types';
 import { checkRateLimit } from '@/lib/middleware/rateLimit';
 import { createGuestOrderToken, createGuestTrackingToken } from '@/lib/security/guest-order-token';
 import { enforceSecureJsonPostRequest } from '@/lib/security/request-guards';
+import { calculateWeightBasedShipping } from '@/lib/utils/shipping';
 
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
@@ -282,16 +283,12 @@ export async function POST(req: NextRequest) {
 
         // 6. Secure Price Calculation (Trusted Source)
         let subtotal = 0;
-        let maxShipping = 0;
 
         for (const item of cartToProcess) {
             subtotal += (item.price || 0) * item.quantity;
-            if ((item.shipping || 0) > maxShipping) {
-                maxShipping = item.shipping || 0;
-            }
         }
 
-        const shippingFee = subtotal >= 2000 ? 0 : maxShipping;
+        const shippingFee = calculateWeightBasedShipping(cartToProcess).shippingCharge;
         const totalAmount = subtotal + shippingFee;
         const shippingAddress = [addressLine1, addressLine2].filter(Boolean).join(', ');
 

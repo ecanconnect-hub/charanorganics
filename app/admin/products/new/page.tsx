@@ -371,12 +371,13 @@ export default function AddProductPage() {
 
                         <Input
                             type="number"
-                            label="Default Shipping Charges (₹) *"
+                            label="Fallback Shipping Charges (₹) *"
                             value={shippingCharges}
                             onChange={(e) => setShippingCharges(e.target.value)}
                             placeholder="40"
                             required
                             step="0.01"
+                            helperText="Used only as a fallback. Checkout shipping is now calculated from product/variant weight."
                         />
 
                         {/* Variants Management */}
@@ -387,6 +388,9 @@ export default function AddProductPage() {
                                     + Add Variant
                                 </Button>
                             </div>
+                            <p className="text-sm text-gray-500 mb-4">
+                                Use variant labels in a clear size format like 50 g, 100 g, 250 g, 500 ml, or 1 kg so shipping weight can be calculated correctly.
+                            </p>
 
                             {variants.length > 0 ? (
                                 <div className="space-y-4">
@@ -398,6 +402,7 @@ export default function AddProductPage() {
                                                     value={v.label}
                                                     onChange={(e) => updateVariant(index, 'label', e.target.value)}
                                                     required
+                                                    helperText="Examples: 50 g, 100 g, 500 ml, 1 kg"
                                                 />
                                             </div>
                                             <div>

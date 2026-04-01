@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
+import { calculateWeightBasedShipping } from '@/lib/utils/shipping';
 
 export function CartDrawer() {
     const { isOpen, closeCart, items, removeItem, updateQuantity } = useCart();
@@ -22,6 +23,9 @@ export function CartDrawer() {
         const price = item.product?.current_price || 0;
         return sum + (price * item.quantity);
     }, 0);
+    const shippingSummary = calculateWeightBasedShipping(items);
+    const estimatedShipping = shippingSummary.shippingCharge;
+    const estimatedTotal = subtotal + estimatedShipping;
 
     const handleWhatsappCart = () => {
         try {
@@ -54,6 +58,10 @@ export function CartDrawer() {
 
             lines.push('');
             lines.push(`Subtotal: Rs.${subtotal.toFixed(0)}`);
+            lines.push(`Actual Weight: ${shippingSummary.formattedActualWeight}`);
+            lines.push(`Billable Weight: ${shippingSummary.formattedBillableWeight}`);
+            lines.push(`Estimated Shipping: Rs.${estimatedShipping.toFixed(0)}`);
+            lines.push(`Estimated Total: Rs.${estimatedTotal.toFixed(0)}`);
             lines.push('');
             lines.push(`From: ${window.location.origin}`);
 
@@ -118,7 +126,7 @@ export function CartDrawer() {
                                         : resolveLocalizedText(item.product.title_en, item.product.title_te);
 
                                     return (
-                                        <div key={item.product_id} className="flex gap-4">
+                                        <div key={`${item.product_id}:${item.variant_id || 'base'}`} className="flex gap-4">
                                             <div className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
                                                 {item.product.image_url ? (
                                                     <Image
@@ -174,15 +182,18 @@ export function CartDrawer() {
                                         <span className="text-gray-500 font-medium">Subtotal</span>
                                         <span className="text-xl font-bold text-gray-900 font-mono">₹{subtotal.toFixed(2)}</span>
                                     </div>
-                                    {subtotal < 2000 ? (
-                                        <p className="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-1 rounded inline-block self-end">
-                                            Add ₹{(2000 - subtotal).toFixed(2)} more for FREE shipping
-                                        </p>
-                                    ) : (
-                                        <p className="text-[10px] text-green-600 font-black uppercase tracking-widest bg-green-50 px-2 py-1 rounded inline-block self-end animate-pulse">
-                                            🎉 Free Shipping Applied!
-                                        </p>
-                                    )}
+                                    <div className="flex items-center justify-between text-sm mt-2">
+                                        <span className="text-gray-500 font-medium">Weight</span>
+                                        <span className="text-sm font-bold text-gray-900">{shippingSummary.formattedBillableWeight}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm mt-1">
+                                        <span className="text-gray-500 font-medium">Shipping</span>
+                                        <span className="text-sm font-bold text-gray-900">₹{estimatedShipping.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm mt-1">
+                                        <span className="text-gray-500 font-medium">Estimated Total</span>
+                                        <span className="text-sm font-bold text-gray-900">₹{estimatedTotal.toFixed(2)}</span>
+                                    </div>
                                 </div>
                                 <div className="space-y-3">
                                     <Link href="/cart" className="block w-full" onClick={closeCart}>
@@ -208,7 +219,7 @@ export function CartDrawer() {
                                     </p>
                                 )}
                                 <p className="text-center text-[11px] text-gray-400 mt-4">
-                                    Guest checkout available (no login required). Shipping and taxes calculated at checkout.
+                                    Guest checkout available. Shipping is calculated by total billable weight at checkout.
                                 </p>
                             </div>
                         )}

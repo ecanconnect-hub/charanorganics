@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
 import { migrateGuestCartToUser } from '@/lib/utils/cart';
 import { getEmailTypoSuggestion, isProbablyValidEmail, normalizeEmail } from '@/lib/utils/email';
+import { calculateWeightBasedShipping, SHIPPING_POLICY_LINES } from '@/lib/utils/shipping';
 import toast from 'react-hot-toast';
 
 type ProfilePolicyRow = Pick<Database['public']['Tables']['profiles']['Row'], 'privacy_policy_accepted'>;
@@ -455,10 +456,8 @@ export default function CheckoutPage() {
         (sum, item) => sum + (item.product?.current_price || 0) * item.quantity,
         0
     );
-    const calculatedShipping = cartItems.length > 0
-        ? Math.max(...cartItems.map(item => item.product?.shipping_charges || 0))
-        : 0;
-    const shipping = subtotal >= 2000 ? 0 : calculatedShipping;
+    const shippingSummary = calculateWeightBasedShipping(cartItems);
+    const shipping = shippingSummary.shippingCharge;
     const total = subtotal + shipping;
 
     const handleWhatsappOrder = () => {
@@ -492,6 +491,8 @@ export default function CheckoutPage() {
 
             lines.push('');
             lines.push(`Subtotal: Rs.${subtotal.toFixed(0)}`);
+            lines.push(`Actual Weight: ${shippingSummary.formattedActualWeight}`);
+            lines.push(`Billable Weight: ${shippingSummary.formattedBillableWeight}`);
             lines.push(`Shipping: Rs.${shipping.toFixed(0)}`);
             lines.push(`Total: Rs.${total.toFixed(0)}`);
             lines.push('');
@@ -772,22 +773,27 @@ export default function CheckoutPage() {
                                             <span className="text-white font-medium">Subtotal</span>
                                             <span className="font-bold">₹{subtotal.toFixed(0)}</span>
                                         </div>
-                                        {subtotal < 2000 ? (
-                                            <p className="text-[10px] text-white font-bold bg-white/20 px-2 py-1 rounded inline-block self-end">
-                                                Add ₹{(2000 - subtotal).toFixed(2)} more for FREE shipping
-                                            </p>
-                                        ) : (
-                                            <p className="text-[10px] text-white font-black uppercase tracking-widest bg-green-500/80 px-2 py-1 rounded inline-block self-end animate-pulse">
-                                                🎉 Free Shipping Applied!
-                                            </p>
-                                        )}
                                         <div className="flex justify-between text-sm">
                                             <span className="text-white font-medium">Shipping Charge</span>
-                                            {subtotal >= 2000 ? (
-                                                <span className="text-green-400 font-bold uppercase tracking-widest text-[10px]">Free Shipping</span>
-                                            ) : (
-                                                <span className="font-bold">₹{shipping.toFixed(0)}</span>
-                                            )}
+                                            <span className="font-bold">₹{shipping.toFixed(0)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-white font-medium">Actual Weight</span>
+                                            <span className="font-bold">{shippingSummary.formattedActualWeight}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-white font-medium">Billable Weight</span>
+                                            <span className="font-bold">{shippingSummary.formattedBillableWeight}</span>
+                                        </div>
+                                        <div className="rounded-2xl bg-white/10 p-4">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 mb-2">Shipping Policy</p>
+                                            <div className="space-y-1">
+                                                {SHIPPING_POLICY_LINES.map((line) => (
+                                                    <p key={line} className="text-xs text-white/90 font-medium">
+                                                        {line}
+                                                    </p>
+                                                ))}
+                                            </div>
                                         </div>
                                         <div className="border-t border-white/10 pt-6 flex justify-between items-end">
                                             <span className="text-xs font-black uppercase tracking-[0.2em] text-white">Total Amount</span>

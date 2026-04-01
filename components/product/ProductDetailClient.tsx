@@ -19,6 +19,7 @@ import { useAuth } from '@/lib/auth/context';
 import { useCart } from '@/lib/cart-context';
 import { supabase } from '@/lib/supabase/client';
 import { ProductCard } from '@/components/product/ProductCard';
+import { SHIPPING_POLICY_LINES, formatWeight, getProductMeasurement, measurementToWeightKg } from '@/lib/utils/shipping';
 import toast from 'react-hot-toast';
 
 interface ProductDetailClientProps {
@@ -69,6 +70,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     const discount = displayedMrp > displayedPrice && displayedPrice > 0
         ? Math.max(1, Math.round(((displayedMrp - displayedPrice) / displayedMrp) * 100))
         : 0;
+    const selectedMeasurement = getProductMeasurement(product, selectedVariant);
+    const selectedWeightLabel = selectedMeasurement
+        ? `${selectedMeasurement.value} ${selectedMeasurement.unit}`
+        : null;
+    const selectedWeightKg = measurementToWeightKg(selectedMeasurement);
 
     const fetchData = useCallback(async () => {
         // Fetch Variants
@@ -530,8 +536,22 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                         </div>
                         <div className="p-8 bg-green-600 rounded-3xl shadow-xl shadow-green-900/20 text-white flex flex-col justify-center">
                             <span className="text-3xl mb-4">🎁</span>
-                            <h4 className="font-bold mb-2 uppercase text-[10px] tracking-[0.2em] text-green-100">Offers Available</h4>
-                            <p className="text-xl font-bold">Free standard shipping on all orders over ₹2000</p>
+                            <h4 className="font-bold mb-3 uppercase text-[10px] tracking-[0.2em] text-green-100">Shipping Charges</h4>
+                            {selectedWeightLabel && (
+                                <p className="text-sm text-green-50 font-semibold mb-3">
+                                    Selected size: {selectedWeightLabel}{selectedWeightKg > 0 ? ` (${formatWeight(selectedWeightKg)})` : ''}
+                                </p>
+                            )}
+                            <div className="space-y-2">
+                                {SHIPPING_POLICY_LINES.map((line) => (
+                                    <p key={line} className="text-sm font-semibold text-green-50">
+                                        {line}
+                                    </p>
+                                ))}
+                            </div>
+                            <p className="text-xs text-green-100 mt-4 font-medium">
+                                Final shipping is calculated from the total billable weight of all items in your cart.
+                            </p>
                         </div>
                     </div>
                 </section>
