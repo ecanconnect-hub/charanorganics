@@ -18,9 +18,42 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 
 type ViewType = 'dashboard' | 'orders' | 'products';
 type OrderStatus = 'pending_payment' | 'payment_verification' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+type PaymentStatus = 'pending' | 'verified' | 'rejected';
+type RecentProofOrder = {
+    id: string;
+    status: PaymentStatus;
+    created_at: string;
+    verified_at: string | null;
+    utr_number: string | null;
+    order: {
+        id: string;
+        order_id: string;
+        total_amount: number | string | null;
+        status: OrderStatus;
+        created_at: string;
+        profile: {
+            full_name: string | null;
+            email: string | null;
+        } | null;
+    } | null;
+};
 
 const revenueStatuses: OrderStatus[] = ['confirmed', 'processing', 'shipped', 'delivered'];
 const pendingStatuses: OrderStatus[] = ['pending_payment', 'payment_verification'];
+
+const getPaymentStatusClasses = (status?: PaymentStatus) => {
+    if (status === 'verified') return 'bg-green-100 text-green-800';
+    if (status === 'rejected') return 'bg-red-100 text-red-800';
+    return 'bg-blue-100 text-blue-800';
+};
+
+const getOrderStatusClasses = (status?: OrderStatus) => {
+    if (status === 'confirmed' || status === 'processing') return 'bg-blue-100 text-blue-800';
+    if (status === 'shipped') return 'bg-indigo-100 text-indigo-800';
+    if (status === 'delivered') return 'bg-green-100 text-green-800';
+    if (status === 'cancelled') return 'bg-red-100 text-red-800';
+    return 'bg-yellow-100 text-yellow-800';
+};
 
 export default function AdminDashboard() {
     const { user, loading: authLoading } = useAuth();
@@ -39,7 +72,7 @@ export default function AdminDashboard() {
         monthlyRevenue: 0,
     });
     const [orders, setOrders] = useState<any[]>([]);
-    const [recentOrders, setRecentOrders] = useState<any[]>([]);
+    const [recentProofOrders, setRecentProofOrders] = useState<RecentProofOrder[]>([]);
 
     const fetchStats = useCallback(async () => {
         try {
@@ -96,21 +129,31 @@ export default function AdminDashboard() {
         }
     }, []);
 
-    const fetchRecentOrders = useCallback(async () => {
+    const fetchRecentProofOrders = useCallback(async () => {
         try {
             const { data } = await (supabase
-                .from('orders' as any) as any)
+                .from('payments' as any) as any)
                 .select(`
-          *,
-          profile:profiles (full_name, email)
+          id,
+          status,
+          created_at,
+          verified_at,
+          utr_number,
+          order:orders (
+            id,
+            order_id,
+            total_amount,
+            status,
+            created_at,
+            profile:profiles (full_name, email)
+          )
         `)
-                .eq('status', 'payment_verification')
                 .order('created_at', { ascending: false })
                 .limit(10);
 
-            setRecentOrders(data || []);
+            setRecentProofOrders((data || []) as RecentProofOrder[]);
         } catch (error) {
-            console.error('Error fetching orders:', error);
+            console.error('Error fetching payment proof orders:', error);
         }
     }, []);
 
@@ -131,8 +174,8 @@ export default function AdminDashboard() {
     }, []);
 
     const refreshDashboard = useCallback(async () => {
-        await Promise.all([fetchStats(), fetchRecentOrders(), fetchAllOrders()]);
-    }, [fetchAllOrders, fetchRecentOrders, fetchStats]);
+        await Promise.all([fetchStats(), fetchRecentProofOrders(), fetchAllOrders()]);
+    }, [fetchAllOrders, fetchRecentProofOrders, fetchStats]);
 
     const updateOrderStatus = async (orderId: string, newStatus: string) => {
         try {
@@ -383,7 +426,7 @@ export default function AdminDashboard() {
                         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900">Quick Payment Review</h3>
-                                <p className="text-sm text-gray-500">Only orders with submitted payment proof waiting for admin verification.</p>
+                                <p className="text-sm text-gray-500">Shows every order with submitted payment proof, plus payment and current order status.</p>
                             </div>
                             <Link
                                 href="/admin/payments"
@@ -395,46 +438,58 @@ export default function AdminDashboard() {
                         <div className="overflow-x-auto">
                             {/* Mobile Card View */}
                             <div className="md:hidden space-y-4 p-4">
-                                {recentOrders.slice(0, 5).map((order) => (
-                                    <div key={order.id} className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 shadow-sm">
+                                {recentProofOrders.length === 0 && (
+                                    <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
+                                        No payment proof orders yet.
+                                    </div>
+                                )}
+                                {recentProofOrders.slice(0, 5).map((payment) => (
+                                    <div key={payment.id} className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 shadow-sm">
                                         <div className="flex justify-between items-start mb-3 border-b border-gray-200 pb-2">
                                             <div>
                                                 <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold block mb-1">Order ID</span>
                                                 <span className="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
-                                                    {order.order_id}
+                                                    {payment.order?.order_id || 'Unknown'}
                                                 </span>
                                             </div>
-                                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${order.status === 'payment_verification'
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                {order.status}
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${getPaymentStatusClasses(payment.status)}`}>
+                                                Payment: {payment.status}
                                             </span>
                                         </div>
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-xs text-gray-500">Customer</span>
-                                                <span className="text-sm font-bold text-gray-900">{order.profile?.full_name || 'N/A'}</span>
+                                                <span className="text-sm font-bold text-gray-900">{payment.order?.profile?.full_name || 'N/A'}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
                                                 <span className="text-xs text-gray-500">Amount</span>
-                                                <span className="text-sm font-bold text-gray-900">₹{order.total_amount.toFixed(2)}</span>
+                                                <span className="text-sm font-bold text-gray-900">Rs. {Number(payment.order?.total_amount || 0).toFixed(2)}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500">Date</span>
+                                                <span className="text-xs text-gray-500">Proof Date</span>
                                                 <span className="text-xs font-medium text-gray-600">
-                                                    {new Date(order.created_at).toLocaleDateString()}
+                                                    {new Date(payment.created_at).toLocaleDateString()}
                                                 </span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-gray-500">Order Status</span>
+                                                <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${getOrderStatusClasses(payment.order?.status)}`}>
+                                                    {payment.order?.status || 'unknown'}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-gray-500">UTR</span>
+                                                <span className="font-mono text-xs font-semibold text-gray-700">{payment.utr_number || 'Not provided'}</span>
                                             </div>
                                             <div className="pt-2">
                                                 <Link
-                                                    href={order.status === 'payment_verification' ? '/admin/payments' : '/admin/orders'}
-                                                    className={`block w-full rounded-lg px-3 py-2 text-center text-xs font-bold ${order.status === 'payment_verification'
+                                                    href={payment.status === 'pending' ? '/admin/payments' : '/admin/orders'}
+                                                    className={`block w-full rounded-lg px-3 py-2 text-center text-xs font-bold ${payment.status === 'pending'
                                                         ? 'bg-green-600 text-white hover:bg-green-700'
                                                         : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'
                                                         }`}
                                                 >
-                                                    {order.status === 'payment_verification' ? 'Verify Payment' : 'View Waiting Order'}
+                                                    {payment.status === 'pending' ? 'Verify Payment' : 'View Order Status'}
                                                 </Link>
                                             </div>
                                         </div>
@@ -449,45 +504,55 @@ export default function AdminDashboard() {
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Order ID</th>
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Customer</th>
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Amount</th>
-                                        <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Status</th>
-                                        <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Date</th>
+                                        <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Payment</th>
+                                        <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Order</th>
+                                        <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Proof Date</th>
                                         <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {recentOrders.slice(0, 5).map((order) => (
-                                        <tr key={order.id} className="hover:bg-gray-50">
+                                    {recentProofOrders.length === 0 && (
+                                        <tr>
+                                            <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500">
+                                                No payment proof orders yet.
+                                            </td>
+                                        </tr>
+                                    )}
+                                    {recentProofOrders.slice(0, 5).map((payment) => (
+                                        <tr key={payment.id} className="hover:bg-gray-50">
                                             <td className="py-4 px-6">
                                                 <span className="font-mono text-xs font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">
-                                                    {order.order_id}
+                                                    {payment.order?.order_id || 'Unknown'}
                                                 </span>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <p className="font-semibold text-gray-900 text-sm">{order.profile?.full_name}</p>
+                                                <p className="font-semibold text-gray-900 text-sm">{payment.order?.profile?.full_name || 'N/A'}</p>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <span className="font-bold text-gray-900">₹{order.total_amount.toFixed(2)}</span>
+                                                <span className="font-bold text-gray-900">Rs. {Number(payment.order?.total_amount || 0).toFixed(2)}</span>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.status === 'payment_verification'
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                    {order.status.toUpperCase()}
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getPaymentStatusClasses(payment.status)}`}>
+                                                    {payment.status}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getOrderStatusClasses(payment.order?.status)}`}>
+                                                    {payment.order?.status || 'unknown'}
                                                 </span>
                                             </td>
                                             <td className="py-4 px-6 text-sm text-gray-600">
-                                                {new Date(order.created_at).toLocaleDateString()}
+                                                {new Date(payment.created_at).toLocaleDateString()}
                                             </td>
                                             <td className="py-4 px-6">
                                                 <Link
-                                                    href={order.status === 'payment_verification' ? '/admin/payments' : '/admin/orders'}
-                                                    className={`inline-flex rounded-lg px-3 py-2 text-xs font-bold ${order.status === 'payment_verification'
+                                                    href={payment.status === 'pending' ? '/admin/payments' : '/admin/orders'}
+                                                    className={`inline-flex rounded-lg px-3 py-2 text-xs font-bold ${payment.status === 'pending'
                                                         ? 'bg-green-600 text-white hover:bg-green-700'
                                                         : 'border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'
                                                         }`}
                                                 >
-                                                    {order.status === 'payment_verification' ? 'Verify Payment' : 'View Waiting Order'}
+                                                    {payment.status === 'pending' ? 'Verify Payment' : 'View Order Status'}
                                                 </Link>
                                             </td>
                                         </tr>
