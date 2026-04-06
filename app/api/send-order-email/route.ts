@@ -178,6 +178,31 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const allowedEmailStatuses = new Set([
+            'payment_verification',
+            'confirmed',
+            'processing',
+            'shipped',
+            'delivered',
+        ]);
+        const hasPaymentProof = Array.isArray(orderData.payments) && orderData.payments.some((payment: any) =>
+            Boolean(payment?.utr_number || payment?.payment_screenshot_url)
+        );
+
+        if (!allowedEmailStatuses.has(orderData.status) || !hasPaymentProof) {
+            return NextResponse.json(
+                { error: 'Order is not ready for confirmation email' },
+                {
+                    status: 409,
+                    headers: {
+                        'X-RateLimit-Remaining': remaining.toString(),
+                        'X-RateLimit-Reset': resetTime.toISOString(),
+                        'Cache-Control': 'no-store',
+                    },
+                }
+            );
+        }
+
         // Get user email - Try order record first, then profile
         let recipientEmail = orderData.email;
 

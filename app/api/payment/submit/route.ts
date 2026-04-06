@@ -77,6 +77,25 @@ function isSafeStoragePath(value: string): boolean {
     return true;
 }
 
+function buildExpectedGuestUploadPrefix(): string {
+    return 'guest-uploads/';
+}
+
+function buildExpectedAuthenticatedUploadPrefix(userId: string): string {
+    return `${userId}/`;
+}
+
+function extractStorageFilename(path: string): string | null {
+    const segments = path.split('/').filter(Boolean);
+    return segments.length > 0 ? segments[segments.length - 1] : null;
+}
+
+function matchesExpectedOrderFilename(filename: string, orderId: string): boolean {
+    const normalizedOrderId = normalizeOrderId(orderId);
+    const escapedOrderId = normalizedOrderId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^${escapedOrderId}-[0-9]{13}\\.(jpg|jpeg|png|webp)$`, 'i').test(filename);
+}
+
 export async function POST(request: NextRequest) {
     const requestGuardResponse = enforceSecureJsonPostRequest(request);
     if (requestGuardResponse) {
@@ -237,17 +256,33 @@ export async function POST(request: NextRequest) {
             }
 
             const allowedPrefixes: string[] = [];
+            const guestUploadPrefix = buildExpectedGuestUploadPrefix();
             if (isAdmin) {
                 if (typeof order.user_id === 'string' && order.user_id) {
-                    allowedPrefixes.push(`${order.user_id}/`);
+                    allowedPrefixes.push(buildExpectedAuthenticatedUploadPrefix(order.user_id));
                 }
-                allowedPrefixes.push('guest-uploads/');
+                allowedPrefixes.push(guestUploadPrefix);
             } else if (isOwner) {
                 if (typeof order.user_id === 'string' && order.user_id) {
-                    allowedPrefixes.push(`${order.user_id}/`);
+                    allowedPrefixes.push(buildExpectedAuthenticatedUploadPrefix(order.user_id));
                 }
             } else if (isTokenVerified) {
-                allowedPrefixes.push('guest-uploads/');
+                allowedPrefixes.push(guestUploadPrefix);
+            }
+
+            const filename = extractStorageFilename(extractedPath);
+            if (!filename || !matchesExpectedOrderFilename(filename, normalizedOrderId)) {
+                return NextResponse.json(
+                    { error: 'Invalid screenshot reference' },
+                    {
+                        status: 400,
+                        headers: {
+                            'X-RateLimit-Remaining': remaining.toString(),
+                            'X-RateLimit-Reset': resetTime.toISOString(),
+                            'Cache-Control': 'no-store',
+                        },
+                    }
+                );
             }
 
             if (!allowedPrefixes.some((prefix) => extractedPath.startsWith(prefix))) {

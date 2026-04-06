@@ -30,6 +30,7 @@ const navItems: NavItem[] = [
     { href: '/admin/products', label: 'Products', icon: 'PR' },
     { href: '/admin/categories', label: 'Categories', icon: 'CT' },
     { href: '/admin/payments', label: 'Payments', icon: 'PY' },
+    { href: '/admin/utr', label: 'UTR Desk', icon: 'UT' },
     { href: '/admin/users', label: 'Users', icon: 'US' },
     { href: '/admin/security', label: 'Security', icon: 'SC' },
     { href: '/admin/messages', label: 'Messages', icon: 'MS' },

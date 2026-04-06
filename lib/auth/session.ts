@@ -42,9 +42,12 @@ export async function getServerSession(): Promise<SessionData | null> {
         }
     );
 
-    const { data: { session }, error } = await supabase.auth.getSession();
+    // SECURITY: Never trust getSession() on the server as the source of identity.
+    // getUser() revalidates the auth cookie with Supabase and avoids accepting
+    // a forged or stale local session payload.
+    const { data: { user: authUser }, error } = await supabase.auth.getUser();
 
-    if (error || !session) {
+    if (error || !authUser) {
         return null;
     }
 
@@ -52,7 +55,7 @@ export async function getServerSession(): Promise<SessionData | null> {
     const { data: user } = await supabase
         .from('profiles')
         .select('id, email, role')
-        .eq('id', session.user.id)
+        .eq('id', authUser.id)
         .single();
 
     if (!user) {
@@ -60,7 +63,9 @@ export async function getServerSession(): Promise<SessionData | null> {
     }
 
     return {
-        session,
+        session: {
+            user: authUser,
+        },
         user,
     };
 }

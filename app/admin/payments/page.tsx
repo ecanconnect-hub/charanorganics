@@ -37,6 +37,7 @@ type SelectedPayment = PaymentWithOrder & {
 
 const formatCurrency = (value: number) => `Rs. ${(value || 0).toFixed(2)}`;
 const isHttpUrl = (value: string) => /^https?:\/\//i.test(value);
+const normalizeUtr = (value: string | null | undefined) => (value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 export default function AdminPaymentsPage() {
     const router = useRouter();
@@ -48,6 +49,10 @@ export default function AdminPaymentsPage() {
     const [showModal, setShowModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
     const [screenshotUrlsByPaymentId, setScreenshotUrlsByPaymentId] = useState<Record<string, string>>({});
+    const [duplicateUtrPayments, setDuplicateUtrPayments] = useState<PaymentWithOrder[]>([]);
+    const [duplicateCheckLoading, setDuplicateCheckLoading] = useState(false);
+    const [utrDraft, setUtrDraft] = useState('');
+    const [savingUtr, setSavingUtr] = useState(false);
 
     useEffect(() => {
         void checkAdmin();
@@ -183,23 +188,187 @@ export default function AdminPaymentsPage() {
         }
     };
 
+    const closePaymentModal = () => {
+        setShowModal(false);
+        setSelectedPayment(null);
+        setDuplicateUtrPayments([]);
+        setDuplicateCheckLoading(false);
+        setUtrDraft('');
+        setSavingUtr(false);
+    };
+
+    const fetchDuplicateUtrPayments = async (paymentId: string, utrValue: string | null | undefined) => {
+        const normalizedUtr = normalizeUtr(utrValue);
+        if (!normalizedUtr) {
+            return [];
+        }
+
+        const { data, error } = await supabase
+            .from('payments')
+            .select(`
+                *,
+                order:orders (
+                    id,
+                    order_id,
+                    total_amount,
+                    status,
+                    shipping_name,
+                    shipping_phone,
+                    shipping_address,
+                    shipping_city,
+                    shipping_state,
+                    shipping_pincode,
+                    profile:profiles (full_name, email)
+                )
+            `)
+            .neq('id', paymentId)
+            .not('utr_number', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(500);
+
+        if (error) {
+            throw error;
+        }
+
+        const candidatePayments = (data ?? []) as unknown as PaymentWithOrder[];
+        return candidatePayments.filter((candidate) => normalizeUtr(candidate.utr_number) === normalizedUtr);
+    };
+
+    const runDuplicateCheck = async (
+        paymentId: string,
+        utrValue: string | null | undefined,
+        options?: { notifyOnClean?: boolean; notifyOnDuplicate?: boolean }
+    ) => {
+        const notifyOnClean = options?.notifyOnClean ?? false;
+        const notifyOnDuplicate = options?.notifyOnDuplicate ?? true;
+
+        setDuplicateCheckLoading(true);
+        try {
+            const duplicateMatches = await fetchDuplicateUtrPayments(paymentId, utrValue);
+            setDuplicateUtrPayments(duplicateMatches);
+
+            if (normalizeUtr(utrValue) && duplicateMatches.length > 0 && notifyOnDuplicate) {
+                toast.error('This UTR already exists on another payment. Please review before verifying.');
+            } else if (normalizeUtr(utrValue) && notifyOnClean) {
+                toast.success('No duplicate UTR found');
+            } else {
+                setDuplicateUtrPayments([]);
+            }
+
+            return duplicateMatches;
+        } catch (error) {
+            console.error('Failed to check duplicate UTR numbers:', error);
+            toast.error('Could not check previous UTR usage');
+            return [];
+        } finally {
+            setDuplicateCheckLoading(false);
+        }
+    };
+
+    const updatePaymentUtrInState = (paymentId: string, nextUtr: string) => {
+        setPayments((prev) =>
+            prev.map((payment) =>
+                payment.id === paymentId
+                    ? { ...payment, utr_number: nextUtr || null }
+                    : payment
+            )
+        );
+
+        setSelectedPayment((prev) =>
+            prev && prev.id === paymentId
+                ? { ...prev, utr_number: nextUtr || null }
+                : prev
+        );
+    };
+
+    const saveManualUtr = async (paymentId: string) => {
+        const trimmedUtr = utrDraft.trim();
+        if (!trimmedUtr) {
+            toast.error('Please enter the UTR before saving');
+            return false;
+        }
+
+        setSavingUtr(true);
+        const { error } = await supabase
+            .from('payments')
+            .update({ utr_number: trimmedUtr } as never)
+            .eq('id', paymentId);
+
+        setSavingUtr(false);
+
+        if (error) {
+            toast.error(`Failed to save UTR: ${error.message || 'Unknown error'}`);
+            return false;
+        }
+
+        updatePaymentUtrInState(paymentId, trimmedUtr);
+        toast.success('UTR saved');
+        await runDuplicateCheck(paymentId, trimmedUtr, { notifyOnClean: true, notifyOnDuplicate: true });
+        return true;
+    };
+
     const openPaymentDetails = async (payment: PaymentWithOrder) => {
-        const { data: orderItemsData } = await supabase
+        setShowModal(true);
+        setSelectedPayment({
+            ...payment,
+            orderItems: []
+        });
+        setUtrDraft(payment.utr_number || '');
+        setDuplicateCheckLoading(true);
+        setDuplicateUtrPayments([]);
+
+        const { data: orderItemsData, error: orderItemsError } = await supabase
             .from('order_items')
             .select('id, order_id, product_title_en, variant_label, quantity, unit_price, total_price')
             .eq('order_id', payment.order_id);
 
         const orderItems = (orderItemsData ?? []) as PaymentOrderItem[];
+        if (orderItemsError) {
+            toast.error('Failed to load order items');
+        }
+
+        let duplicateMatches: PaymentWithOrder[] = [];
+        duplicateMatches = await runDuplicateCheck(payment.id, payment.utr_number, {
+            notifyOnClean: false,
+            notifyOnDuplicate: true,
+        });
 
         setSelectedPayment({
             ...payment,
             orderItems
         });
-        setShowModal(true);
+        setDuplicateUtrPayments(duplicateMatches);
     };
 
     const handleVerify = async (paymentId: string, orderId: string) => {
         if (!user) return;
+        if (duplicateCheckLoading) {
+            toast.error('UTR duplicate check is still running. Please wait.');
+            return;
+        }
+
+        const trimmedUtr = utrDraft.trim();
+        if (!trimmedUtr) {
+            toast.error('Please enter and save the UTR before verifying this payment.');
+            return;
+        }
+
+        const currentStoredUtr = selectedPayment?.id === paymentId ? selectedPayment.utr_number : null;
+        if (normalizeUtr(currentStoredUtr) !== normalizeUtr(trimmedUtr)) {
+            const saved = await saveManualUtr(paymentId);
+            if (!saved) {
+                return;
+            }
+        } else {
+            await runDuplicateCheck(paymentId, trimmedUtr, { notifyOnClean: false, notifyOnDuplicate: true });
+        }
+
+        const latestDuplicateMatches = await fetchDuplicateUtrPayments(paymentId, trimmedUtr);
+        setDuplicateUtrPayments(latestDuplicateMatches);
+        if (latestDuplicateMatches.length > 0) {
+            toast.error('Duplicate UTR found. Please review the other payment records before verifying this order.');
+            return;
+        }
 
         const { error: paymentError } = await supabase
             .from('payments')
@@ -226,7 +395,7 @@ export default function AdminPaymentsPage() {
         }
 
         toast.success('Payment verified and order confirmed');
-        setShowModal(false);
+        closePaymentModal();
         await fetchPayments();
     };
 
@@ -250,7 +419,7 @@ export default function AdminPaymentsPage() {
         }
 
         toast.success('Payment rejected');
-        setShowModal(false);
+        closePaymentModal();
         await fetchPayments();
     };
 
@@ -284,7 +453,7 @@ export default function AdminPaymentsPage() {
         }
 
         toast.success('Payment moved back to verification');
-        setShowModal(false);
+        closePaymentModal();
         await fetchPayments();
     };
 
@@ -402,7 +571,7 @@ export default function AdminPaymentsPage() {
 
             <Modal
                 isOpen={showModal}
-                onClose={() => setShowModal(false)}
+                onClose={closePaymentModal}
                 title={selectedPayment?.status === 'pending' ? 'Verify Payment' : 'Payment Details'}
                 size="xl"
             >
@@ -420,6 +589,51 @@ export default function AdminPaymentsPage() {
                                 {selectedPayment.rejection_reason && (
                                     <p className="mt-1 text-xs">Reason: {selectedPayment.rejection_reason}</p>
                                 )}
+                            </div>
+                        )}
+
+                        {duplicateCheckLoading && (
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                <p className="text-sm font-semibold text-amber-900">Checking UTR history...</p>
+                                <p className="mt-1 text-xs text-amber-800">
+                                    We are checking whether this UTR was already used on another order.
+                                </p>
+                            </div>
+                        )}
+
+                        {!duplicateCheckLoading && duplicateUtrPayments.length > 0 && (
+                            <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+                                <p className="text-sm font-semibold text-red-900">Duplicate UTR warning</p>
+                                <p className="mt-1 text-xs text-red-800">
+                                    This same UTR appears on other payment records. Please compare amount, customer, and order details before approving.
+                                </p>
+                                <div className="mt-3 space-y-2">
+                                    {duplicateUtrPayments.map((duplicatePayment) => (
+                                        <div key={duplicatePayment.id} className="rounded-lg border border-red-200 bg-white p-3">
+                                            <div className="flex flex-wrap items-start justify-between gap-3">
+                                                <div>
+                                                    <p className="font-mono text-xs font-semibold text-red-800">
+                                                        {duplicatePayment.order?.order_id || 'Unknown order'}
+                                                    </p>
+                                                    <p className="text-sm font-semibold text-gray-900">
+                                                        {duplicatePayment.order?.profile?.full_name || 'No name'}
+                                                    </p>
+                                                    <p className="text-xs text-gray-600">
+                                                        {duplicatePayment.order?.profile?.email || 'No email'}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-sm font-bold text-gray-900">
+                                                        {formatCurrency(duplicatePayment.order?.total_amount || 0)}
+                                                    </p>
+                                                    <p className="text-xs uppercase text-red-700">
+                                                        Payment {duplicatePayment.status}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -506,13 +720,66 @@ export default function AdminPaymentsPage() {
                             <p className="font-mono text-sm font-bold text-gray-900">{selectedPayment.utr_number || 'Not provided'}</p>
                         </div>
 
+                        {selectedPayment.status === 'pending' && (
+                            <div className="rounded-xl border border-gray-200 bg-white p-4">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-900">Admin UTR Entry</p>
+                                        <p className="mt-1 text-xs text-gray-600">
+                                            If the customer only shared a screenshot, enter the bank-verified UTR here, save it, and check duplicates before approving.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                                    <input
+                                        type="text"
+                                        value={utrDraft}
+                                        onChange={(event) => setUtrDraft(event.target.value)}
+                                        placeholder="Enter or correct UTR number"
+                                        className="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                    />
+                                    <button
+                                        onClick={() => void saveManualUtr(selectedPayment.id)}
+                                        disabled={savingUtr || duplicateCheckLoading}
+                                        className={`rounded-xl px-4 py-3 text-sm font-bold text-white ${savingUtr || duplicateCheckLoading
+                                            ? 'cursor-not-allowed bg-gray-400'
+                                            : 'bg-indigo-600 hover:bg-indigo-700'
+                                            }`}
+                                    >
+                                        {savingUtr ? 'Saving...' : 'Save UTR'}
+                                    </button>
+                                    <button
+                                        onClick={() => void runDuplicateCheck(selectedPayment.id, utrDraft, {
+                                            notifyOnClean: true,
+                                            notifyOnDuplicate: true,
+                                        })}
+                                        disabled={savingUtr || duplicateCheckLoading}
+                                        className={`rounded-xl px-4 py-3 text-sm font-bold ${savingUtr || duplicateCheckLoading
+                                            ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        Check UTR
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {selectedPayment.status === 'pending' ? (
                             <div className="flex flex-col gap-3 pt-2 sm:flex-row">
                                 <button
                                     onClick={() => void handleVerify(selectedPayment.id, selectedPayment.order_id)}
-                                    className="flex-1 rounded-xl bg-green-600 py-3 font-bold text-white hover:bg-green-700"
+                                    disabled={duplicateCheckLoading || duplicateUtrPayments.length > 0}
+                                    className={`flex-1 rounded-xl py-3 font-bold text-white ${duplicateCheckLoading || duplicateUtrPayments.length > 0
+                                        ? 'cursor-not-allowed bg-gray-400'
+                                        : 'bg-green-600 hover:bg-green-700'
+                                        }`}
                                 >
-                                    Verify Payment
+                                    {duplicateCheckLoading
+                                        ? 'Checking UTR...'
+                                        : duplicateUtrPayments.length > 0
+                                            ? 'Resolve Duplicate UTR First'
+                                            : 'Verify Payment'}
                                 </button>
                                 <button
                                     onClick={() => void handleReject(selectedPayment.id)}
@@ -530,7 +797,7 @@ export default function AdminPaymentsPage() {
                                     Move Back To Verification
                                 </button>
                                 <button
-                                    onClick={() => setShowModal(false)}
+                                    onClick={closePaymentModal}
                                     className="flex-1 rounded-xl bg-gray-100 py-3 font-bold text-gray-700 hover:bg-gray-200"
                                 >
                                     Close

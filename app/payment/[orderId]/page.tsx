@@ -28,6 +28,7 @@ export default function PaymentPage() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
     const orderId = params.orderId as string;
+    const normalizedOrderId = String(orderId || '').trim().toUpperCase();
 
     const [order, setOrder] = useState<PaymentOrder | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -178,8 +179,10 @@ export default function PaymentPage() {
 
             if (screenshot) {
                 const fileExt = screenshot.name.split('.').pop()?.toLowerCase();
-                const fileName = `${orderId}-${Date.now()}.${fileExt}`;
-                const filePath = user ? `${user.id}/${fileName}` : `guest-uploads/${fileName}`;
+                const fileName = `${normalizedOrderId}-${Date.now()}.${fileExt}`;
+                const filePath = user
+                    ? `${user.id}/${fileName}`
+                    : `guest-uploads/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
                     .from('payments')

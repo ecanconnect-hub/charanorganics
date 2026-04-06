@@ -22,6 +22,12 @@ interface RateLimitRow {
     request_count: number;
 }
 
+interface AtomicRateLimitRow {
+    allowed: boolean;
+    remaining: number;
+    reset_time: string;
+}
+
 // Default rate limit configurations
 const RATE_LIMITS: Record<string, RateLimitConfig> = {
     '/api/auth/login': { windowMs: 15 * 60 * 1000, maxRequests: 5 }, // 5 attempts per 15 minutes
@@ -90,23 +96,30 @@ const getRateLimitConfig = (pathname: string): RateLimitConfig => {
 const shouldFailClosed = (pathname: string): boolean =>
     FAIL_CLOSED_ENDPOINT_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
-/**
- * Check and update rate limit
- */
-export const checkRateLimit = async (
-    request: NextRequest
-): Promise<{ allowed: boolean; remaining: number; resetTime: Date }> => {
-    const pathname = request.nextUrl.pathname;
-    const identifier = getClientIdentifier(request);
-    const config = getRateLimitConfig(pathname);
-    const failClosed = shouldFailClosed(pathname);
+const failRateLimitCheck = (failClosed: boolean, config: RateLimitConfig, now: Date) => ({
+    allowed: !failClosed,
+    remaining: failClosed ? 0 : config.maxRequests,
+    resetTime: new Date(now.getTime() + config.windowMs),
+});
 
-    const supabase = getServiceSupabase();
-    const now = new Date();
+const checkRateLimitLegacy = async ({
+    supabase,
+    pathname,
+    identifier,
+    config,
+    failClosed,
+    now,
+}: {
+    supabase: ReturnType<typeof getServiceSupabase>;
+    pathname: string;
+    identifier: string;
+    config: RateLimitConfig;
+    failClosed: boolean;
+    now: Date;
+}): Promise<{ allowed: boolean; remaining: number; resetTime: Date }> => {
     const windowStart = new Date(now.getTime() - config.windowMs);
 
     try {
-        // Get or create rate limit record
         const { data: existingData, error: fetchError } = await supabase
             .from('rate_limits')
             .select('*')
@@ -116,18 +129,11 @@ export const checkRateLimit = async (
         const existing = existingData as RateLimitRow | null;
 
         if (fetchError && fetchError.code !== 'PGRST116') {
-            // Error other than "not found"
-            console.error('Rate limit check error:', fetchError);
-            // Fail closed on sensitive endpoints.
-            return {
-                allowed: !failClosed,
-                remaining: failClosed ? 0 : config.maxRequests,
-                resetTime: new Date(now.getTime() + config.windowMs),
-            };
+            console.error('Legacy rate limit check error:', fetchError);
+            return failRateLimitCheck(failClosed, config, now);
         }
 
         if (!existing) {
-            // Create new rate limit record
             await (supabase
                 .from('rate_limits') as any)
                 .insert({
@@ -146,9 +152,7 @@ export const checkRateLimit = async (
 
         const recordWindowStart = new Date(existing.window_start);
 
-        // Check if window has expired
         if (recordWindowStart < windowStart) {
-            // Reset window
             await (supabase
                 .from('rate_limits') as any)
                 .update({
@@ -164,9 +168,7 @@ export const checkRateLimit = async (
             };
         }
 
-        // Window is still active
         if (existing.request_count >= config.maxRequests) {
-            // Rate limit exceeded
             return {
                 allowed: false,
                 remaining: 0,
@@ -174,7 +176,6 @@ export const checkRateLimit = async (
             };
         }
 
-        // Increment request count
         await (supabase
             .from('rate_limits') as any)
             .update({
@@ -188,13 +189,72 @@ export const checkRateLimit = async (
             resetTime: new Date(recordWindowStart.getTime() + config.windowMs),
         };
     } catch (error) {
-        console.error('Rate limit error:', error);
-        // Fail closed on sensitive endpoints.
+        console.error('Legacy rate limit error:', error);
+        return failRateLimitCheck(failClosed, config, now);
+    }
+};
+
+/**
+ * Check and update rate limit
+ */
+export const checkRateLimit = async (
+    request: NextRequest
+): Promise<{ allowed: boolean; remaining: number; resetTime: Date }> => {
+    const pathname = request.nextUrl.pathname;
+    const identifier = getClientIdentifier(request);
+    const config = getRateLimitConfig(pathname);
+    const failClosed = shouldFailClosed(pathname);
+
+    const supabase = getServiceSupabase();
+    const now = new Date();
+    try {
+        const { data, error } = await (supabase.rpc as any)('check_rate_limit_atomic', {
+            p_identifier: identifier,
+            p_endpoint: pathname,
+            p_window_ms: config.windowMs,
+            p_max_requests: config.maxRequests,
+        });
+
+        if (error) {
+            console.error('Atomic rate limit rpc error:', error);
+            return await checkRateLimitLegacy({
+                supabase,
+                pathname,
+                identifier,
+                config,
+                failClosed,
+                now,
+            });
+        }
+
+        const result = (Array.isArray(data) ? data[0] : data) as AtomicRateLimitRow | null;
+        if (!result || typeof result.allowed !== 'boolean' || typeof result.reset_time !== 'string') {
+            console.error('Atomic rate limit rpc returned invalid payload:', data);
+            return await checkRateLimitLegacy({
+                supabase,
+                pathname,
+                identifier,
+                config,
+                failClosed,
+                now,
+            });
+        }
+
         return {
-            allowed: !failClosed,
-            remaining: failClosed ? 0 : config.maxRequests,
-            resetTime: new Date(now.getTime() + config.windowMs),
+            allowed: result.allowed,
+            remaining: Math.max(Number(result.remaining || 0), 0),
+            resetTime: new Date(result.reset_time),
         };
+    } catch (error) {
+        console.error('Rate limit error:', error);
+        return await checkRateLimitLegacy({
+            supabase,
+            pathname,
+            identifier,
+            config,
+            failClosed,
+            now,
+        });
     }
 };
 

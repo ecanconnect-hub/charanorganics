@@ -9,16 +9,9 @@ const NO_STORE_HEADERS = {
 };
 
 function getExpectedOrigin(request: NextRequest): string {
-    const forwardedHost = request.headers.get('x-forwarded-host')?.split(',')[0]?.trim();
-    const host = forwardedHost || request.headers.get('host')?.trim();
-    const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
-    const protocol = forwardedProto || request.nextUrl.protocol.replace(':', '');
-
-    if (!host) {
-        return request.nextUrl.origin;
-    }
-
-    return `${protocol}://${host}`;
+    // Use Next.js' resolved request origin instead of trusting forwarded
+    // host/proto headers from the client request path.
+    return request.nextUrl.origin;
 }
 
 function forbidden(message: string): NextResponse {
