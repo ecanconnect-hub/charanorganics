@@ -6,6 +6,7 @@ type Measurement = {
 };
 
 type ProductLike = {
+    product_id?: string | null;
     title_en?: string | null;
     specifications_en?: string | null;
     unit_value?: number | string | null;
@@ -32,6 +33,9 @@ export const SHIPPING_POLICY_LINES = [
     'More than 4 kg: Rs.300',
 ];
 
+const FIXED_SHIPPING_PRODUCT_IDS = new Set(['BC191']);
+const DEFAULT_PRODUCT_SHIPPING_CHARGE = 70;
+
 function getShippingChargeForBillableWeight(billableWeightKg: number): number {
     if (!Number.isFinite(billableWeightKg) || billableWeightKg <= 0) return 0;
     if (billableWeightKg <= 1) return 80;
@@ -50,6 +54,24 @@ function toNumber(value: unknown): number | null {
         if (Number.isFinite(parsed)) return parsed;
     }
     return null;
+}
+
+function normalizeCompactText(value: string | null | undefined): string {
+    return (value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function hasFixedShippingOverride(product: ProductLike | null | undefined): boolean {
+    if (!product) return false;
+
+    const configuredShippingCharge = toNumber(product.shipping_charges);
+    const normalizedTitle = normalizeCompactText(product.title_en);
+    const looksLikeKit = normalizedTitle.includes('kit');
+
+    if (typeof product.product_id === 'string' && FIXED_SHIPPING_PRODUCT_IDS.has(product.product_id)) {
+        return true;
+    }
+
+    return looksLikeKit && configuredShippingCharge !== null && configuredShippingCharge > DEFAULT_PRODUCT_SHIPPING_CHARGE;
 }
 
 function parseNumericToken(token: string): number | null {
@@ -156,18 +178,43 @@ export function calculateWeightBasedShipping(items: CartLikeItem[]) {
         return sum + measurementToWeightKg(measurement) * quantity;
     }, 0);
 
+    const weightBasedActualWeightKg = items.reduce((sum, item) => {
+        if (hasFixedShippingOverride(item.product)) {
+            return sum;
+        }
+
+        const quantity = typeof item.quantity === 'number' && Number.isFinite(item.quantity) ? item.quantity : 0;
+        const measurement = getProductMeasurement(item.product, item.variant, item.variant_label);
+        return sum + measurementToWeightKg(measurement) * quantity;
+    }, 0);
+
     const totalUnits = items.reduce((sum, item) => {
         const quantity = typeof item.quantity === 'number' && Number.isFinite(item.quantity) ? item.quantity : 0;
         return sum + quantity;
     }, 0);
 
     const billableWeightKg = totalUnits > 0 ? Math.max(1, Math.ceil(totalActualWeightKg)) : 0;
-    const shippingCharge = getShippingChargeForBillableWeight(billableWeightKg);
+    const weightBasedBillableWeightKg = weightBasedActualWeightKg > 0 ? Math.max(1, Math.ceil(weightBasedActualWeightKg)) : 0;
+    const fixedShippingCharge = items.reduce((sum, item) => {
+        if (!hasFixedShippingOverride(item.product)) {
+            return sum;
+        }
+
+        const quantity = typeof item.quantity === 'number' && Number.isFinite(item.quantity) ? item.quantity : 0;
+        const shipping = toNumber(item.product?.shipping_charges);
+        return sum + (shipping ?? 0) * quantity;
+    }, 0);
+    const weightBasedShippingCharge = getShippingChargeForBillableWeight(weightBasedBillableWeightKg);
+    const shippingCharge = fixedShippingCharge + weightBasedShippingCharge;
+    const hasFixedShipping = fixedShippingCharge > 0;
 
     return {
         totalActualWeightKg,
         billableWeightKg,
         shippingCharge,
+        fixedShippingCharge,
+        weightBasedShippingCharge,
+        hasFixedShipping,
         formattedActualWeight: formatWeight(totalActualWeightKg),
         formattedBillableWeight: formatWeight(billableWeightKg),
     };

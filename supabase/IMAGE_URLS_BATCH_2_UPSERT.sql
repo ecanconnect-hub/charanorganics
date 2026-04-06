@@ -105,7 +105,7 @@ VALUES
   ('BC188','Banana Soap','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772639075/Banana_soaps_jr6cqc.jpg','soap',100,150,70,100),
   ('BC189','Eyeliner Containers','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772639074/Eye_liner_continears_tjwdly.jpg','container',40,50,70,100),
   ('BC190','Neem Gel','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772639072/neem_gel_osi8ud.jpg','cream',180,200,70,100),
-  ('BC191','Basic Soap Making Kit','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772639073/Basic_soap_making_kit_bg62ta.jpg','kit',3500,4500,70,100),
+  ('BC191','Basic Soap Making Kit','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772639073/Basic_soap_making_kit_bg62ta.jpg','kit',3500,4500,200,100),
   ('BC192','Baby Talcum Powder','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772639070/Baby_talcum_powder_pr7ret.jpg','powder',150,200,70,100),
   ('BC193','Winter Special Foot Cream','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772639068/Winter_special_foot_cream_vybcrk.jpg','cream',150,200,70,100),
   ('BC194','Gold Facial Bombs','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772639064/Gold_facial_bombs_j4mwbr.jpg','cream',50,100,70,100),

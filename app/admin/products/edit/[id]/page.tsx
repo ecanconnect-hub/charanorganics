@@ -481,7 +481,7 @@ export default function EditProductPage() {
                             onChange={(e) => setShippingCharges(e.target.value)}
                             required
                             step="0.01"
-                            helperText="Used only as a fallback. Checkout shipping is now calculated from product/variant weight."
+                            helperText="Use this for fixed shipping on special items like kits. Otherwise checkout shipping is calculated from product/variant weight."
                         />
 
                         {/* Variants Management */}

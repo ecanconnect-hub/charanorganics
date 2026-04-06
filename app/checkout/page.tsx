@@ -777,6 +777,11 @@ export default function CheckoutPage() {
                                             <span className="text-white font-medium">Shipping Charge</span>
                                             <span className="font-bold">₹{shipping.toFixed(0)}</span>
                                         </div>
+                                        {shippingSummary.hasFixedShipping && (
+                                            <p className="text-[11px] text-white/80 font-medium">
+                                                Special fixed shipping is applied for selected items like kits.
+                                            </p>
+                                        )}
                                         <div className="flex justify-between text-sm">
                                             <span className="text-white font-medium">Actual Weight</span>
                                             <span className="font-bold">{shippingSummary.formattedActualWeight}</span>

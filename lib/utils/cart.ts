@@ -21,6 +21,9 @@ export interface CartItem {
         current_price: number;
         mrp: number;
         shipping_charges: number;
+        specifications_en?: string | null;
+        unit_value?: number | null;
+        unit_type?: string | null;
     };
 }
 
@@ -176,7 +179,10 @@ export const getUserCart = async (userId: string): Promise<CartItem[]> => {
                     image_url,
                     current_price,
                     mrp,
-                    shipping_charges
+                    shipping_charges,
+                    specifications_en,
+                    unit_value,
+                    unit_type
                 ),
                 variant:product_variants (
                     id,

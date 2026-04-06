@@ -262,6 +262,11 @@ export default function CartPage() {
                                         <span>Shipping</span>
                                         <span className="text-base font-semibold text-gray-900">₹{shipping.toFixed(2)}</span>
                                     </div>
+                                    {shippingSummary.hasFixedShipping && (
+                                        <p className="text-[11px] text-gray-500">
+                                            Special fixed shipping is applied for selected items like kits.
+                                        </p>
+                                    )}
                                     <div className="flex justify-between text-sm font-medium text-gray-500">
                                         <span>Billable Weight</span>
                                         <span className="text-base font-semibold text-gray-900">{shippingSummary.formattedBillableWeight}</span>

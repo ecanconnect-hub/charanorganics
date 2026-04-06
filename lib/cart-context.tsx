@@ -87,7 +87,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     const [{ data: products, error: productsError }, { data: variants, error: variantsError }] = await Promise.all([
                         supabase
                             .from('products')
-                            .select('id, product_id, title_en, title_te, image_url, current_price, mrp, shipping_charges')
+                            .select('id, product_id, title_en, title_te, image_url, current_price, mrp, shipping_charges, specifications_en, unit_value, unit_type')
                             .in('id', productIds),
                         variantIds.length > 0 ?
                             supabase

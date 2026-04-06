@@ -190,6 +190,11 @@ export function CartDrawer() {
                                         <span className="text-gray-500 font-medium">Shipping</span>
                                         <span className="text-sm font-bold text-gray-900">₹{estimatedShipping.toFixed(2)}</span>
                                     </div>
+                                    {shippingSummary.hasFixedShipping && (
+                                        <p className="text-[11px] text-gray-500 mt-1">
+                                            Special fixed shipping is applied for selected items like kits.
+                                        </p>
+                                    )}
                                     <div className="flex items-center justify-between text-sm mt-1">
                                         <span className="text-gray-500 font-medium">Estimated Total</span>
                                         <span className="text-sm font-bold text-gray-900">₹{estimatedTotal.toFixed(2)}</span>
