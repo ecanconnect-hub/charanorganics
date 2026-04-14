@@ -40,6 +40,7 @@ type RecentProofOrder = {
 
 const revenueStatuses: OrderStatus[] = ['confirmed', 'processing', 'shipped', 'delivered'];
 const pendingStatuses: OrderStatus[] = ['pending_payment', 'payment_verification'];
+const adminVisibleOrderStatuses: OrderStatus[] = ['payment_verification', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 const getPaymentStatusClasses = (status?: PaymentStatus) => {
     if (status === 'verified') return 'bg-green-100 text-green-800';
@@ -165,6 +166,7 @@ export default function AdminDashboard() {
           *,
           profile:profiles (full_name, email)
         `)
+                .in('status', adminVisibleOrderStatuses)
                 .order('created_at', { ascending: false });
 
             setOrders(data || []);
@@ -318,7 +320,7 @@ export default function AdminDashboard() {
                         : 'bg-white text-gray-700 border border-gray-200 hover:border-indigo-300'
                         }`}
                 >
-                    📦 All Orders ({stats.totalOrders})
+                    📦 Orders ({orders.length})
                 </button>
             </div>
 
@@ -586,7 +588,10 @@ export default function AdminDashboard() {
             {currentView === 'orders' && (
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     <div className="p-6 border-b border-gray-200">
-                        <h3 className="text-lg font-bold text-gray-900">All Orders ({orders.length})</h3>
+                        <h3 className="text-lg font-bold text-gray-900">Orders With Payment Proof ({orders.length})</h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                            New checkout records stay hidden here until the customer submits UTR or a payment screenshot.
+                        </p>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -601,6 +606,13 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
+                                {orders.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                                            No proof-submitted orders yet.
+                                        </td>
+                                    </tr>
+                                )}
                                 {orders.map((order) => (
                                     <tr key={order.id} className="hover:bg-gray-50">
                                         <td className="py-4 px-6">

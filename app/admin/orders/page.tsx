@@ -58,7 +58,23 @@ type SelectedOrder = OrderListRecord & {
     history: OrderHistoryWithProfile[];
 };
 
+const ADMIN_ORDER_VISIBLE_STATUSES: OrderStatus[] = [
+    'payment_verification',
+    'confirmed',
+    'processing',
+    'shipped',
+    'delivered',
+    'cancelled',
+];
 const ORDER_STATUSES: FilterStatus[] = ['all', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+const ORDER_FILTER_LABELS: Record<FilterStatus, string> = {
+    all: 'All',
+    pending: 'Payment Review',
+    confirmed: 'Confirmed',
+    shipped: 'Shipped',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled',
+};
 
 const formatCurrency = (value: number) => `Rs. ${(value || 0).toFixed(2)}`;
 const formatDate = (value: string | null, includeTime = false) => {
@@ -138,6 +154,7 @@ export default function AdminOrdersPage() {
                 profile:profiles (full_name, email, phone),
                 payment:payments (id, order_id, utr_number, payment_screenshot_url, status, verified_at, rejection_reason, created_at)
             `)
+            .in('status', ADMIN_ORDER_VISIBLE_STATUSES)
             .order('created_at', { ascending: false });
 
         if (ordersError) {
@@ -469,7 +486,7 @@ export default function AdminOrdersPage() {
 
         if (filterStatus !== 'all') {
             if (filterStatus === 'pending') {
-                result = result.filter((order) => order.status === 'pending_payment' || order.status === 'payment_verification');
+                result = result.filter((order) => order.status === 'payment_verification');
             } else {
                 result = result.filter((order) => order.status === filterStatus);
             }
@@ -521,7 +538,7 @@ export default function AdminOrdersPage() {
 
     if (loading) {
         return (
-            <AdminLayout title="Orders" subtitle="Manage all customer orders">
+            <AdminLayout title="Orders" subtitle="Orders appear here after customers submit payment proof">
                 <div className="flex items-center justify-center py-20">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
                 </div>
@@ -530,7 +547,7 @@ export default function AdminOrdersPage() {
     }
 
     return (
-        <AdminLayout title="Orders" subtitle="Simple order tracking with full payment visibility">
+        <AdminLayout title="Orders" subtitle="Only proof-submitted orders show here; new checkouts stay in the payment queue">
             <div className="mb-5 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-4 shadow-sm">
                 <div className="grid gap-3 lg:grid-cols-[1fr_260px]">
                     <div>
@@ -569,7 +586,10 @@ export default function AdminOrdersPage() {
                     </div>
                 </div>
                 <p className="mt-2 text-xs text-slate-500">
-                    Showing {filteredOrders.length} of {orders.length} orders
+                    Showing {filteredOrders.length} of {orders.length} proof-submitted orders
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                    Orders move here only after the customer submits UTR or a payment screenshot from the payment page.
                 </p>
             </div>
 
@@ -583,7 +603,7 @@ export default function AdminOrdersPage() {
                             : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300'
                             }`}
                     >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                        {ORDER_FILTER_LABELS[status]}
                         {status === 'all' ? ` (${orders.length})` : ''}
                     </button>
                 ))}
@@ -713,7 +733,9 @@ export default function AdminOrdersPage() {
                 </div>
 
                 {filteredOrders.length === 0 && (
-                    <div className="py-14 text-center text-gray-500">No orders found for this filter.</div>
+                    <div className="py-14 text-center text-gray-500">
+                        No proof-submitted orders found for this filter.
+                    </div>
                 )}
             </div>
 
