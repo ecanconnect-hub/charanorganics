@@ -5,6 +5,7 @@
  */
 
 import { supabase } from '@/lib/supabase/client';
+import { calculateWeightBasedShipping } from '@/lib/utils/shipping';
 
 export interface CartItem {
     id?: string;
@@ -443,15 +444,14 @@ export const migrateGuestCartToUser = async (
  */
 export const calculateCartTotals = (cart: CartItem[]) => {
     let subtotal = 0;
-    let shippingTotal = 0;
 
     cart.forEach(item => {
         if (item.product) {
             subtotal += item.product.current_price * item.quantity;
-            shippingTotal += item.product.shipping_charges * item.quantity;
         }
     });
 
+    const shippingTotal = calculateWeightBasedShipping(cart).shippingCharge;
     const total = subtotal + shippingTotal;
 
     return { subtotal, shippingTotal, total };

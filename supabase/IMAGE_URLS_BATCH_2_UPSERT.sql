@@ -127,7 +127,7 @@ VALUES
   ('BC210','Tears Free Shampoo','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772638879/Tears_free_shampoo_xicj7j.jpg','cleanser',750,1000,70,100),
   ('BC211','Winter Special Moisturizer','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772638868/Winter_special_moisturizer_soap_lglskc.jpg','cream',130,150,70,100),
   ('BC212','Washing Machine Liquid','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772638865/Washing_machine_liquid_slxvzc.jpg','home-cleaner',200,300,70,100),
-  ('BC213','Baby Care Class Material Kit','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772638829/Baby_care_class_materials_k8cfoi.jpg','kit',3000,4500,70,100),
+  ('BC213','Baby Care Kit (41 Products)','https://res.cloudinary.com/dur6fkyoz/image/upload/v1776184041/baby_care_kit_40_Items_zw6bgm.png','kit',3199,3499,220,100),
   ('BC214','Face Serum','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772638824/skin_britainng_face_serium_ozlhdf.jpg','cream',180,200,70,100),
   ('BC215','Skin Whitening Glutathione Cream','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772638821/Skin_whitening_Glutathione_cream_zqc0pd.jpg','cream',180,200,70,100),
   ('BC216','Skin Brightening Niacinamide Cream','https://res.cloudinary.com/dur6fkyoz/image/upload/w_1000,h_1000,c_fill,g_auto,q_auto,f_auto/v1772638817/Skin_brightening_niacinamide_cream_wa4cf9.jpg','cream',180,250,70,100),
