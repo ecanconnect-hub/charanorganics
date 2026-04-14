@@ -74,6 +74,7 @@ export default function AdminDashboard() {
     });
     const [orders, setOrders] = useState<any[]>([]);
     const [recentProofOrders, setRecentProofOrders] = useState<RecentProofOrder[]>([]);
+    const getOrderDetailsHref = (orderId: string) => `/admin/orders?order=${encodeURIComponent(orderId)}`;
 
     const fetchStats = useCallback(async () => {
         try {
@@ -94,23 +95,24 @@ export default function AdminDashboard() {
                 total_amount: number | string | null;
                 created_at: string;
             }>;
+            const dashboardOrders = orders.filter((order) => adminVisibleOrderStatuses.includes(order.status));
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-            const totalOrders = orders.length;
+            const totalOrders = dashboardOrders.length;
             const pendingOrders = orders.filter((order) => pendingStatuses.includes(order.status)).length;
-            const confirmedOrders = orders.filter((order) => order.status === 'confirmed' || order.status === 'processing').length;
-            const shippedOrders = orders.filter((order) => order.status === 'shipped').length;
-            const deliveredOrders = orders.filter((order) => order.status === 'delivered').length;
-            const todayOrders = orders.filter((order) => new Date(order.created_at) >= today).length;
+            const confirmedOrders = dashboardOrders.filter((order) => order.status === 'confirmed' || order.status === 'processing').length;
+            const shippedOrders = dashboardOrders.filter((order) => order.status === 'shipped').length;
+            const deliveredOrders = dashboardOrders.filter((order) => order.status === 'delivered').length;
+            const todayOrders = dashboardOrders.filter((order) => new Date(order.created_at) >= today).length;
 
-            const totalRevenue = orders
+            const totalRevenue = dashboardOrders
                 .filter((order) => revenueStatuses.includes(order.status))
                 .reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0);
 
-            const monthlyRevenue = orders
+            const monthlyRevenue = dashboardOrders
                 .filter((order) => revenueStatuses.includes(order.status) && new Date(order.created_at) >= firstDayOfMonth)
                 .reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0);
 
@@ -594,15 +596,15 @@ export default function AdminDashboard() {
                         </p>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full">
+                        <table className="w-full min-w-[980px]">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Order ID</th>
-                                    <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Customer</th>
-                                    <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Amount</th>
-                                    <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Status</th>
-                                    <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Date</th>
-                                    <th className="text-left py-3 px-6 font-semibold text-gray-700 text-sm">Actions</th>
+                                    <th className="w-[220px] whitespace-nowrap text-left py-3 px-6 font-semibold text-gray-700 text-sm">Order ID</th>
+                                    <th className="whitespace-nowrap text-left py-3 px-6 font-semibold text-gray-700 text-sm">Customer</th>
+                                    <th className="whitespace-nowrap text-left py-3 px-6 font-semibold text-gray-700 text-sm">Amount</th>
+                                    <th className="whitespace-nowrap text-left py-3 px-6 font-semibold text-gray-700 text-sm">Status</th>
+                                    <th className="whitespace-nowrap text-left py-3 px-6 font-semibold text-gray-700 text-sm">Date</th>
+                                    <th className="whitespace-nowrap text-left py-3 px-6 font-semibold text-gray-700 text-sm">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -616,9 +618,12 @@ export default function AdminDashboard() {
                                 {orders.map((order) => (
                                     <tr key={order.id} className="hover:bg-gray-50">
                                         <td className="py-4 px-6">
-                                            <span className="font-mono text-xs font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">
+                                            <Link
+                                                href={getOrderDetailsHref(order.id)}
+                                                className="inline-flex min-w-[170px] items-center justify-center whitespace-nowrap rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 font-mono text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+                                            >
                                                 {order.order_id}
-                                            </span>
+                                            </Link>
                                         </td>
                                         <td className="py-4 px-6">
                                             <p className="font-semibold text-gray-900 text-sm">{order.profile?.full_name}</p>
@@ -649,8 +654,8 @@ export default function AdminDashboard() {
                                             {new Date(order.created_at).toLocaleDateString()}
                                         </td>
                                         <td className="py-4 px-6">
-                                            <Link href="/admin/orders">
-                                                <button className="text-indigo-600 hover:text-indigo-700 font-semibold text-sm">
+                                            <Link href={getOrderDetailsHref(order.id)}>
+                                                <button className="whitespace-nowrap text-indigo-600 hover:text-indigo-700 font-semibold text-sm">
                                                     View Details (Go to Orders) →
                                                 </button>
                                             </Link>

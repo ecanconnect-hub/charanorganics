@@ -33,6 +33,13 @@ type GuestSavedAddress = {
 };
 
 const GUEST_ADDRESS_STORAGE_KEY = 'guest_checkout_address_v1';
+const PHONE_DIGITS = 10;
+const MAX_FULL_NAME_LENGTH = 20;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_ADDRESS_LENGTH = 400;
+const MAX_CITY_LENGTH = 100;
+const MAX_STATE_LENGTH = 100;
+const MAX_PINCODE_LENGTH = 6;
 
 const toFiniteNumber = (value: unknown): number | null => {
     if (typeof value === 'number' && Number.isFinite(value)) {
@@ -71,6 +78,23 @@ export default function CheckoutPage() {
 
     const supportWhatsappPhone = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || '';
     const supportWhatsappDigits = supportWhatsappPhone.replace(/\D/g, '');
+    const normalizePhoneNumber = (value: string) => value.replace(/\D/g, '').slice(0, PHONE_DIGITS);
+    const limitLength = (value: string, maxLength: number) => value.slice(0, maxLength);
+    const isValidPhoneNumber = (value: string) => /^\d{10}$/.test(value);
+    const normalizedGuestEmail = normalizeEmail(email);
+    const guestEmailSuggestion = !user ? getEmailTypoSuggestion(normalizedGuestEmail) : null;
+    const phoneError =
+        phone.length > 0 && !isValidPhoneNumber(phone)
+            ? 'Phone number must be exactly 10 digits.'
+            : '';
+    const guestEmailError =
+        !user && email
+            ? !isProbablyValidEmail(normalizedGuestEmail)
+                ? 'Email is wrong.'
+                : guestEmailSuggestion && guestEmailSuggestion !== normalizedGuestEmail
+                    ? `Email is wrong. Did you mean ${guestEmailSuggestion}?`
+                    : ''
+            : '';
 
     const loadGuestSavedAddress = () => {
         try {
@@ -92,14 +116,14 @@ export default function CheckoutPage() {
                 typeof value === 'string' ? value.slice(0, maxLen) : '';
 
             const saved: GuestSavedAddress = {
-                fullName: normalize(parsed.fullName, 100),
-                phone: normalize(parsed.phone, 20),
-                email: normalize(parsed.email, 254),
-                addressLine1: normalize(parsed.addressLine1, 200),
-                addressLine2: normalize(parsed.addressLine2, 200),
-                city: normalize(parsed.city, 100),
-                state: normalize(parsed.state, 100),
-                pincode: normalize(parsed.pincode, 12),
+                fullName: normalize(parsed.fullName, MAX_FULL_NAME_LENGTH),
+                phone: normalizePhoneNumber(normalize(parsed.phone, PHONE_DIGITS)),
+                email: normalize(parsed.email, MAX_EMAIL_LENGTH),
+                addressLine1: normalize(parsed.addressLine1, MAX_ADDRESS_LENGTH),
+                addressLine2: normalize(parsed.addressLine2, MAX_ADDRESS_LENGTH),
+                city: normalize(parsed.city, MAX_CITY_LENGTH),
+                state: normalize(parsed.state, MAX_STATE_LENGTH),
+                pincode: normalize(parsed.pincode, MAX_PINCODE_LENGTH),
             };
 
             const formIsEmpty = [fullName, phone, email, addressLine1, addressLine2, city, state, pincode].every(
@@ -128,14 +152,14 @@ export default function CheckoutPage() {
 
     const persistGuestSavedAddress = () => {
         const address: GuestSavedAddress = {
-            fullName,
-            phone,
-            email: normalizeEmail(email),
-            addressLine1,
-            addressLine2,
-            city,
-            state,
-            pincode,
+            fullName: limitLength(fullName, MAX_FULL_NAME_LENGTH),
+            phone: normalizePhoneNumber(phone),
+            email: normalizeEmail(limitLength(email, MAX_EMAIL_LENGTH)),
+            addressLine1: limitLength(addressLine1, MAX_ADDRESS_LENGTH),
+            addressLine2: limitLength(addressLine2, MAX_ADDRESS_LENGTH),
+            city: limitLength(city, MAX_CITY_LENGTH),
+            state: limitLength(state, MAX_STATE_LENGTH),
+            pincode: limitLength(pincode, MAX_PINCODE_LENGTH),
         };
 
         try {
@@ -294,13 +318,13 @@ export default function CheckoutPage() {
 
     const applyAddressToForm = (addr: any) => {
         if (!addr) return;
-        setFullName(addr.full_name || addr.name || '');
-        setPhone(addr.phone || '');
-        setAddressLine1(addr.address_line1 || addr.address_line || '');
-        setAddressLine2(addr.address_line2 || '');
-        setCity(addr.city || '');
-        setState(addr.state || '');
-        setPincode(addr.pincode || '');
+        setFullName(limitLength(addr.full_name || addr.name || '', MAX_FULL_NAME_LENGTH));
+        setPhone(normalizePhoneNumber(addr.phone || ''));
+        setAddressLine1(limitLength(addr.address_line1 || addr.address_line || '', MAX_ADDRESS_LENGTH));
+        setAddressLine2(limitLength(addr.address_line2 || '', MAX_ADDRESS_LENGTH));
+        setCity(limitLength(addr.city || '', MAX_CITY_LENGTH));
+        setState(limitLength(addr.state || '', MAX_STATE_LENGTH));
+        setPincode(limitLength(addr.pincode || '', MAX_PINCODE_LENGTH));
     };
 
     const fetchSavedAddresses = async () => {
@@ -332,17 +356,21 @@ export default function CheckoutPage() {
         e.preventDefault();
         if (loading) return;
 
+        if (!isValidPhoneNumber(phone)) {
+            toast.error('Phone number must be exactly 10 digits.');
+            return;
+        }
+
         if (!user) {
-            const normalized = normalizeEmail(email);
+            const normalized = normalizedGuestEmail;
             if (!isProbablyValidEmail(normalized)) {
-                const suggestion = getEmailTypoSuggestion(normalized);
-                toast.error(suggestion ? `Please enter a valid email. Did you mean ${suggestion}?` : 'Please enter a valid email address.');
+                toast.error('Email is wrong.');
                 return;
             }
 
-            const typoSuggestion = getEmailTypoSuggestion(normalized);
+            const typoSuggestion = guestEmailSuggestion;
             if (typoSuggestion && typoSuggestion !== normalized) {
-                toast.error(`Did you mean ${typoSuggestion}?`);
+                toast.error(`Email is wrong. Did you mean ${typoSuggestion}?`);
                 return;
             }
         }
@@ -375,15 +403,15 @@ export default function CheckoutPage() {
                 persistGuestSavedAddress();
             }
 
-            const payload: any = {
-                fullName,
-                phone,
-                email: !user ? normalizeEmail(email) : undefined,
-                addressLine1,
-                addressLine2,
-                city,
-                state,
-                pincode,
+        const payload: any = {
+                fullName: limitLength(fullName, MAX_FULL_NAME_LENGTH),
+                phone: normalizePhoneNumber(phone),
+                email: !user ? normalizeEmail(limitLength(email, MAX_EMAIL_LENGTH)) : undefined,
+                addressLine1: limitLength(addressLine1, MAX_ADDRESS_LENGTH),
+                addressLine2: limitLength(addressLine2, MAX_ADDRESS_LENGTH),
+                city: limitLength(city, MAX_CITY_LENGTH),
+                state: limitLength(state, MAX_STATE_LENGTH),
+                pincode: limitLength(pincode, MAX_PINCODE_LENGTH),
             };
 
             // If guest, send cart items in body
@@ -619,7 +647,9 @@ export default function CheckoutPage() {
                                         <Input
                                             label="Full Name"
                                             value={fullName}
-                                            onChange={(e) => setFullName(e.target.value)}
+                                            onChange={(e) => setFullName(limitLength(e.target.value, MAX_FULL_NAME_LENGTH))}
+                                            maxLength={MAX_FULL_NAME_LENGTH}
+                                            helperText={`Max ${MAX_FULL_NAME_LENGTH} characters.`}
                                             required
                                             className="rounded-xl h-14"
                                         />
@@ -627,7 +657,12 @@ export default function CheckoutPage() {
                                             label="Phone"
                                             type="tel"
                                             value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
+                                            onChange={(e) => setPhone(normalizePhoneNumber(e.target.value))}
+                                            inputMode="numeric"
+                                            pattern="[0-9]{10}"
+                                            maxLength={PHONE_DIGITS}
+                                            error={phoneError || undefined}
+                                            helperText="Enter exactly 10 digits."
                                             required
                                             className="rounded-xl h-14"
                                         />
@@ -638,7 +673,9 @@ export default function CheckoutPage() {
                                                     label="Email"
                                                     type="email"
                                                     value={email}
-                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    onChange={(e) => setEmail(limitLength(e.target.value, MAX_EMAIL_LENGTH))}
+                                                    maxLength={MAX_EMAIL_LENGTH}
+                                                    error={guestEmailError || undefined}
                                                     required
                                                     placeholder="name@example.com"
                                                     helperText="Order confirmation and updates will be sent to this email."
@@ -650,7 +687,9 @@ export default function CheckoutPage() {
                                             <Input
                                                 label="Address Line 1"
                                                 value={addressLine1}
-                                                onChange={(e) => setAddressLine1(e.target.value)}
+                                                onChange={(e) => setAddressLine1(limitLength(e.target.value, MAX_ADDRESS_LENGTH))}
+                                                maxLength={MAX_ADDRESS_LENGTH}
+                                                helperText={`Max ${MAX_ADDRESS_LENGTH} characters.`}
                                                 required
                                                 className="rounded-xl h-14"
                                             />
@@ -659,21 +698,25 @@ export default function CheckoutPage() {
                                             <Input
                                                 label="Address Line 2 (Optional)"
                                                 value={addressLine2}
-                                                onChange={(e) => setAddressLine2(e.target.value)}
+                                                onChange={(e) => setAddressLine2(limitLength(e.target.value, MAX_ADDRESS_LENGTH))}
+                                                maxLength={MAX_ADDRESS_LENGTH}
+                                                helperText={`Max ${MAX_ADDRESS_LENGTH} characters.`}
                                                 className="rounded-xl h-14"
                                             />
                                         </div>
                                         <Input
                                             label="City"
                                             value={city}
-                                            onChange={(e) => setCity(e.target.value)}
+                                            onChange={(e) => setCity(limitLength(e.target.value, MAX_CITY_LENGTH))}
+                                            maxLength={MAX_CITY_LENGTH}
                                             required
                                             className="rounded-xl h-14"
                                         />
                                         <Input
                                             label="State"
                                             value={state}
-                                            onChange={(e) => setState(e.target.value)}
+                                            onChange={(e) => setState(limitLength(e.target.value, MAX_STATE_LENGTH))}
+                                            maxLength={MAX_STATE_LENGTH}
                                             required
                                             className="rounded-xl h-14"
                                         />
@@ -681,7 +724,7 @@ export default function CheckoutPage() {
                                             label="Pincode"
                                             value={pincode}
                                             onChange={(e) => {
-                                                const val = e.target.value.replace(/\D/g, '');
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, MAX_PINCODE_LENGTH);
                                                 setPincode(val);
                                                 if (val.length === 6) {
                                                     // Auto-fetch details
@@ -702,7 +745,7 @@ export default function CheckoutPage() {
                                                 }
                                             }}
                                             required
-                                            maxLength={6}
+                                            maxLength={MAX_PINCODE_LENGTH}
                                             className="rounded-xl h-14"
                                         />
                                     </div>

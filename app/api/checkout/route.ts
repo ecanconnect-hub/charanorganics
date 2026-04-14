@@ -12,19 +12,19 @@ type OrderItemRow = Database['public']['Tables']['order_items']['Row'];
 
 // Input Validation Schema
 const checkoutSchema = z.object({
-    fullName: z.string().min(2).max(100),
-    phone: z.string().min(10).max(15).regex(/^\+?[\d\s-]+$/, "Invalid phone format"),
+    fullName: z.string().trim().min(2).max(20, "Full name must be 20 characters or fewer"),
+    phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
     email: z
         .string()
         .trim()
         .max(254)
-        .email("Invalid email address")
-        .refine((value) => !/[\r\n]/.test(value), "Invalid email address")
+        .email("Email is wrong.")
+        .refine((value) => !/[\r\n]/.test(value), "Email is wrong.")
         .optional(),
-    addressLine1: z.string().min(5).max(200),
-    addressLine2: z.string().max(200).optional(),
-    city: z.string().min(2).max(100),
-    state: z.string().min(2).max(100),
+    addressLine1: z.string().trim().min(5).max(400, "Address must be 400 characters or fewer"),
+    addressLine2: z.string().trim().max(400, "Address must be 400 characters or fewer").optional(),
+    city: z.string().trim().min(2).max(100),
+    state: z.string().trim().min(2).max(100),
     pincode: z.string().min(4).max(10).regex(/^[\d\s-]+$/, "Invalid pincode"),
     cartItems: z.array(z.object({
         product_id: z.string().uuid(),
