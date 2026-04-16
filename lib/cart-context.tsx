@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { CartItem, getGuestCart, getUserCart, addToGuestCart, addToUserCart, removeFromGuestCart, removeFromUserCart, saveGuestCart, updateGuestCartQuantity, updateUserCartQuantity, migrateGuestCartToUser } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/auth/context';
@@ -64,10 +64,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const { user, loading: authLoading } = useAuth();
+    const userId = user?.id;
     const hasShownNetworkWarningRef = useRef(false);
 
-    const openCart = () => setIsOpen(true);
-    const closeCart = () => setIsOpen(false);
+    const openCart = useCallback(() => setIsOpen(true), []);
+    const closeCart = useCallback(() => setIsOpen(false), []);
 
     const fetchItems = useCallback(async (userId?: string, silent = false) => {
         if (!silent) setIsLoading(true);
@@ -183,67 +184,79 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!authLoading) {
-            fetchItems(user?.id);
+            fetchItems(userId);
         }
-    }, [user?.id, authLoading, fetchItems]);
+    }, [userId, authLoading, fetchItems]);
 
     // Sync items when localStorage changes (for guest cart)
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'guest_cart' && !user) {
+            if (e.key === 'guest_cart' && !userId) {
                 fetchItems();
             }
         };
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, [fetchItems, user]);
+    }, [fetchItems, userId]);
 
-    const addItem = async (productId: string, variantId?: string | null, quantity: number = 1) => {
-        if (user) {
-            await addToUserCart(user.id, productId, variantId, quantity);
-            await fetchItems(user.id, true);
+    const addItem = useCallback(async (productId: string, variantId?: string | null, quantity: number = 1) => {
+        if (userId) {
+            await addToUserCart(userId, productId, variantId, quantity);
+            await fetchItems(userId, true);
         } else {
             addToGuestCart(productId, variantId, quantity);
             await fetchItems(undefined, true);
         }
-    };
+    }, [fetchItems, userId]);
 
-    const removeItem = async (productId: string, variantId?: string | null) => {
-        if (user) {
-            await removeFromUserCart(user.id, productId, variantId);
-            await fetchItems(user.id, true);
+    const removeItem = useCallback(async (productId: string, variantId?: string | null) => {
+        if (userId) {
+            await removeFromUserCart(userId, productId, variantId);
+            await fetchItems(userId, true);
         } else {
             removeFromGuestCart(productId, variantId);
             await fetchItems(undefined, true);
         }
-    };
+    }, [fetchItems, userId]);
 
-    const updateQuantity = async (productId: string, variantId: string | null | undefined, quantity: number) => {
-        if (user) {
-            await updateUserCartQuantity(user.id, productId, variantId, quantity);
-            await fetchItems(user.id, true);
+    const updateQuantity = useCallback(async (productId: string, variantId: string | null | undefined, quantity: number) => {
+        if (userId) {
+            await updateUserCartQuantity(userId, productId, variantId, quantity);
+            await fetchItems(userId, true);
         } else {
             updateGuestCartQuantity(productId, variantId, quantity);
             await fetchItems(undefined, true);
         }
-    };
+    }, [fetchItems, userId]);
 
-    const refreshCart = async () => {
-        await fetchItems(user?.id);
-    };
+    const refreshCart = useCallback(async () => {
+        await fetchItems(userId);
+    }, [fetchItems, userId]);
+
+    const contextValue = useMemo(() => ({
+        items,
+        isOpen,
+        openCart,
+        closeCart,
+        addItem,
+        removeItem,
+        updateQuantity,
+        refreshCart,
+        isLoading
+    }), [
+        items,
+        isOpen,
+        openCart,
+        closeCart,
+        addItem,
+        removeItem,
+        updateQuantity,
+        refreshCart,
+        isLoading
+    ]);
 
     return (
-        <CartContext.Provider value={{
-            items,
-            isOpen,
-            openCart,
-            closeCart,
-            addItem,
-            removeItem,
-            updateQuantity,
-            refreshCart,
-            isLoading
-        }}>
+        <CartContext.Provider value={contextValue}>
             {children}
         </CartContext.Provider>
     );

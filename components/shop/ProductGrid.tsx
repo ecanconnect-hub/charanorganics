@@ -25,6 +25,7 @@ type ShopProductsResponse = {
 
 export function ProductGrid() {
     const searchParams = useSearchParams();
+    const queryString = searchParams.toString();
     const requestRef = useRef(0); // Track request ID to handle race conditions
 
     const [products, setProducts] = useState<Product[]>([]);
@@ -63,18 +64,19 @@ export function ProductGrid() {
         return 'Could not load products right now. Please retry.';
     }, [isSupabaseUnavailableError]);
 
-    const fetchProducts = useCallback(async () => {
+    const fetchProducts = useCallback(async (signal?: AbortSignal) => {
         const requestId = ++requestRef.current;
         setLoading(true);
         setServiceError(null);
 
         try {
-            const apiParams = new URLSearchParams(searchParams.toString());
+            const apiParams = new URLSearchParams(queryString);
             apiParams.set('limit', String(visibleCount));
 
             const response = await fetch(`/api/shop/products?${apiParams.toString()}`, {
                 method: 'GET',
                 cache: 'no-store',
+                signal,
             });
 
             const payload = await response.json() as ShopProductsResponse;
@@ -88,6 +90,8 @@ export function ProductGrid() {
             setTotalCount(payload.totalCount || 0);
             setRecommendedProducts(payload.recommendedProducts || []);
         } catch (error) {
+            if (signal?.aborted) return;
+
             const message = typeof error === 'object' && error !== null && 'message' in error
                 ? (error as { message?: string }).message
                 : String(error);
@@ -98,24 +102,18 @@ export function ProductGrid() {
                 setServiceError(getReadableServiceError(message || ''));
             }
         } finally {
-            if (requestRef.current === requestId) {
+            if (!signal?.aborted && requestRef.current === requestId) {
                 setLoading(false);
             }
         }
-    }, [getReadableServiceError, searchParams, visibleCount]);
+    }, [getReadableServiceError, queryString, visibleCount]);
 
     useEffect(() => {
-        let isCancelled = false;
-
-        const fetchData = async () => {
-            if (isCancelled) return;
-            await fetchProducts();
-        };
-
-        fetchData();
+        const controller = new AbortController();
+        void fetchProducts(controller.signal);
 
         return () => {
-            isCancelled = true;
+            controller.abort();
         };
     }, [fetchProducts]);
 

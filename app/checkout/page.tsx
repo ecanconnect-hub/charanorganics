@@ -6,15 +6,15 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/lib/auth/context';
+import { useCart } from '@/lib/cart-context';
 import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
-import { migrateGuestCartToUser } from '@/lib/utils/cart';
 import { getEmailTypoSuggestion, isProbablyValidEmail, normalizeEmail } from '@/lib/utils/email';
 import { calculateWeightBasedShipping, SHIPPING_POLICY_LINES } from '@/lib/utils/shipping';
 import toast from 'react-hot-toast';
@@ -56,10 +56,15 @@ const toFiniteNumber = (value: unknown): number | null => {
     return null;
 };
 
+const normalizePhoneNumber = (value: string) => value.replace(/\D/g, '').slice(0, PHONE_DIGITS);
+const limitLength = (value: string, maxLength: number) => value.slice(0, maxLength);
+const isValidPhoneNumber = (value: string) => /^\d{10}$/.test(value);
+
 export default function CheckoutPage() {
     const router = useRouter();
     const { user, session, loading: authLoading } = useAuth();
-    const [cartItems, setCartItems] = useState<any[]>([]);
+    const userId = user?.id;
+    const { items: cartItems, isLoading: cartLoading } = useCart();
     const [loading, setLoading] = useState(false);
     const [policyBlocked, setPolicyBlocked] = useState(false);
     const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -75,12 +80,10 @@ export default function CheckoutPage() {
     const [pincode, setPincode] = useState('');
     const [saveAddressOnDevice, setSaveAddressOnDevice] = useState(false);
     const [hasSavedGuestAddress, setHasSavedGuestAddress] = useState(false);
+    const guestAddressLoadedRef = useRef(false);
 
     const supportWhatsappPhone = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || '';
     const supportWhatsappDigits = supportWhatsappPhone.replace(/\D/g, '');
-    const normalizePhoneNumber = (value: string) => value.replace(/\D/g, '').slice(0, PHONE_DIGITS);
-    const limitLength = (value: string, maxLength: number) => value.slice(0, maxLength);
-    const isValidPhoneNumber = (value: string) => /^\d{10}$/.test(value);
     const normalizedGuestEmail = normalizeEmail(email);
     const guestEmailSuggestion = !user ? getEmailTypoSuggestion(normalizedGuestEmail) : null;
     const phoneError =
@@ -96,7 +99,10 @@ export default function CheckoutPage() {
                     : ''
             : '';
 
-    const loadGuestSavedAddress = () => {
+    const loadGuestSavedAddress = useCallback(() => {
+        if (guestAddressLoadedRef.current) return;
+        guestAddressLoadedRef.current = true;
+
         try {
             const raw = localStorage.getItem(GUEST_ADDRESS_STORAGE_KEY);
             if (!raw) {
@@ -126,29 +132,22 @@ export default function CheckoutPage() {
                 pincode: normalize(parsed.pincode, MAX_PINCODE_LENGTH),
             };
 
-            const formIsEmpty = [fullName, phone, email, addressLine1, addressLine2, city, state, pincode].every(
-                (value) => !value
-            );
-
             setHasSavedGuestAddress(true);
             setSaveAddressOnDevice(true);
-
-            if (formIsEmpty) {
-                setFullName(saved.fullName);
-                setPhone(saved.phone);
-                setEmail(saved.email);
-                setAddressLine1(saved.addressLine1);
-                setAddressLine2(saved.addressLine2);
-                setCity(saved.city);
-                setState(saved.state);
-                setPincode(saved.pincode);
-            }
+            setFullName((current) => current || saved.fullName);
+            setPhone((current) => current || saved.phone);
+            setEmail((current) => current || saved.email);
+            setAddressLine1((current) => current || saved.addressLine1);
+            setAddressLine2((current) => current || saved.addressLine2);
+            setCity((current) => current || saved.city);
+            setState((current) => current || saved.state);
+            setPincode((current) => current || saved.pincode);
         } catch (error) {
             console.warn('Failed to load saved guest address:', error);
             setHasSavedGuestAddress(false);
             setSaveAddressOnDevice(false);
         }
-    };
+    }, []);
 
     const persistGuestSavedAddress = () => {
         const address: GuestSavedAddress = {
@@ -182,141 +181,7 @@ export default function CheckoutPage() {
         }
     };
 
-    useEffect(() => {
-        const initialization = async () => {
-            if (user) {
-                await migrateGuestCartToUser(user.id);
-                await fetchCart();
-                await fetchSavedAddresses();
-                await loadSavedAddress();
-            } else if (!authLoading) {
-                loadGuestSavedAddress();
-                await fetchGuestCart();
-            }
-        };
-        initialization();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user, authLoading]);
-
-    const fetchCart = async () => {
-        if (!user) return;
-        const { data, error } = await supabase
-            .from('cart_items')
-            .select(`
-                *, 
-                product:products (*),
-                variant:product_variants (*)
-            `)
-            .eq('user_id', user.id);
-
-        if (error) {
-            console.error('Failed to fetch cart:', error);
-            return;
-        }
-
-        if (data) {
-            const invalidIds: string[] = [];
-            const enriched = (data as any[]).flatMap(item => {
-                const resolvedPrice = toFiniteNumber(item.variant?.price ?? item.product?.current_price);
-                if (resolvedPrice === null) {
-                    if (typeof item.id === 'string') invalidIds.push(item.id);
-                    return [];
-                }
-
-                const resolvedMrp = toFiniteNumber(item.variant?.mrp ?? item.product?.mrp);
-                const resolvedShipping = toFiniteNumber(item.variant?.shipping_charge ?? item.product?.shipping_charges);
-
-                return [{
-                    ...item,
-                    product: item.product ? {
-                        ...item.product,
-                        current_price: resolvedPrice,
-                        mrp: resolvedMrp ?? item.product.mrp,
-                        shipping_charges: resolvedShipping ?? item.product.shipping_charges,
-                    } : item.product
-                }];
-            });
-
-            if (invalidIds.length > 0) {
-                await supabase.from('cart_items').delete().in('id', invalidIds);
-                toast.error('Unavailable items were removed from your cart.');
-            }
-
-            setCartItems(enriched);
-        }
-    };
-
-    const fetchGuestCart = async () => {
-        try {
-            const guestCart = JSON.parse(localStorage.getItem('guest_cart') || '[]');
-            const productIds = Array.from(new Set(guestCart.map((item: any) => item.product_id)));
-            const variantIds = Array.from(new Set(guestCart.map((item: any) => item.variant_id).filter(Boolean))) as string[];
-
-            if (productIds.length === 0) {
-                setCartItems([]);
-                return;
-            }
-
-            const [{ data: products, error: productsError }, { data: variants, error: variantsError }] = await Promise.all([
-                supabase
-                    .from('products')
-                    .select('*')
-                    .in('id', productIds),
-                variantIds.length > 0 ?
-                    supabase
-                        .from('product_variants')
-                        .select('*')
-                        .in('id', variantIds) : Promise.resolve({ data: [], error: null })
-            ]);
-
-            if (productsError || variantsError) {
-                throw productsError || variantsError;
-            }
-
-            const productMap = new Map(((products as any[]) || []).map((product) => [product.id, product]));
-            const variantMap = new Map(((variants as any[]) || []).map((variant) => [variant.id, variant]));
-
-            const items = guestCart.flatMap((item: any) => {
-                const product = productMap.get(item.product_id);
-                if (!product) return [];
-
-                const variant = item.variant_id ? variantMap.get(item.variant_id) : undefined;
-                const resolvedPrice = toFiniteNumber(variant?.price ?? product.current_price);
-                if (resolvedPrice === null) return [];
-
-                const resolvedMrp = toFiniteNumber(variant?.mrp ?? product.mrp);
-                const resolvedShipping = toFiniteNumber(variant?.shipping_charge ?? product.shipping_charges);
-
-                return [{
-                    ...item,
-                    variant: variant ?? null,
-                    variant_label: variant?.label ?? null,
-                    product: {
-                        ...product,
-                        current_price: resolvedPrice,
-                        mrp: resolvedMrp ?? product.mrp,
-                        shipping_charges: resolvedShipping ?? product.shipping_charges,
-                    },
-                }];
-            });
-
-            if (items.length !== guestCart.length) {
-                const itemKeys = new Set(
-                    items.map((item: any) => `${item.product_id}:${item.variant_id || 'no_variant'}`)
-                );
-                const cleaned = guestCart.filter((item: any) =>
-                    itemKeys.has(`${item.product_id}:${item.variant_id || 'no_variant'}`)
-                );
-                localStorage.setItem('guest_cart', JSON.stringify(cleaned));
-            }
-
-            setCartItems(items);
-        } catch (error) {
-            console.error('Guest cart error:', error);
-        }
-    };
-
-    const applyAddressToForm = (addr: any) => {
+    const applyAddressToForm = useCallback((addr: any) => {
         if (!addr) return;
         setFullName(limitLength(addr.full_name || addr.name || '', MAX_FULL_NAME_LENGTH));
         setPhone(normalizePhoneNumber(addr.phone || ''));
@@ -325,32 +190,43 @@ export default function CheckoutPage() {
         setCity(limitLength(addr.city || '', MAX_CITY_LENGTH));
         setState(limitLength(addr.state || '', MAX_STATE_LENGTH));
         setPincode(limitLength(addr.pincode || '', MAX_PINCODE_LENGTH));
-    };
+    }, []);
 
-    const fetchSavedAddresses = async () => {
-        if (!user) return;
+    const fetchSavedAddresses = useCallback(async () => {
+        if (!userId) return;
         const { data } = await supabase
             .from('addresses' as any)
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .order('is_default', { ascending: false });
 
         setSavedAddresses((data as any[]) || []);
-    };
+    }, [userId]);
 
-    const loadSavedAddress = async () => {
-        if (!user) return;
+    const loadSavedAddress = useCallback(async () => {
+        if (!userId) return;
         const { data } = await supabase
             .from('addresses' as any)
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .eq('is_default', true)
             .single();
 
         if (data) {
             applyAddressToForm(data as any);
         }
-    };
+    }, [applyAddressToForm, userId]);
+
+    useEffect(() => {
+        if (authLoading) return;
+
+        if (userId) {
+            void Promise.all([fetchSavedAddresses(), loadSavedAddress()]);
+            return;
+        }
+
+        loadGuestSavedAddress();
+    }, [authLoading, userId, fetchSavedAddresses, loadSavedAddress, loadGuestSavedAddress]);
 
     const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -476,7 +352,7 @@ export default function CheckoutPage() {
         }
     };
 
-    if (authLoading) {
+    if (authLoading || cartLoading) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
@@ -507,7 +383,7 @@ export default function CheckoutPage() {
 
             for (const item of cartItems) {
                 const title = item?.product?.title_en || 'Product';
-                const variantLabel = item?.variant?.label || item?.variant_label || '';
+                const variantLabel = item?.variant_label || '';
                 const unitPrice = toFiniteNumber(item?.product?.current_price);
                 const qty = typeof item?.quantity === 'number' ? item.quantity : 1;
                 const lineTotal = unitPrice === null ? null : unitPrice * qty;
@@ -802,7 +678,7 @@ export default function CheckoutPage() {
                                                     )}
                                                     <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mt-0.5">Qty: {item.quantity}</p>
                                                 </div>
-                                                <p className="font-black text-gray-900 text-sm">₹{(item.product?.current_price * item.quantity).toFixed(0)}</p>
+                                                <p className="font-black text-gray-900 text-sm">₹{((toFiniteNumber(item.product?.current_price) ?? 0) * item.quantity).toFixed(0)}</p>
                                             </div>
                                         ))}
                                     </div>
