@@ -5,7 +5,6 @@ import { AuthProvider } from '@/lib/auth/context';
 import { CartProvider } from '@/lib/cart-context';
 import { LayoutWrapper } from '@/components/layout/LayoutWrapper';
 import { Outfit, Instrument_Serif } from 'next/font/google';
-import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 // Load Premium Google Fonts
@@ -83,6 +82,7 @@ export const metadata: Metadata = {
 };
 
 import Script from 'next/script';
+import { Analytics } from "@vercel/analytics/react";
 
 export default function RootLayout({
   children,
