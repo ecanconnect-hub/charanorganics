@@ -23,6 +23,11 @@ type ShopFiltersResponse = {
     error?: string;
 };
 
+// Module-level cache: filters data changes rarely (sections, price range).
+// Caching here means re-mounts (e.g. back-navigation) resolve instantly
+// without another network round-trip to /api/shop/filters.
+let filtersCache: ShopFiltersResponse | null = null;
+
 export function ShopFilters() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -35,11 +40,18 @@ export function ShopFilters() {
     const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
 
     const fetchFilters = useCallback(async () => {
+        // Return from module-level cache if available (avoids re-fetch on re-mount)
+        if (filtersCache) {
+            setSections(filtersCache.sections || []);
+            setPriceRange(filtersCache.priceRange || { min: 0, max: 10000 });
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         try {
             const response = await fetch('/api/shop/filters', {
                 method: 'GET',
-                cache: 'force-cache',
             });
 
             const payload = await response.json() as ShopFiltersResponse;
@@ -47,6 +59,8 @@ export function ShopFilters() {
                 throw new Error(payload.error || `Request failed (${response.status})`);
             }
 
+            // Store in module cache for subsequent mounts
+            filtersCache = payload;
             setSections(payload.sections || []);
             setPriceRange(payload.priceRange || { min: 0, max: 10000 });
         } catch (error) {

@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
@@ -35,6 +35,10 @@ type HomeApiResponse = {
   error?: string;
 };
 
+// Module-level cache: prevents duplicate /api/home fetches on StrictMode
+// double-invoke and on back-navigation re-mounts.
+let homeDataCache: HomeApiResponse | null = null;
+
 export default function HomePage() {
   const t = useTranslations();
   const locale = useLocale();
@@ -43,21 +47,36 @@ export default function HomePage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [sectionsWithProducts, setSectionsWithProducts] = useState<SectionWithProducts[]>([]);
 
+  // Guard against StrictMode double-invocation firing two parallel requests
+  const fetchedRef = useRef(false);
+
   useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     fetchData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = async () => {
+    // Return from module-level cache if already fetched this session
+    if (homeDataCache) {
+      setSections(homeDataCache.sections || []);
+      setSectionsWithProducts(homeDataCache.sectionsWithProducts || []);
+      setBestSellers(homeDataCache.bestSellers || []);
+      setNewArrivals(homeDataCache.newArrivals || []);
+      return;
+    }
+
     try {
       const response = await fetch('/api/home', {
         method: 'GET',
-        cache: 'force-cache',
       });
       const payload = await response.json() as HomeApiResponse;
       if (!response.ok) {
         throw new Error(payload.error || `Request failed (${response.status})`);
       }
 
+      // Store in module cache for subsequent renders
+      homeDataCache = payload;
       setSections(payload.sections || []);
       setSectionsWithProducts(payload.sectionsWithProducts || []);
       setBestSellers(payload.bestSellers || []);

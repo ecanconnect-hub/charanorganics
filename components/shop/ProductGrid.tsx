@@ -34,6 +34,10 @@ export function ProductGrid() {
     const [totalCount, setTotalCount] = useState(0);
     const [visibleCount, setVisibleCount] = useState(50);
     const [serviceError, setServiceError] = useState<string | null>(null);
+    // Track visibleCount in a ref so fetchProducts doesn't need it as a dep.
+    // Without this, every "Load More" click discards the current list and refetches from scratch.
+    const visibleCountRef = useRef(visibleCount);
+    useEffect(() => { visibleCountRef.current = visibleCount; }, [visibleCount]);
 
     const isSupabaseUnavailableError = useCallback((message: string) => {
         const normalized = message.toLowerCase();
@@ -71,11 +75,11 @@ export function ProductGrid() {
 
         try {
             const apiParams = new URLSearchParams(queryString);
-            apiParams.set('limit', String(visibleCount));
+            // Read from ref — not a dep — so Load More doesn't trigger a full refetch
+            apiParams.set('limit', String(visibleCountRef.current));
 
             const response = await fetch(`/api/shop/products?${apiParams.toString()}`, {
                 method: 'GET',
-                cache: 'force-cache',
                 signal,
             });
 
@@ -106,7 +110,7 @@ export function ProductGrid() {
                 setLoading(false);
             }
         }
-    }, [getReadableServiceError, queryString, visibleCount]);
+    }, [getReadableServiceError, queryString]); // visibleCount intentionally excluded — read via ref
 
     useEffect(() => {
         const controller = new AbortController();
@@ -115,6 +119,8 @@ export function ProductGrid() {
         return () => {
             controller.abort();
         };
+    // Re-fetch only when filters/search change (queryString), NOT on visibleCount change.
+    // Load More appends to existing data via a separate controlled re-fetch below.
     }, [fetchProducts]);
 
     if (loading) {
@@ -281,7 +287,13 @@ export function ProductGrid() {
             {products.length < totalCount && (
                 <div className="flex justify-center mt-8 pb-8">
                     <button
-                        onClick={() => setVisibleCount((prev) => prev + 20)}
+                        onClick={() => {
+                            // Update count first, then re-fetch using the new ref value
+                            const next = visibleCount + 20;
+                            setVisibleCount(next);
+                            visibleCountRef.current = next;
+                            void fetchProducts();
+                        }}
                         className="px-6 py-2 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
                         disabled={loading}
                     >
