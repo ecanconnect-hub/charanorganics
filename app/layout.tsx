@@ -5,6 +5,7 @@ import { AuthProvider } from '@/lib/auth/context';
 import { CartProvider } from '@/lib/cart-context';
 import { LayoutWrapper } from '@/components/layout/LayoutWrapper';
 import { Outfit, Instrument_Serif } from 'next/font/google';
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 // Load Premium Google Fonts
@@ -263,6 +264,7 @@ export default function RootLayout({
             </CartProvider>
           </I18nProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
