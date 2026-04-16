@@ -40,6 +40,8 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
     '/api/report-issue': { windowMs: 15 * 60 * 1000, maxRequests: 5 }, // 5 issue reports per 15 minutes
     '/api/orders': { windowMs: 60 * 1000, maxRequests: 10 }, // 10 orders per minute
     '/api/cart': { windowMs: 60 * 1000, maxRequests: 30 }, // 30 cart operations per minute
+    '/api/shop/products': { windowMs: 60 * 1000, maxRequests: 60 }, // 60 product/search requests per minute
+    '/api/shop/filters': { windowMs: 60 * 1000, maxRequests: 30 }, // 30 filter metadata requests per minute
     '/api/products': { windowMs: 60 * 1000, maxRequests: 60 }, // 60 product requests per minute
     default: { windowMs: 60 * 1000, maxRequests: 100 }, // 100 requests per minute (default)
 };
@@ -53,6 +55,8 @@ const FAIL_CLOSED_ENDPOINT_PREFIXES = [
     '/api/send-order-email',
     '/api/track-order',
     '/api/report-issue',
+    '/api/shop/products',
+    '/api/shop/filters',
 ];
 
 /**

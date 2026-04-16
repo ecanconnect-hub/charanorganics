@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/database.types';
-import { NO_STORE_HEADERS, PUBLIC_CATALOG_CACHE_HEADERS } from '@/lib/server/cacheHeaders';
+import { NO_STORE_HEADERS, PUBLIC_FILTER_CACHE_HEADERS } from '@/lib/server/cacheHeaders';
 import { ensureSupabaseDnsRouting } from '@/lib/server/ensureSupabaseDnsRouting';
+import { withApiProtection } from '@/lib/middleware/withApiProtection';
 
 type Section = Database['public']['Tables']['sections']['Row'];
 type Product = Database['public']['Tables']['products']['Row'];
@@ -72,7 +73,7 @@ function getErrorMessage(error: unknown): string {
     return 'Unknown error';
 }
 
-export async function GET() {
+async function handleGET(_req: NextRequest) {
     try {
         const [{ data: sections, error: sectionsError }, { data: prices, error: pricesError }] = await Promise.all([
             supabase
@@ -109,7 +110,7 @@ export async function GET() {
                     max: maxPrice,
                 },
             },
-            { headers: PUBLIC_CATALOG_CACHE_HEADERS }
+            { headers: PUBLIC_FILTER_CACHE_HEADERS }
         );
     } catch (error: unknown) {
         const message = getErrorMessage(error);
@@ -120,3 +121,5 @@ export async function GET() {
         );
     }
 }
+
+export const GET = withApiProtection(handleGET);

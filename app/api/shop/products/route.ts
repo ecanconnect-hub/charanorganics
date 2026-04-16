@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/database.types';
 import { NO_STORE_HEADERS, PUBLIC_SEARCH_CACHE_HEADERS } from '@/lib/server/cacheHeaders';
 import { ensureSupabaseDnsRouting } from '@/lib/server/ensureSupabaseDnsRouting';
+import { withApiProtection } from '@/lib/middleware/withApiProtection';
 
 type Product = Database['public']['Tables']['products']['Row'] & {
     is_best_seller?: boolean;
@@ -441,7 +442,7 @@ async function attachVariantMeta(items: Product[]): Promise<ProductWithVariantMe
     }
 }
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
     try {
         const params = req.nextUrl.searchParams;
         const sectionsParam = params.get('section');
@@ -664,3 +665,8 @@ export async function GET(req: NextRequest) {
         );
     }
 }
+
+// Protected export: sliding-window (middleware) + Supabase rate limit + search abuse guard
+export const GET = withApiProtection(handleGET, {
+    searchGuard: { searchParam: 'q', maxQueryLength: 80 },
+});
