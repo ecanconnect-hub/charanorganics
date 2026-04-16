@@ -13,6 +13,7 @@ type ProfilePolicyRow = Pick<Database['public']['Tables']['profiles']['Row'], 'p
 
 export default function SecurityPage() {
     const { user, loading } = useAuth();
+    const userId = user?.id;
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [updating, setUpdating] = useState(false);
@@ -22,12 +23,12 @@ export default function SecurityPage() {
 
     useEffect(() => {
         const loadPolicyPreference = async () => {
-            if (!user) return;
+            if (!userId) return;
             try {
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('privacy_policy_accepted')
-                    .eq('id', user.id)
+                    .eq('id', userId)
                     .single();
                 if (error) throw error;
                 const profilePolicy = data as ProfilePolicyRow | null;
@@ -39,7 +40,7 @@ export default function SecurityPage() {
             }
         };
         void loadPolicyPreference();
-    }, [user]);
+    }, [userId]);
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();

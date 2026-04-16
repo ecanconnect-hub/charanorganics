@@ -33,6 +33,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     const router = useRouter();
     const locale = useLocale();
     const { user } = useAuth();
+    const userId = user?.id;
     const t = useTranslations('product');
     const ct = useTranslations('common');
 
@@ -94,12 +95,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         }
 
         // Fetch Wishlist Status
-        if (user) {
+        if (userId) {
             try {
                 const { data, error } = await (supabase
                     .from('wishlist') as any)
                     .select('id')
-                    .eq('user_id', user.id)
+                    .eq('user_id', userId)
                     .eq('product_id', product.id)
                     .single();
 
@@ -114,7 +115,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     .from('order_items' as any) as any)
                     .select('id, orders!inner(status, user_id)')
                     .eq('product_id', product.id)
-                    .eq('orders.user_id', user.id)
+                    .eq('orders.user_id', userId)
                     .eq('orders.status', 'delivered')
                     .limit(1);
 
@@ -143,7 +144,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         } finally {
             setLoadingReviews(false);
         }
-    }, [product.id, user]);
+    }, [product.id, userId]);
 
     useEffect(() => {
         fetchData();

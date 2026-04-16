@@ -48,11 +48,12 @@ function getOrderItemImage(item: OrderItem): string | null {
 export default function MyOrdersPage() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
+    const userId = user?.id;
     const [orders, setOrders] = useState<OrderRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchOrders = useCallback(async () => {
-        if (!user) return;
+        if (!userId) return;
 
         setLoading(true);
         try {
@@ -72,25 +73,25 @@ export default function MyOrdersPage() {
                         product:products (image_url)
                     )
                 `)
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
             setOrders((data as OrderRecord[] | null) || []);
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [userId]);
 
     useEffect(() => {
         if (authLoading) return;
 
-        if (!user) {
+        if (!userId) {
             router.push('/login');
             return;
         }
 
         void fetchOrders();
-    }, [authLoading, user, router, fetchOrders]);
+    }, [authLoading, userId, router, fetchOrders]);
 
     if (authLoading || loading) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;

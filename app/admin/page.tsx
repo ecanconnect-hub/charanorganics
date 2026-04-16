@@ -255,8 +255,10 @@ export default function AdminDashboard() {
             void refreshDashboard();
 
             const refreshInterval = window.setInterval(() => {
-                void refreshDashboard();
-            }, 15000);
+                if (document.visibilityState === 'visible') {
+                    void refreshDashboard();
+                }
+            }, 60000);
 
             const handleVisibilityRefresh = () => {
                 if (document.visibilityState === 'visible') {

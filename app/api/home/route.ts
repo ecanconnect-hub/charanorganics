@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/database.types';
+import { NO_STORE_HEADERS, PUBLIC_CATALOG_CACHE_HEADERS } from '@/lib/server/cacheHeaders';
 import { ensureSupabaseDnsRouting } from '@/lib/server/ensureSupabaseDnsRouting';
 
 type Product = Database['public']['Tables']['products']['Row'] & {
@@ -263,18 +264,21 @@ export async function GET() {
         const bestSellersWithMeta = bestSellers.map((product) => withMeta(product));
         const newArrivalsWithMeta = newArrivals.map((product) => withMeta(product));
 
-        return NextResponse.json({
-            sections: sectionsWithCounts,
-            sectionsWithProducts: sectionsWithProductsWithMeta,
-            bestSellers: bestSellersWithMeta,
-            newArrivals: newArrivalsWithMeta,
-        });
+        return NextResponse.json(
+            {
+                sections: sectionsWithCounts,
+                sectionsWithProducts: sectionsWithProductsWithMeta,
+                bestSellers: bestSellersWithMeta,
+                newArrivals: newArrivalsWithMeta,
+            },
+            { headers: PUBLIC_CATALOG_CACHE_HEADERS }
+        );
     } catch (error: unknown) {
         const message = getErrorMessage(error);
         console.error('Home API error:', message, error);
         return NextResponse.json(
             { error: 'Failed to load home data' },
-            { status: 503 }
+            { status: 503, headers: NO_STORE_HEADERS }
         );
     }
 }

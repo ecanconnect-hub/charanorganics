@@ -51,7 +51,7 @@ export default function HomePage() {
     try {
       const response = await fetch('/api/home', {
         method: 'GET',
-        cache: 'no-store',
+        cache: 'force-cache',
       });
       const payload = await response.json() as HomeApiResponse;
       if (!response.ok) {

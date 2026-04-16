@@ -53,6 +53,7 @@ export default function TrackOrderPage() {
     const params = useParams();
     const orderId = params.orderId as string;
     const { user, loading: authLoading } = useAuth();
+    const userId = user?.id;
 
     const [order, setOrder] = useState<TrackedOrder | null>(null);
     const [loading, setLoading] = useState(true);
@@ -64,12 +65,12 @@ export default function TrackOrderPage() {
     const fetchOrder = useCallback(async (phoneOverride?: string, pincodeOverride?: string): Promise<boolean> => {
         setLoading(true);
 
-        const phoneFromSession = !user
+        const phoneFromSession = !userId
             ? (sessionStorage.getItem(`guest_track_phone:${orderId}`) ||
                 sessionStorage.getItem(`guest_track_phone:${orderId.toUpperCase()}`) ||
                 '')
             : '';
-        const pincodeFromSession = !user
+        const pincodeFromSession = !userId
             ? (sessionStorage.getItem(`guest_track_pincode:${orderId}`) ||
                 sessionStorage.getItem(`guest_track_pincode:${orderId.toUpperCase()}`) ||
                 '')
@@ -81,15 +82,15 @@ export default function TrackOrderPage() {
             sessionStorage.getItem(`guest_payment_token:${orderId.toUpperCase()}`) ||
             '';
 
-        const phone = !user ? (phoneOverride || phoneFromSession || '') : '';
-        const pincode = !user ? (pincodeOverride || pincodeFromSession || '') : '';
+        const phone = !userId ? (phoneOverride || phoneFromSession || '') : '';
+        const pincode = !userId ? (pincodeOverride || pincodeFromSession || '') : '';
 
         try {
             const response = await fetch('/api/track-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(
-                    user
+                    userId
                         ? {
                             orderId,
                         }
@@ -112,11 +113,11 @@ export default function TrackOrderPage() {
                 return false;
             }
 
-            if (!user && phone) {
+            if (!userId && phone) {
                 sessionStorage.setItem(`guest_track_phone:${orderId}`, phone);
                 sessionStorage.setItem(`guest_track_phone:${orderId.toUpperCase()}`, phone);
             }
-            if (!user && pincode) {
+            if (!userId && pincode) {
                 sessionStorage.setItem(`guest_track_pincode:${orderId}`, pincode);
                 sessionStorage.setItem(`guest_track_pincode:${orderId.toUpperCase()}`, pincode);
             }
@@ -133,7 +134,7 @@ export default function TrackOrderPage() {
         } finally {
             setLoading(false);
         }
-    }, [orderId, user]);
+    }, [orderId, userId]);
 
     useEffect(() => {
         if (!orderId || authLoading) return;
@@ -182,7 +183,7 @@ export default function TrackOrderPage() {
     }
 
     if (!order) {
-        if (user) {
+        if (userId) {
             return (
                 <div className="min-h-screen flex items-center justify-center px-4">
                     <div className="text-center max-w-md w-full bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">

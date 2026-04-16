@@ -75,7 +75,7 @@ export function ProductGrid() {
 
             const response = await fetch(`/api/shop/products?${apiParams.toString()}`, {
                 method: 'GET',
-                cache: 'no-store',
+                cache: 'force-cache',
                 signal,
             });
 

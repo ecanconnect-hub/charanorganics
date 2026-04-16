@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,12 +13,13 @@ import toast from 'react-hot-toast';
 
 export default function WishlistPage() {
     const { user, loading: authLoading } = useAuth();
+    const userId = user?.id;
     const locale = useLocale();
     const [wishlistItems, setWishlistItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchWishlist = async () => {
-        if (!user) return;
+    const fetchWishlist = useCallback(async () => {
+        if (!userId) return;
 
         try {
             setLoading(true);
@@ -29,7 +30,7 @@ export default function WishlistPage() {
                     product_id,
                     products (*)
                 `)
-                .eq('user_id', user.id);
+                .eq('user_id', userId);
 
             if (error) throw error;
             setWishlistItems(data || []);
@@ -39,17 +40,17 @@ export default function WishlistPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [userId]);
 
     useEffect(() => {
         if (!authLoading) {
-            if (user) {
+            if (userId) {
                 fetchWishlist();
             } else {
                 setLoading(false);
             }
         }
-    }, [user, authLoading]);
+    }, [userId, authLoading, fetchWishlist]);
 
     const removeFromWishlist = async (id: string, productId: string) => {
         try {

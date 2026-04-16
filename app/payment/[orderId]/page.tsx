@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
@@ -27,6 +27,7 @@ export default function PaymentPage() {
     const params = useParams();
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
+    const userId = user?.id;
     const orderId = params.orderId as string;
     const normalizedOrderId = String(orderId || '').trim().toUpperCase();
 
@@ -47,32 +48,7 @@ export default function PaymentPage() {
     const supportWhatsappDigits = supportWhatsappPhone.replace(/\D/g, '');
     const supportWhatsappHref = supportWhatsappDigits ? `https://wa.me/${supportWhatsappDigits}` : '';
 
-    useEffect(() => {
-        setIsMobile(isMobileDevice());
-
-        if (!orderId || authLoading) {
-            return;
-        }
-
-        if (user) {
-            setAccessToken(null);
-            void fetchOrder();
-        } else {
-            const storedToken = sessionStorage.getItem(`guest_payment_token:${orderId}`);
-            setAccessToken(storedToken);
-            void fetchOrder(storedToken || undefined);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orderId, user, authLoading]);
-
-    useEffect(() => {
-        if (order) {
-            void generateQR();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [order]);
-
-    const fetchOrder = async (guestAccessToken?: string) => {
+    const fetchOrder = useCallback(async (guestAccessToken?: string) => {
         try {
             setLoadError(null);
             const response = await fetch('/api/payment/details', {
@@ -80,15 +56,15 @@ export default function PaymentPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     orderId,
-                    accessToken: guestAccessToken || accessToken || undefined,
+                    accessToken: guestAccessToken || undefined,
                 }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                const tokenUsed = guestAccessToken || accessToken || '';
-                const isGuestTokenAttempt = !user && !!tokenUsed;
+                const tokenUsed = guestAccessToken || '';
+                const isGuestTokenAttempt = !userId && !!tokenUsed;
 
                 if (response.status === 403 || (isGuestTokenAttempt && response.status === 404)) {
                     const message = 'Payment session expired. Please return to checkout.';
@@ -113,9 +89,9 @@ export default function PaymentPage() {
             setLoadError('Failed to load payment details');
             toast.error('Failed to load payment details');
         }
-    };
+    }, [orderId, userId]);
 
-    const generateQR = async () => {
+    const generateQR = useCallback(async () => {
         if (!order) return;
         if (!upiId) {
             toast.error('UPI configuration missing');
@@ -131,7 +107,30 @@ export default function PaymentPage() {
         });
 
         setQRCode(qr);
-    };
+    }, [order, orderId, upiId, upiName]);
+
+    useEffect(() => {
+        setIsMobile(isMobileDevice());
+
+        if (!orderId || authLoading) {
+            return;
+        }
+
+        if (userId) {
+            setAccessToken(null);
+            void fetchOrder();
+        } else {
+            const storedToken = sessionStorage.getItem(`guest_payment_token:${orderId}`);
+            setAccessToken(storedToken);
+            void fetchOrder(storedToken || undefined);
+        }
+    }, [orderId, userId, authLoading, fetchOrder]);
+
+    useEffect(() => {
+        if (order) {
+            void generateQR();
+        }
+    }, [order, generateQR]);
 
     const handleCopyText = async (value: string, successMessage: string) => {
         if (!value) {

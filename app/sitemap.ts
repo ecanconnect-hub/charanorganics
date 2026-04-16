@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/lib/supabase/database.types';
 import type { MetadataRoute } from 'next';
 
+export const revalidate = 86400;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,

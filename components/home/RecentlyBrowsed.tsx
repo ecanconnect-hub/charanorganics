@@ -71,18 +71,19 @@ export function RecentlyBrowsed() {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const { user, loading: authLoading } = useAuth();
+    const userId = user?.id;
 
     useEffect(() => {
         const fetchRecentlyBrowsed = async () => {
             if (authLoading) return;
 
             try {
-                if (user) {
+                if (userId) {
                     // Fetch from database
                     const { data } = await (supabase
                         .from('browsing_history' as any) as any)
                         .select(`
-              product:products (
+            product:products (
                 id,
                 product_id,
                 title_en,
@@ -93,7 +94,7 @@ export function RecentlyBrowsed() {
                 is_active
               )
             `)
-                        .eq('user_id', user.id)
+                        .eq('user_id', userId)
                         .order('viewed_at', { ascending: false })
                         .limit(4);
 
@@ -130,7 +131,7 @@ export function RecentlyBrowsed() {
         };
 
         fetchRecentlyBrowsed();
-    }, [authLoading, user]);
+    }, [authLoading, userId]);
 
     if (loading || products.length === 0) {
         return null;

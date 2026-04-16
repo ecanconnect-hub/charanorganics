@@ -111,7 +111,7 @@ export async function proxy(req: NextRequest) {
         }
     }
 
-    // Allow guest checkout. Account pages still require login.
+    // Account pages require login. Checkout is intentionally public for guest orders.
     if (pathname.startsWith('/account')) {
         if (!user) {
             const url = req.nextUrl.clone();
@@ -125,5 +125,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*', '/diagnostic', '/diagnostic/:path*', '/account/:path*', '/checkout/:path*'],
+    matcher: ['/admin/:path*', '/diagnostic', '/diagnostic/:path*', '/account/:path*'],
 };

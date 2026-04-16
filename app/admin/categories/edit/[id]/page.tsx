@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
@@ -39,13 +39,7 @@ export default function EditCategoryPage() {
         image_url: '',
     });
 
-    useEffect(() => {
-        if (id) {
-            fetchCategory();
-        }
-    }, [id]);
-
-    const fetchCategory = async () => {
+    const fetchCategory = useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('sections' as any)
@@ -74,7 +68,13 @@ export default function EditCategoryPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, router]);
+
+    useEffect(() => {
+        if (id) {
+            void fetchCategory();
+        }
+    }, [fetchCategory, id]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;

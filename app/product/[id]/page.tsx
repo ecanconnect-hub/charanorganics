@@ -6,14 +6,34 @@
 
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { cache } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { ProductDetailClient } from '@/components/product/ProductDetailClient';
-import { supabase } from '@/lib/supabase/client';
 import type { Database } from '@/lib/supabase/database.types';
+import { ensureSupabaseDnsRouting } from '@/lib/server/ensureSupabaseDnsRouting';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 const siteUrl = 'https://charanorganics.com';
 
-async function getProductBySlug(id: string): Promise<ProductRow | null> {
+export const revalidate = 300;
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables for product page');
+}
+
+ensureSupabaseDnsRouting();
+
+const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+    },
+});
+
+const getProductBySlug = cache(async (id: string): Promise<ProductRow | null> => {
     const { data } = await supabase
         .from('products')
         .select('*')
@@ -22,6 +42,17 @@ async function getProductBySlug(id: string): Promise<ProductRow | null> {
         .single();
 
     return (data as ProductRow | null) ?? null;
+});
+
+export async function generateStaticParams() {
+    const { data } = await supabase
+        .from('products')
+        .select('product_id')
+        .eq('is_active', true);
+
+    return ((data || []) as Pick<ProductRow, 'product_id'>[])
+        .filter((product) => product.product_id)
+        .map((product) => ({ id: product.product_id }));
 }
 
 export async function generateMetadata({

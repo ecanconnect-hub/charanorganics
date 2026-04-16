@@ -28,6 +28,9 @@ export function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
     const lastScrollYRef = useRef(0);
+    const isScrolledRef = useRef(false);
+    const isVisibleRef = useRef(true);
+    const scrollRafRef = useRef<number | null>(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Search State
@@ -38,19 +41,26 @@ export function Header() {
 
     useEffect(() => {
         const handleScroll = () => {
-            const currentScrollY = window.scrollY;
+            if (scrollRafRef.current !== null) return;
 
-            // Determine if scrolled significantly
-            setIsScrolled(currentScrollY > 20);
+            scrollRafRef.current = window.requestAnimationFrame(() => {
+                scrollRafRef.current = null;
+                const currentScrollY = window.scrollY;
+                const nextIsScrolled = currentScrollY > 20;
+                const nextIsVisible = !(currentScrollY > lastScrollYRef.current && currentScrollY > 100);
 
-            // Determine visibility (show on scroll up, hide on scroll down)
-            if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
-                setIsVisible(false);
-            } else {
-                setIsVisible(true);
-            }
+                if (isScrolledRef.current !== nextIsScrolled) {
+                    isScrolledRef.current = nextIsScrolled;
+                    setIsScrolled(nextIsScrolled);
+                }
 
-            lastScrollYRef.current = currentScrollY;
+                if (isVisibleRef.current !== nextIsVisible) {
+                    isVisibleRef.current = nextIsVisible;
+                    setIsVisible(nextIsVisible);
+                }
+
+                lastScrollYRef.current = currentScrollY;
+            });
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -74,6 +84,9 @@ export function Header() {
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
+            if (scrollRafRef.current !== null) {
+                window.cancelAnimationFrame(scrollRafRef.current);
+            }
             window.removeEventListener('scroll', handleScroll);
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('keydown', handleKeyDown);

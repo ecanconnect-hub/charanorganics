@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
@@ -20,7 +20,8 @@ export default function SubmitReviewPage() {
     const router = useRouter();
     const params = useParams();
     const productId = params.id as string;
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
+    const userId = user?.id;
     const locale = useLocale();
 
     const [product, setProduct] = useState<any>(null);
@@ -29,16 +30,7 @@ export default function SubmitReviewPage() {
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!user) {
-            toast.error('Please login to write a review');
-            router.push('/login');
-            return;
-        }
-        fetchProduct();
-    }, [user, productId]);
-
-    const fetchProduct = async () => {
+    const fetchProduct = useCallback(async () => {
         setLoading(true);
 
         const { data, error } = await supabase
@@ -62,7 +54,7 @@ export default function SubmitReviewPage() {
                 .from('order_items' as any) as any)
                 .select('id, orders!inner(status, user_id)')
                 .eq('product_id', (data as any).id)
-                .eq('orders.user_id', user?.id)
+                .eq('orders.user_id', userId)
                 .eq('orders.status', 'delivered')
                 .limit(1);
 
@@ -79,7 +71,18 @@ export default function SubmitReviewPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [productId, router, userId]);
+
+    useEffect(() => {
+        if (authLoading) return;
+
+        if (!userId) {
+            toast.error('Please login to write a review');
+            router.push('/login');
+            return;
+        }
+        void fetchProduct();
+    }, [authLoading, fetchProduct, router, userId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -117,7 +120,7 @@ export default function SubmitReviewPage() {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    if (authLoading || loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
     const title = locale === 'en'
         ? product?.title_en

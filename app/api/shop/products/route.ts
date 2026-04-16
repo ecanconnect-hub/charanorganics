@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/database.types';
+import { NO_STORE_HEADERS, PUBLIC_SEARCH_CACHE_HEADERS } from '@/lib/server/cacheHeaders';
 import { ensureSupabaseDnsRouting } from '@/lib/server/ensureSupabaseDnsRouting';
 
 type Product = Database['public']['Tables']['products']['Row'] & {
@@ -211,7 +212,7 @@ function buildSmartSearchTerms(rawQuery: string): string[] {
         }
     });
 
-    return [...terms].filter((term) => term.length > 1).slice(0, 16);
+    return [...terms].filter((term) => term.length > 1).slice(0, 8);
 }
 
 function normalizeField(value: string | null | undefined): string {
@@ -320,7 +321,7 @@ async function fetchFuzzyMatches(smartSearchTerms: string[]): Promise<{
 }> {
     const fuzzyMap = new Map<string, Product>();
     const fuzzyRankMap = new Map<string, number>();
-    const fuzzyQueries = smartSearchTerms.slice(0, 6);
+    const fuzzyQueries = smartSearchTerms.slice(0, 3);
 
     if (fuzzyQueries.length === 0) {
         return { fuzzyMap, fuzzyRankMap };
@@ -330,7 +331,7 @@ async function fetchFuzzyMatches(smartSearchTerms: string[]): Promise<{
         fuzzyQueries.map((term) =>
             supabase.rpc(
                 'search_products_fuzzy' as never,
-                { p_query: term, p_limit: 180 } as never
+                { p_query: term, p_limit: 80 } as never
             )
         )
     );
@@ -370,7 +371,7 @@ function parseLimit(value: string | null): number {
     if (!Number.isFinite(parsed) || parsed <= 0) {
         return 50;
     }
-    return Math.min(Math.floor(parsed), 200);
+    return Math.min(Math.floor(parsed), 100);
 }
 
 function sanitizeSort(value: string | null): 'default' | 'price_asc' | 'price_desc' | 'newest' {
@@ -448,7 +449,7 @@ export async function GET(req: NextRequest) {
         const minPrice = parseNumber(params.get('minPrice'));
         const maxPrice = parseNumber(params.get('maxPrice'));
         const sort = sanitizeSort(params.get('sort'));
-        const search = params.get('q')?.trim() || '';
+        const search = (params.get('q')?.trim() || '').slice(0, 80);
         const limit = parseLimit(params.get('limit'));
         const smartSearchTerms = search ? buildSmartSearchTerms(search) : [];
 
@@ -476,11 +477,14 @@ export async function GET(req: NextRequest) {
                     .order('created_at', { ascending: false })
                     .limit(6);
 
-                return NextResponse.json({
-                    products: [],
-                    totalCount: 0,
-                    recommendedProducts: (recommended || []) as Product[],
-                });
+                return NextResponse.json(
+                    {
+                        products: [],
+                        totalCount: 0,
+                        recommendedProducts: (recommended || []) as Product[],
+                    },
+                    { headers: PUBLIC_SEARCH_CACHE_HEADERS }
+                );
             }
 
             const sectionUUIDs = (sectionData as Pick<Section, 'id' | 'section_id'>[]).map((item) => item.id);
@@ -502,11 +506,14 @@ export async function GET(req: NextRequest) {
                     .order('created_at', { ascending: false })
                     .limit(6);
 
-                return NextResponse.json({
-                    products: [],
-                    totalCount: 0,
-                    recommendedProducts: (recommended || []) as Product[],
-                });
+                return NextResponse.json(
+                    {
+                        products: [],
+                        totalCount: 0,
+                        recommendedProducts: (recommended || []) as Product[],
+                    },
+                    { headers: PUBLIC_SEARCH_CACHE_HEADERS }
+                );
             }
 
             sectionProductIds = [...new Set((sectionProducts as Pick<ProductSection, 'product_id'>[]).map((item) => item.product_id))];
@@ -640,17 +647,20 @@ export async function GET(req: NextRequest) {
             attachVariantMeta(recommendedProducts),
         ]);
 
-        return NextResponse.json({
-            products: productsWithMeta,
-            totalCount,
-            recommendedProducts: recommendedWithMeta,
-        });
+        return NextResponse.json(
+            {
+                products: productsWithMeta,
+                totalCount,
+                recommendedProducts: recommendedWithMeta,
+            },
+            { headers: PUBLIC_SEARCH_CACHE_HEADERS }
+        );
     } catch (error: unknown) {
         const message = getErrorMessage(error);
         console.error('Shop products API error:', message, error);
         return NextResponse.json(
             { error: 'Failed to load products' },
-            { status: 503 }
+            { status: 503, headers: NO_STORE_HEADERS }
         );
     }
 }

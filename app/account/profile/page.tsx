@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 export default function ProfilePage() {
     const router = useRouter();
     const { user, loading } = useAuth();
+    const userId = user?.id;
     const [profile, setProfile] = useState<any>(null);
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
@@ -25,11 +26,11 @@ export default function ProfilePage() {
 
     useEffect(() => {
         async function fetchProfile() {
-            if (user) {
+            if (userId) {
                 const { data } = await (supabase
                     .from('profiles') as any)
                     .select('*')
-                    .eq('id', user.id)
+                    .eq('id', userId)
                     .maybeSingle();
 
                 if (data) {
@@ -40,7 +41,7 @@ export default function ProfilePage() {
             }
         }
         fetchProfile();
-    }, [user]);
+    }, [userId]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();

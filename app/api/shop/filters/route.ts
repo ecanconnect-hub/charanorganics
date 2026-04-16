@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/database.types';
+import { NO_STORE_HEADERS, PUBLIC_CATALOG_CACHE_HEADERS } from '@/lib/server/cacheHeaders';
 import { ensureSupabaseDnsRouting } from '@/lib/server/ensureSupabaseDnsRouting';
 
 type Section = Database['public']['Tables']['sections']['Row'];
@@ -100,19 +101,22 @@ export async function GET() {
         const minPrice = priceValues.length > 0 ? Math.floor(Math.min(...priceValues)) : 0;
         const maxPrice = priceValues.length > 0 ? Math.ceil(Math.max(...priceValues)) : 10000;
 
-        return NextResponse.json({
-            sections: (sections || []) as Section[],
-            priceRange: {
-                min: minPrice,
-                max: maxPrice,
+        return NextResponse.json(
+            {
+                sections: (sections || []) as Section[],
+                priceRange: {
+                    min: minPrice,
+                    max: maxPrice,
+                },
             },
-        });
+            { headers: PUBLIC_CATALOG_CACHE_HEADERS }
+        );
     } catch (error: unknown) {
         const message = getErrorMessage(error);
         console.error('Shop filters API error:', message, error);
         return NextResponse.json(
             { error: 'Failed to load shop filters' },
-            { status: 503 }
+            { status: 503, headers: NO_STORE_HEADERS }
         );
     }
 }

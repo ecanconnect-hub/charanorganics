@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 
@@ -33,11 +33,7 @@ export function ImageCropper({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  useEffect(() => {
-    drawImage();
-  }, [scale, position]);
-
-  const drawImage = () => {
+  const drawImage = useCallback(() => {
     if (!canvasRef.current || !imgRef.current) return;
 
     const ctx = canvasRef.current.getContext('2d');
@@ -60,7 +56,11 @@ export function ImageCropper({
     ctx.setLineDash([5, 5]);
     ctx.strokeRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     ctx.setLineDash([]);
-  };
+  }, [position.x, position.y, scale]);
+
+  useEffect(() => {
+    drawImage();
+  }, [drawImage]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -121,7 +121,7 @@ export function ImageCropper({
     if (img) {
       img.onload = drawImage;
     }
-  }, []);
+  }, [drawImage]);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

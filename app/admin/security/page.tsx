@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import toast from 'react-hot-toast';
@@ -27,11 +27,7 @@ export default function SecurityLogsPage() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
 
-    useEffect(() => {
-        fetchLogs();
-    }, [filter]);
-
-    const fetchLogs = async () => {
+    const fetchLogs = useCallback(async () => {
         try {
             setLoading(true);
             let query = (supabase
@@ -56,7 +52,11 @@ export default function SecurityLogsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filter]);
+
+    useEffect(() => {
+        void fetchLogs();
+    }, [fetchLogs]);
 
     const getStatusColor = (success: boolean) => {
         return success

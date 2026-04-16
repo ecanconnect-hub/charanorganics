@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
@@ -91,13 +91,7 @@ export default function EditProductPage() {
     const [sections, setSections] = useState<any[]>([]);
     const [selectedSectionIds, setSelectedSectionIds] = useState<string[]>([]);
 
-    useEffect(() => {
-        if (productId) {
-            fetchAllData();
-        }
-    }, [productId]);
-
-    const fetchAllData = async () => {
+    const fetchAllData = useCallback(async () => {
         try {
             // Fetch All Sections
             const { data: allSections } = await supabase.from('sections' as any).select('id, title_en').order('display_order');
@@ -165,7 +159,13 @@ export default function EditProductPage() {
         } finally {
             setFetching(false);
         }
-    };
+    }, [productId]);
+
+    useEffect(() => {
+        if (productId) {
+            void fetchAllData();
+        }
+    }, [fetchAllData, productId]);
 
     const addVariant = () => {
         setVariants([...variants, { id: null, label: '', price: '', mrp: '', shipping_charge: '', stock_quantity: '', enabled: true }]);

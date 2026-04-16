@@ -13,12 +13,14 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase/client';
 
+const DEFAULT_HERO_CONTENT = {
+    title: 'Pure Organic & Ayurvedic Products',
+    subtitle: 'Handcrafted with love, delivered with care',
+};
+
 export function HeroSection() {
     const locale = useLocale();
-    const [content, setContent] = useState({
-        title: 'Pure Organic & Ayurvedic Products',
-        subtitle: 'Handcrafted with love, delivered with care',
-    });
+    const [content, setContent] = useState(DEFAULT_HERO_CONTENT);
 
     useEffect(() => {
         const fetchContent = async () => {
@@ -34,16 +36,16 @@ export function HeroSection() {
 
                 setContent({
                     title: locale === 'en'
-                        ? (titleContent?.content_en || content.title)
-                        : (titleContent?.content_te || content.title),
+                        ? (titleContent?.content_en || DEFAULT_HERO_CONTENT.title)
+                        : (titleContent?.content_te || DEFAULT_HERO_CONTENT.title),
                     subtitle: locale === 'en'
-                        ? (subtitleContent?.content_en || content.subtitle)
-                        : (subtitleContent?.content_te || content.subtitle),
+                        ? (subtitleContent?.content_en || DEFAULT_HERO_CONTENT.subtitle)
+                        : (subtitleContent?.content_te || DEFAULT_HERO_CONTENT.subtitle),
                 });
             }
         };
 
-        fetchContent();
+        void fetchContent();
     }, [locale]);
 
     return (

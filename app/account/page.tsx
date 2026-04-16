@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase/client';
 export default function AccountPage() {
     const router = useRouter();
     const { user, loading, signOut } = useAuth();
+    const userId = user?.id;
     const { items: cartItems } = useCart();
     const [profile, setProfile] = useState<any>(null);
     const [orderCount, setOrderCount] = useState(0);
@@ -25,13 +26,13 @@ export default function AccountPage() {
 
     useEffect(() => {
         async function fetchDashboardData() {
-            if (user) {
+            if (userId) {
                 try {
                     // Fetch profile
                     const { data: profileData, error: profileError } = await supabase
                         .from('profiles')
                         .select('*')
-                        .eq('id', user.id)
+                        .eq('id', userId)
                         .maybeSingle();
 
                     if (profileError) {
@@ -40,7 +41,7 @@ export default function AccountPage() {
                             code: profileError.code,
                             hint: profileError.hint,
                             details: profileError.details,
-                            userId: user.id,
+                            userId,
                             timestamp: new Date().toISOString()
                         });
 
@@ -60,14 +61,14 @@ export default function AccountPage() {
                     if (profileData) {
                         setProfile(profileData);
                     } else {
-                        console.warn('No profile found for user:', user.id);
+                        console.warn('No profile found for user:', userId);
                     }
 
                     // Fetch order count
                     const { count } = await (supabase
                         .from('orders') as any)
                         .select('id', { count: 'exact', head: true })
-                        .eq('user_id', user.id);
+                        .eq('user_id', userId);
 
                     setOrderCount(count || 0);
                 } catch (error) {
@@ -78,10 +79,10 @@ export default function AccountPage() {
             }
         }
 
-        if (user) {
+        if (userId) {
             fetchDashboardData();
         }
-    }, [user]);
+    }, [userId]);
 
     if (loading || (fetching && user)) {
         return (

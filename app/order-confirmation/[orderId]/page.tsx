@@ -16,6 +16,7 @@ export default function OrderConfirmationPage() {
     const params = useParams();
     const orderId = params.orderId as string;
     const { user, loading: authLoading } = useAuth();
+    const userId = user?.id;
     const [order, setOrder] = useState<any>(null);
     const [showEmailModal, setShowEmailModal] = useState(true);
 
@@ -37,7 +38,7 @@ export default function OrderConfirmationPage() {
             },
             body: JSON.stringify({
                 orderId: normalizedOrderId,
-                accessToken: user ? undefined : guestToken || undefined,
+                accessToken: userId ? undefined : guestToken || undefined,
             }),
         });
 
@@ -58,7 +59,7 @@ export default function OrderConfirmationPage() {
             ...(payload?.order || null),
             order_items: normalizedItems,
         });
-    }, [orderId, user]);
+    }, [orderId, userId]);
 
     useEffect(() => {
         if (!orderId || authLoading) {

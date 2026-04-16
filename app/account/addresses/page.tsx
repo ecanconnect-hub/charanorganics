@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 export default function AddressesPage() {
     const router = useRouter();
     const { user, loading } = useAuth();
+    const userId = user?.id;
     const [addresses, setAddresses] = useState<any[]>([]);
     const [fetching, setFetching] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);
@@ -33,22 +34,22 @@ export default function AddressesPage() {
         }
     }, [user, loading, router]);
 
-    const fetchAddresses = async () => {
-        if (user) {
+    const fetchAddresses = useCallback(async () => {
+        if (userId) {
             const { data } = await (supabase
                 .from('addresses') as any)
                 .select('*')
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .order('is_default', { ascending: false });
 
             setAddresses(data || []);
             setFetching(false);
         }
-    };
+    }, [userId]);
 
     useEffect(() => {
         fetchAddresses();
-    }, [user]);
+    }, [fetchAddresses]);
 
     const handleAddAddress = async (e: React.FormEvent) => {
         e.preventDefault();
