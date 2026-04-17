@@ -58,6 +58,17 @@ function isNetworkAuthError(message: string): boolean {
     );
 }
 
+function isStaleAuthSessionError(message: string): boolean {
+    const normalized = message.toLowerCase();
+    return (
+        normalized.includes('invalid refresh token') ||
+        normalized.includes('refresh token not found') ||
+        normalized.includes('refresh token has been revoked') ||
+        normalized.includes('auth session missing') ||
+        normalized.includes('session_not_found')
+    );
+}
+
 function getSupabaseProjectRef(): string | null {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!supabaseUrl) return null;
@@ -96,6 +107,16 @@ function clearLocalSupabaseSession(): void {
         storageKeysToRemove.forEach((key) => localStorage.removeItem(key));
     } catch (error) {
         console.warn('Failed to clear local Supabase session keys:', error);
+    }
+}
+
+async function clearStoredSupabaseSession(): Promise<void> {
+    try {
+        await supabase.auth.signOut({ scope: 'local' });
+    } catch (error) {
+        console.warn('Failed to clear Supabase auth session locally:', getErrorMessage(error));
+    } finally {
+        clearLocalSupabaseSession();
     }
 }
 
@@ -173,10 +194,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const message = getErrorMessage(error);
                 console.warn('Failed to initialize auth session:', message);
 
-                // When network routing to Supabase fails, stale local auth state can trigger repeated refresh attempts.
-                // Clear local session only (no server call) so the app can continue for public browsing.
-                if (isNetworkAuthError(message)) {
-                    clearLocalSupabaseSession();
+                // Stale/invalid refresh tokens can otherwise be retried on every page load.
+                if (isNetworkAuthError(message) || isStaleAuthSessionError(message)) {
+                    await clearStoredSupabaseSession();
                 }
 
                 if (!isMounted) return;
@@ -329,8 +349,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const signOut = async () => {
         try {
             const { error } = await supabase.auth.signOut();
-            if (error) throw error;
+            if (error) {
+                const message = getErrorMessage(error);
+                if (!isStaleAuthSessionError(message)) {
+                    throw error;
+                }
 
+                console.warn('Supabase sign out found a stale local session:', message);
+                await clearStoredSupabaseSession();
+            } else {
+                clearLocalSupabaseSession();
+            }
+
+            setSession(null);
+            setUser(null);
             toast.success('Signed out successfully');
             router.push('/');
             router.refresh();

@@ -23,8 +23,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
  */
 export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // Avoid repeated retry/abort loops when network to Supabase is unstable or blocked.
-    autoRefreshToken: false,
+    // Keep browser sessions fresh; stale/invalid refresh tokens are cleared in AuthProvider.
+    autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
   },
