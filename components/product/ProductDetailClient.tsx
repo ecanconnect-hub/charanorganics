@@ -647,6 +647,22 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                                         </div>
                                     </div>
                                     <p className="text-gray-600 text-lg font-medium leading-relaxed italic">&ldquo;{review.review_text}&rdquo;</p>
+                                    {review.user_id === userId && (
+                                        <div className="mt-5 flex justify-end">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => router.push(`/product/${product.product_id}/review`)}
+                                                className="rounded-xl !border-green-200 !text-green-700 hover:!bg-green-50 hover:!text-green-800"
+                                            >
+                                                <svg className="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16.862 4.487l1.651-1.651a2.121 2.121 0 013 3l-9.193 9.193a4 4 0 01-1.897 1.13l-3.087.772.772-3.087a4 4 0 011.13-1.897l7.624-7.46z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.5 7.125L16.875 4.5M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                </svg>
+                                                Edit
+                                            </Button>
+                                        </div>
+                                    )}
                                  </div>
                              ))}
                          </div>

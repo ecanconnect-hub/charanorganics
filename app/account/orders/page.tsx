@@ -19,7 +19,7 @@ type OrderItem = {
     unit_price: number;
     product_title_en: string;
     variant_label: string | null;
-    product: { image_url: string | null } | Array<{ image_url: string | null }> | null;
+    product: { image_url: string | null; product_id: string | null } | Array<{ image_url: string | null; product_id: string | null }> | null;
 };
 
 type OrderRecord = {
@@ -43,6 +43,14 @@ function getOrderItemImage(item: OrderItem): string | null {
         return item.product[0]?.image_url ?? null;
     }
     return item.product.image_url;
+}
+
+function getOrderItemProductSlug(item: OrderItem): string | null {
+    if (!item.product) return null;
+    if (Array.isArray(item.product)) {
+        return item.product[0]?.product_id ?? null;
+    }
+    return item.product.product_id;
 }
 
 export default function MyOrdersPage() {
@@ -70,7 +78,7 @@ export default function MyOrdersPage() {
                         unit_price,
                         product_title_en,
                         variant_label,
-                        product:products (image_url)
+                        product:products (image_url, product_id)
                     )
                 `)
                 .eq('user_id', userId)
@@ -137,7 +145,9 @@ export default function MyOrdersPage() {
                     </motion.div>
                 ) : (
                     <div className="space-y-8">
-                        {orders.map((order, idx) => (
+                        {orders.map((order, idx) => {
+                            const isDelivered = order.status === 'delivered';
+                            return (
                             <motion.div
                                 key={order.id}
                                 initial={{ opacity: 0, y: 20 }}
@@ -177,12 +187,17 @@ export default function MyOrdersPage() {
                                 <div className="p-8">
                                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                                         <div className="lg:col-span-8 space-y-6">
-                                            {order.order_items?.map((item, index: number) => (
-                                                <div key={`${order.id}-item-${index}`} className="flex items-center gap-6">
+                                            {order.order_items?.map((item, index: number) => {
+                                                const imageUrl = getOrderItemImage(item);
+                                                const productSlug = getOrderItemProductSlug(item);
+                                                const productHref = productSlug ? `/product/${productSlug}` : null;
+                                                const reviewHref = productSlug ? `/product/${productSlug}/review` : null;
+
+                                                const productImage = (
                                                     <div className="w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner">
-                                                        {getOrderItemImage(item) ? (
+                                                        {imageUrl ? (
                                                             <img
-                                                                src={getOrderItemImage(item) || ''}
+                                                                src={imageUrl}
                                                                 alt={item.product_title_en}
                                                                 className="w-full h-full object-cover"
                                                             />
@@ -192,24 +207,63 @@ export default function MyOrdersPage() {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="font-bold text-lg text-gray-900 truncate mb-0.5">{item.product_title_en}</h4>
-                                                        <div className="flex items-center gap-3">
-                                                            {item.variant_label && (
-                                                                <span className="text-[10px] font-black text-green-600 uppercase bg-green-50 px-2 py-0.5 rounded-lg ring-1 ring-green-200">
-                                                                    {item.variant_label}
-                                                                </span>
+                                                );
+
+                                                return (
+                                                    <div key={`${order.id}-item-${index}`} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+                                                        {productHref ? (
+                                                            <Link href={productHref} className="flex-shrink-0 transition-opacity hover:opacity-80" aria-label={`View ${item.product_title_en}`}>
+                                                                {productImage}
+                                                            </Link>
+                                                        ) : productImage}
+                                                        <div className="flex-1 min-w-0">
+                                                            {productHref ? (
+                                                                <Link href={productHref} className="group inline-block max-w-full">
+                                                                    <h4 className="font-bold text-lg text-gray-900 truncate mb-0.5 group-hover:text-green-600 transition-colors">{item.product_title_en}</h4>
+                                                                </Link>
+                                                            ) : (
+                                                                <h4 className="font-bold text-lg text-gray-900 truncate mb-0.5">{item.product_title_en}</h4>
                                                             )}
-                                                            <p className="text-sm text-gray-500 font-medium">
-                                                                {item.quantity} Unit{item.quantity > 1 ? 's' : ''} x Rs {Number(item.unit_price).toFixed(2)}
+                                                            <div className="flex flex-wrap items-center gap-3">
+                                                                {item.variant_label && (
+                                                                    <span className="text-[10px] font-black text-green-600 uppercase bg-green-50 px-2 py-0.5 rounded-lg ring-1 ring-green-200">
+                                                                        {item.variant_label}
+                                                                    </span>
+                                                                )}
+                                                                <p className="text-sm text-gray-500 font-medium">
+                                                                    {item.quantity} Unit{item.quantity > 1 ? 's' : ''} x Rs {Number(item.unit_price).toFixed(2)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+                                                            <p className="font-bold text-gray-900 text-lg">
+                                                                Rs {(item.quantity * Number(item.unit_price)).toFixed(2)}
                                                             </p>
+                                                            {reviewHref && isDelivered && (
+                                                                <Link href={reviewHref}>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="rounded-xl font-bold border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 shadow-sm"
+                                                                    >
+                                                                        Review
+                                                                    </Button>
+                                                                </Link>
+                                                            )}
+                                                            {reviewHref && !isDelivered && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    disabled
+                                                                    className="rounded-xl font-bold border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 shadow-sm"
+                                                                >
+                                                                    Review
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <p className="font-bold text-gray-900 text-lg">
-                                                        Rs {(item.quantity * Number(item.unit_price)).toFixed(2)}
-                                                    </p>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
 
                                         <div className="lg:col-span-4 bg-gray-50/50 rounded-3xl p-6 flex flex-col justify-center gap-4">
@@ -219,10 +273,7 @@ export default function MyOrdersPage() {
                                                     <svg className="w-4 h-4 ml-2 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4 4H3" /></svg>
                                                 </Button>
                                             </Link>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <Button variant="outline" size="sm" className="rounded-xl font-bold border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 shadow-sm">
-                                                    Invoice
-                                                </Button>
+                                            <div>
                                                 <a href="https://wa.me/918247838125" target="_blank" rel="noopener noreferrer" className="block w-full">
                                                     <Button variant="outline" size="sm" fullWidth className="rounded-xl font-bold border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 shadow-sm">
                                                         Help
@@ -233,7 +284,8 @@ export default function MyOrdersPage() {
                                     </div>
                                 </div>
                             </motion.div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

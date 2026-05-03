@@ -16,6 +16,12 @@ import { useLocale } from '@/lib/i18n/context';
 import { resolveLocalizedText } from '@/lib/i18n/localized';
 import toast from 'react-hot-toast';
 
+type ProductReview = {
+    id: string;
+    rating: number | null;
+    review_text: string;
+};
+
 export default function SubmitReviewPage() {
     const router = useRouter();
     const params = useParams();
@@ -27,6 +33,7 @@ export default function SubmitReviewPage() {
     const [product, setProduct] = useState<any>(null);
     const [rating, setRating] = useState(5);
     const [reviewText, setReviewText] = useState('');
+    const [existingReview, setExistingReview] = useState<ProductReview | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -68,6 +75,25 @@ export default function SubmitReviewPage() {
                 router.push(`/product/${productId}`);
                 return;
             }
+
+            const { data: reviewData, error: reviewError } = await (supabase
+                .from('reviews' as any) as any)
+                .select('id, rating, review_text')
+                .eq('product_id', (data as any).id)
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (reviewError) {
+                console.warn('Existing review lookup failed:', reviewError);
+            }
+
+            const review = reviewData?.[0] as ProductReview | undefined;
+            if (review) {
+                setExistingReview(review);
+                setRating(review.rating || 5);
+                setReviewText(review.review_text || '');
+            }
         } finally {
             setLoading(false);
         }
@@ -94,18 +120,28 @@ export default function SubmitReviewPage() {
 
         setSubmitting(true);
         try {
-            const { error } = await (supabase
-                .from('reviews') as any)
-                .insert({
+            const reviewPayload = {
+                rating,
+                review_text: reviewText
+            };
+
+            const { error } = existingReview
+                ? await (supabase
+                    .from('reviews') as any)
+                    .update(reviewPayload)
+                    .eq('id', existingReview.id)
+                    .eq('user_id', user?.id)
+                : await (supabase
+                    .from('reviews') as any)
+                    .insert({
                     product_id: product.id, // Use UUID from fetched product data
                     user_id: user?.id,
-                    rating,
-                    review_text: reviewText
+                    ...reviewPayload
                 });
 
             if (error) throw error;
 
-            toast.success('Review submitted successfully!');
+            toast.success(existingReview ? 'Review updated successfully!' : 'Review submitted successfully!');
             router.push(`/product/${productId}`);
         } catch (error: any) {
             console.error('Error submitting review:', error);
@@ -137,8 +173,8 @@ export default function SubmitReviewPage() {
                     </Link>
 
                     <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100">
-                        <h1 className="text-3xl font-black mb-2 text-gray-900">Write a Review</h1>
-                        <p className="text-gray-500 mb-8 font-medium">Sharing your experience with <span className="text-green-600 font-bold">{title}</span></p>
+                        <h1 className="text-3xl font-black mb-2 text-gray-900">{existingReview ? 'Edit Review' : 'Write a Review'}</h1>
+                        <p className="text-gray-500 mb-8 font-medium">{existingReview ? 'Update your experience with' : 'Sharing your experience with'} <span className="text-green-600 font-bold">{title}</span></p>
 
                         <form onSubmit={handleSubmit} className="space-y-8">
                             {/* Star Rating */}
@@ -189,7 +225,7 @@ export default function SubmitReviewPage() {
                                 disabled={reviewText.length > 200}
                                 className="py-4 text-lg font-bold shadow-xl shadow-green-100 rounded-2xl h-auto"
                             >
-                                Submit Review
+                                {existingReview ? 'Update Review' : 'Submit Review'}
                             </Button>
                         </form>
                     </div>
