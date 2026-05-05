@@ -212,13 +212,13 @@ export default function MyOrdersPage() {
                                                 return (
                                                     <div key={`${order.id}-item-${index}`} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
                                                         {productHref ? (
-                                                            <Link href={productHref} className="flex-shrink-0 transition-opacity hover:opacity-80" aria-label={`View ${item.product_title_en}`}>
+                                                            <Link href={productHref} prefetch={false} className="flex-shrink-0 transition-opacity hover:opacity-80" aria-label={`View ${item.product_title_en}`}>
                                                                 {productImage}
                                                             </Link>
                                                         ) : productImage}
                                                         <div className="flex-1 min-w-0">
                                                             {productHref ? (
-                                                                <Link href={productHref} className="group inline-block max-w-full">
+                                                                <Link href={productHref} prefetch={false} className="group inline-block max-w-full">
                                                                     <h4 className="font-bold text-lg text-gray-900 truncate mb-0.5 group-hover:text-green-600 transition-colors">{item.product_title_en}</h4>
                                                                 </Link>
                                                             ) : (
@@ -240,7 +240,7 @@ export default function MyOrdersPage() {
                                                                 Rs {(item.quantity * Number(item.unit_price)).toFixed(2)}
                                                             </p>
                                                             {reviewHref && isDelivered && (
-                                                                <Link href={reviewHref}>
+                                                                <Link href={reviewHref} prefetch={false}>
                                                                     <Button
                                                                         variant="outline"
                                                                         size="sm"

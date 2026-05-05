@@ -370,9 +370,17 @@ function parseNumber(value: string | null): number | null {
 function parseLimit(value: string | null): number {
     const parsed = Number(value);
     if (!Number.isFinite(parsed) || parsed <= 0) {
-        return 50;
+        return 12;
     }
-    return Math.min(Math.floor(parsed), 100);
+    return Math.min(Math.floor(parsed), 12);
+}
+
+function parsePage(value: string | null): number {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+        return 1;
+    }
+    return Math.floor(parsed);
 }
 
 function sanitizeSort(value: string | null): 'default' | 'price_asc' | 'price_desc' | 'newest' {
@@ -452,6 +460,8 @@ async function handleGET(req: NextRequest) {
         const sort = sanitizeSort(params.get('sort'));
         const search = (params.get('q')?.trim() || '').slice(0, 80);
         const limit = parseLimit(params.get('limit'));
+        const page = parsePage(params.get('page'));
+        const offset = (page - 1) * limit;
         const smartSearchTerms = search ? buildSmartSearchTerms(search) : [];
 
         let sectionProductIds: string[] | null = null;
@@ -563,8 +573,11 @@ async function handleGET(req: NextRequest) {
                 break;
         }
 
-        const fetchLimit = smartSearchTerms.length > 0 ? Math.max(limit, 120) : limit;
-        query = query.limit(fetchLimit);
+        if (smartSearchTerms.length > 0) {
+            query = query.limit(Math.max(limit, 120));
+        } else {
+            query = query.range(offset, offset + limit - 1);
+        }
 
         const { data, count, error } = await query;
         if (error) {
@@ -630,7 +643,7 @@ async function handleGET(req: NextRequest) {
             }
 
             totalCount = mergedProducts.length;
-            products = mergedProducts.slice(0, limit);
+            products = mergedProducts.slice(offset, offset + limit);
         }
 
         if (products.length === 0) {

@@ -23,21 +23,20 @@ type ShopProductsResponse = {
     error?: string;
 };
 
+const PRODUCTS_PER_PAGE = 12;
+
 export function ProductGrid() {
     const searchParams = useSearchParams();
     const queryString = searchParams.toString();
     const requestRef = useRef(0); // Track request ID to handle race conditions
+    const previousQueryStringRef = useRef(queryString);
 
     const [products, setProducts] = useState<Product[]>([]);
     const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
-    const [visibleCount, setVisibleCount] = useState(50);
+    const [page, setPage] = useState(1);
     const [serviceError, setServiceError] = useState<string | null>(null);
-    // Track visibleCount in a ref so fetchProducts doesn't need it as a dep.
-    // Without this, every "Load More" click discards the current list and refetches from scratch.
-    const visibleCountRef = useRef(visibleCount);
-    useEffect(() => { visibleCountRef.current = visibleCount; }, [visibleCount]);
 
     const isSupabaseUnavailableError = useCallback((message: string) => {
         const normalized = message.toLowerCase();
@@ -68,19 +67,20 @@ export function ProductGrid() {
         return 'Could not load products right now. Please retry.';
     }, [isSupabaseUnavailableError]);
 
-    const fetchProducts = useCallback(async (signal?: AbortSignal) => {
+    const fetchProducts = useCallback(async (signal?: AbortSignal, requestedPage = page) => {
         const requestId = ++requestRef.current;
         setLoading(true);
         setServiceError(null);
 
         try {
             const apiParams = new URLSearchParams(queryString);
-            // Read from ref — not a dep — so Load More doesn't trigger a full refetch
-            apiParams.set('limit', String(visibleCountRef.current));
+            apiParams.set('limit', String(PRODUCTS_PER_PAGE));
+            apiParams.set('page', String(requestedPage));
 
             const response = await fetch(`/api/shop/products?${apiParams.toString()}`, {
                 method: 'GET',
                 signal,
+                cache: 'force-cache',
             });
 
             const payload = await response.json() as ShopProductsResponse;
@@ -110,18 +110,26 @@ export function ProductGrid() {
                 setLoading(false);
             }
         }
-    }, [getReadableServiceError, queryString]); // visibleCount intentionally excluded — read via ref
+    }, [getReadableServiceError, page, queryString]);
 
     useEffect(() => {
         const controller = new AbortController();
-        void fetchProducts(controller.signal);
+        const queryChanged = previousQueryStringRef.current !== queryString;
+        const requestedPage = queryChanged ? 1 : page;
+
+        if (queryChanged) {
+            previousQueryStringRef.current = queryString;
+            if (page !== 1) {
+                setPage(1);
+            }
+        }
+
+        void fetchProducts(controller.signal, requestedPage);
 
         return () => {
             controller.abort();
         };
-    // Re-fetch only when filters/search change (queryString), NOT on visibleCount change.
-    // Load More appends to existing data via a separate controlled re-fetch below.
-    }, [fetchProducts]);
+    }, [fetchProducts, page, queryString]);
 
     if (loading) {
         return (
@@ -226,12 +234,16 @@ export function ProductGrid() {
     }
 
     // Products Grid
+    const totalPages = Math.max(1, Math.ceil(totalCount / PRODUCTS_PER_PAGE));
+    const firstProductNumber = totalCount === 0 ? 0 : (page - 1) * PRODUCTS_PER_PAGE + 1;
+    const lastProductNumber = Math.min(page * PRODUCTS_PER_PAGE, totalCount);
+
     return (
         <div className="space-y-4">
             {/* Results Count - Compact */}
             <div className="flex items-center justify-between py-2 px-3 bg-white rounded-lg border border-gray-100">
                 <p className="text-xs md:text-sm font-semibold text-gray-600">
-                    Showing <span className="text-gray-900 font-bold">{products.length}</span> of <span className="text-gray-900 font-bold">{totalCount}</span> products
+                    Showing <span className="text-gray-900 font-bold">{firstProductNumber}-{lastProductNumber}</span> of <span className="text-gray-900 font-bold">{totalCount}</span> products
                 </p>
             </div>
 
@@ -283,21 +295,27 @@ export function ProductGrid() {
                     </div>
                 </div>
             )}
-            {/* Load More Button */}
-            {products.length < totalCount && (
-                <div className="flex justify-center mt-8 pb-8">
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 mt-8 pb-8">
                     <button
-                        onClick={() => {
-                            // Update count first, then re-fetch using the new ref value
-                            const next = visibleCount + 20;
-                            setVisibleCount(next);
-                            visibleCountRef.current = next;
-                            void fetchProducts();
-                        }}
-                        className="px-6 py-2 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
-                        disabled={loading}
+                        type="button"
+                        onClick={() => setPage((current) => Math.max(1, current - 1))}
+                        className="px-5 py-2 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={loading || page <= 1}
                     >
-                        {loading ? 'Loading...' : `Load More (${totalCount - products.length} remaining)`}
+                        Previous
+                    </button>
+                    <span className="text-xs font-bold text-gray-500">
+                        Page {page} of {totalPages}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                        className="px-5 py-2 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={loading || page >= totalPages}
+                    >
+                        Next
                     </button>
                 </div>
             )}

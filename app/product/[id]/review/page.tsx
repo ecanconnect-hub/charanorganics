@@ -168,7 +168,7 @@ export default function SubmitReviewPage() {
             <div className="h-24 md:h-28"></div>
             <div className="py-12">
                 <div className="container mx-auto px-4 max-w-2xl">
-                    <Link href={`/product/${productId}`} className="text-green-600 hover:underline mb-6 inline-block font-medium">
+                    <Link href={`/product/${productId}`} prefetch={false} className="text-green-600 hover:underline mb-6 inline-block font-medium">
                         ← Back to Product
                     </Link>
 

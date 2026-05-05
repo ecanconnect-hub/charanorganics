@@ -173,6 +173,7 @@ export default function CartPage() {
                                         {/* Image */}
                                         <Link
                                             href={productHref}
+                                            prefetch={false}
                                             className="w-24 h-24 md:w-28 md:h-28 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 ring-1 ring-gray-100"
                                         >
                                             {product?.image_url ? (
@@ -192,7 +193,7 @@ export default function CartPage() {
                                         <div className="min-w-0 flex flex-col justify-between">
                                             <div>
                                                 <div className="flex justify-between items-start gap-3 mb-2">
-                                                    <Link href={productHref} className="min-w-0">
+                                                    <Link href={productHref} prefetch={false} className="min-w-0">
                                                         <h3 className="text-lg font-semibold leading-snug text-gray-900 group-hover:text-green-700 transition-colors">
                                                             {title || 'Product unavailable'}
                                                         </h3>

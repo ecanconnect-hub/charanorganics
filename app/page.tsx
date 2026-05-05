@@ -54,7 +54,7 @@ export default function HomePage() {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
     fetchData();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchData = async () => {
     // Return from module-level cache if already fetched this session
@@ -69,6 +69,7 @@ export default function HomePage() {
     try {
       const response = await fetch('/api/home', {
         method: 'GET',
+        cache: 'force-cache',
       });
       const payload = await response.json() as HomeApiResponse;
       if (!response.ok) {

@@ -91,7 +91,7 @@ export function ProductCard({ product }: ProductCardProps) {
     };
 
     return (
-        <Link href={`/product/${product.product_id}`} className="block h-full group">
+        <Link href={`/product/${product.product_id}`} prefetch={false} className="block h-full group">
             <motion.div
                 className="bg-white rounded-[20px] overflow-hidden border border-gray-100/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] transition-all duration-500 h-full flex flex-col !p-0 group"
                 whileHover={{ y: -6 }}

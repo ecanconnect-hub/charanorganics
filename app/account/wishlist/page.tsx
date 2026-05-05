@@ -169,7 +169,7 @@ export default function WishlistPage() {
                                                 <p className="text-xs font-black text-green-600 uppercase tracking-widest">₹{product.current_price}</p>
                                             </div>
                                             <div className="flex gap-3">
-                                                <Link href={`/product/${product.product_id}`} className="flex-1">
+                                                <Link href={`/product/${product.product_id}`} prefetch={false} className="flex-1">
                                                     <Button variant="primary" size="sm" className="w-full rounded-xl text-[10px] font-black tracking-widest uppercase py-4">
                                                         View Product
                                                     </Button>

@@ -52,6 +52,7 @@ export function ShopFilters() {
         try {
             const response = await fetch('/api/shop/filters', {
                 method: 'GET',
+                cache: 'force-cache',
             });
 
             const payload = await response.json() as ShopFiltersResponse;
