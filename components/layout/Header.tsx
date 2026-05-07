@@ -9,7 +9,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale, useSetLocale } from '@/lib/i18n/context';
 import { useCart } from '@/lib/cart-context';
 import { useAuth } from '@/lib/auth/context';
@@ -20,6 +20,7 @@ export function Header() {
     const t = useTranslations('nav');
     const pathname = usePathname();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const locale = useLocale();
     const setLocale = useSetLocale();
     const { items } = useCart();
@@ -38,6 +39,7 @@ export function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
+    const activeShopQuery = searchParams.get('q') || '';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -93,6 +95,18 @@ export function Header() {
         };
     }, []);
 
+    const clearSearch = () => {
+        setSearchQuery('');
+
+        if (pathname !== '/shop' || !searchParams.get('q')) {
+            return;
+        }
+
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('q');
+        router.push(params.toString() ? `/shop?${params.toString()}` : '/shop', { scroll: false });
+    };
+
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!searchQuery.trim()) return;
@@ -125,7 +139,13 @@ export function Header() {
                     {/* LEFT: Hamburger Menu (Fixed) */}
                     <div className="w-10 flex items-center mr-1">
                         <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            onClick={() => {
+                                const nextIsOpen = !isMobileMenuOpen;
+                                if (nextIsOpen) {
+                                    setSearchQuery(pathname === '/shop' ? activeShopQuery : '');
+                                }
+                                setIsMobileMenuOpen(nextIsOpen);
+                            }}
                             className="p-1 text-gray-900 transition-colors"
                             aria-label="Open menu"
                         >
@@ -242,6 +262,7 @@ export function Header() {
                                             searchInputRef.current?.focus();
                                         }
                                     } else {
+                                        setSearchQuery(pathname === '/shop' ? activeShopQuery : '');
                                         setIsSearchOpen(true);
                                         setTimeout(() => searchInputRef.current?.focus(), 100);
                                     }
@@ -266,7 +287,7 @@ export function Header() {
                                     onMouseDown={(e) => {
                                         e.preventDefault();
                                         if (searchQuery) {
-                                            setSearchQuery('');
+                                            clearSearch();
                                             searchInputRef.current?.focus();
                                         } else {
                                             setIsSearchOpen(false);
@@ -370,7 +391,7 @@ export function Header() {
                                 {searchQuery && (
                                     <button
                                         type="button"
-                                        onClick={() => setSearchQuery('')}
+                                        onClick={clearSearch}
                                         className="absolute right-0 top-0 h-full w-11 flex items-center justify-center text-gray-400 hover:text-gray-600"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
