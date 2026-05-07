@@ -383,8 +383,8 @@ function parsePage(value: string | null): number {
     return Math.floor(parsed);
 }
 
-function sanitizeSort(value: string | null): 'default' | 'price_asc' | 'price_desc' | 'newest' {
-    if (value === 'price_asc' || value === 'price_desc' || value === 'newest') {
+function sanitizeSort(value: string | null): 'default' | 'price_asc' | 'price_desc' | 'newest' | 'latest_updated' {
+    if (value === 'price_asc' || value === 'price_desc' || value === 'newest' || value === 'latest_updated') {
         return value;
     }
     return 'default';
@@ -568,6 +568,9 @@ async function handleGET(req: NextRequest) {
             case 'newest':
                 query = query.order('created_at', { ascending: false });
                 break;
+            case 'latest_updated':
+                query = query.order('updated_at', { ascending: false });
+                break;
             default:
                 query = query.order('created_at', { ascending: false });
                 break;
@@ -626,6 +629,13 @@ async function handleGET(req: NextRequest) {
                     break;
                 case 'newest':
                     mergedProducts.sort((a, b) => getCreatedAtTimestamp(b) - getCreatedAtTimestamp(a));
+                    break;
+                case 'latest_updated':
+                    mergedProducts.sort((a, b) => {
+                        const aUpdated = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+                        const bUpdated = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+                        return bUpdated - aUpdated;
+                    });
                     break;
                 default:
                     mergedProducts.sort((a, b) => {

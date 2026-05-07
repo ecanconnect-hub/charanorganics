@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import { TopBar } from './TopBar';
 import { Header } from './Header';
@@ -26,7 +27,9 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex flex-col min-h-screen">
             <TopBar />
-            <Header />
+            <Suspense fallback={null}>
+                <Header />
+            </Suspense>
             <main className="flex-1 pt-16 md:pt-32">
                 {children}
             </main>

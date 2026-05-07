@@ -110,7 +110,7 @@ function ShopContent() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search products..."
-                                    className="w-full h-11 !py-0 !pl-12 pr-12 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all leading-[44px]"
+                                    className="w-full h-11 !py-0 !pl-12 pr-14 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm transition-all leading-[44px]"
                                 />
                                 <svg
                                     className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
@@ -125,7 +125,7 @@ function ShopContent() {
                                         type="button"
                                         onClick={handleClearSearch}
                                         aria-label="Clear search"
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                                        className="absolute right-2.5 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-all hover:border-green-200 hover:bg-green-50 hover:text-green-700 active:scale-95"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -149,6 +149,7 @@ function ShopContent() {
                                 }}
                             >
                                 <option value="default" className="text-gray-900">Sort: Default</option>
+                                <option value="latest_updated" className="text-gray-900">Latest Updated</option>
                                 <option value="price_asc" className="text-gray-900">Price: Low to High</option>
                                 <option value="price_desc" className="text-gray-900">Price: High to Low</option>
                                 <option value="newest" className="text-gray-900">Newest First</option>

@@ -38,8 +38,11 @@ export function Header() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const mobileSearchInputRef = useRef<HTMLInputElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
+    const shouldFocusMobileSearchRef = useRef(false);
     const activeShopQuery = searchParams.get('q') || '';
+    const languageToggleLabel = locale === 'en' ? 'TE' : 'EN';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -95,6 +98,32 @@ export function Header() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!isMobileMenuOpen || !shouldFocusMobileSearchRef.current) {
+            return;
+        }
+
+        const focusTimer = window.setTimeout(() => {
+            mobileSearchInputRef.current?.focus();
+            shouldFocusMobileSearchRef.current = false;
+        }, 120);
+
+        return () => window.clearTimeout(focusTimer);
+    }, [isMobileMenuOpen]);
+
+    const openMobileMenu = (focusSearch = false) => {
+        const nextIsOpen = !isMobileMenuOpen;
+
+        if (nextIsOpen) {
+            setSearchQuery(pathname === '/shop' ? activeShopQuery : '');
+            shouldFocusMobileSearchRef.current = focusSearch;
+        } else {
+            shouldFocusMobileSearchRef.current = false;
+        }
+
+        setIsMobileMenuOpen(nextIsOpen);
+    };
+
     const clearSearch = () => {
         setSearchQuery('');
 
@@ -139,13 +168,7 @@ export function Header() {
                     {/* LEFT: Hamburger Menu (Fixed) */}
                     <div className="w-10 flex items-center mr-1">
                         <button
-                            onClick={() => {
-                                const nextIsOpen = !isMobileMenuOpen;
-                                if (nextIsOpen) {
-                                    setSearchQuery(pathname === '/shop' ? activeShopQuery : '');
-                                }
-                                setIsMobileMenuOpen(nextIsOpen);
-                            }}
+                            onClick={() => openMobileMenu(false)}
                             className="p-1 text-gray-900 transition-colors"
                             aria-label="Open menu"
                         >
@@ -175,11 +198,14 @@ export function Header() {
                     {/* RIGHT: Actions (Fixed) */}
                     <div className="flex items-center justify-end shrink-0">
                         <button
-                            onClick={() => setLocale(locale === 'en' ? 'te' : 'en')}
-                            className="w-8 h-8 ml-3 bg-gray-100 rounded-full flex items-center justify-center text-xs font-bold text-gray-900 border border-gray-200 shrink-0"
-                            aria-label="Switch Language"
+                            type="button"
+                            onClick={() => openMobileMenu(true)}
+                            className="ml-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-900 shadow-sm transition-colors hover:border-green-200 hover:bg-green-50 hover:text-green-600"
+                            aria-label="Search products"
                         >
-                            {locale === 'en' ? 'Te' : 'E'}
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
                         </button>
 
                         <Link href="/cart" className="relative shrink-0 ml-2 mr-1" aria-label="Cart">
@@ -247,7 +273,7 @@ export function Header() {
                                 placeholder="Search..."
                                 className={`absolute right-0 top-1/2 -translate-y-1/2 bg-white text-gray-900 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 shadow-sm
                                     ${isSearchOpen
-                                        ? 'w-full h-11 !pl-20 !pr-14 opacity-100 pointer-events-auto'
+                                        ? 'w-full h-11 !pl-20 !pr-16 opacity-100 pointer-events-auto'
                                         : 'w-full h-10 opacity-0 pointer-events-none'
                                     }`}
                             />
@@ -293,7 +319,8 @@ export function Header() {
                                             setIsSearchOpen(false);
                                         }
                                     }}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 z-20"
+                                    aria-label={searchQuery ? 'Clear search' : 'Close search'}
+                                    className="absolute right-2.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-all hover:border-green-200 hover:bg-green-50 hover:text-green-700 active:scale-95"
                                 >
                                     {searchQuery ? (
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,7 +345,7 @@ export function Header() {
                             className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full text-xs font-bold text-gray-900 border border-gray-200 shadow-sm hover:shadow-md hover:border-green-600 hover:text-green-600 transition-all active:scale-95"
                             aria-label="Switch Language"
                         >
-                            {locale === 'en' ? 'తె' : 'E'}
+                            {languageToggleLabel}
                         </button>
 
                         {/* Cart (Optimized Display) */}
@@ -376,11 +403,12 @@ export function Header() {
                         <div className="mb-4">
                             <form onSubmit={handleSearchSubmit} className="relative">
                                 <input
+                                    ref={mobileSearchInputRef}
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search products..."
-                                    className="w-full h-12 !pl-16 !pr-14 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium py-3 text-base shadow-sm"
+                                    className="w-full h-12 !pl-16 !pr-16 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium py-3 text-base shadow-sm"
                                 // autoFocus might not work well with transition, so we rely on user tap or effect
                                 />
                                 <div className="absolute left-0 top-0 h-full w-11 flex items-center justify-center text-gray-600 pointer-events-none">
@@ -392,7 +420,8 @@ export function Header() {
                                     <button
                                         type="button"
                                         onClick={clearSearch}
-                                        className="absolute right-0 top-0 h-full w-11 flex items-center justify-center text-gray-400 hover:text-gray-600"
+                                        aria-label="Clear search"
+                                        className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-all hover:border-green-200 hover:bg-green-50 hover:text-green-700 active:scale-95"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -427,6 +456,16 @@ export function Header() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                             </svg>
                         </Link>
+                        <button
+                            type="button"
+                            onClick={() => setLocale(locale === 'en' ? 'te' : 'en')}
+                            className="group py-3 text-lg font-semibold tracking-[0.01em] flex items-center justify-between border-b border-gray-100/70 text-gray-700 hover:text-gray-900 transition-colors"
+                        >
+                            <span>Language</span>
+                            <span className="inline-flex min-w-[52px] items-center justify-center rounded-full border border-gray-200 bg-gray-100 px-3 py-1 text-sm font-bold text-gray-900 transition-colors group-hover:border-green-200 group-hover:bg-green-50 group-hover:text-green-700">
+                                {languageToggleLabel}
+                            </span>
+                        </button>
                         <div className="pt-5 mt-3 border-t border-gray-100/80 flex flex-col gap-3">
                             {user ? (
                                 <Link
