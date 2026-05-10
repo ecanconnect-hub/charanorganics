@@ -244,7 +244,7 @@ export default function MyOrdersPage() {
                                                                     <Button
                                                                         variant="outline"
                                                                         size="sm"
-                                                                        className="rounded-xl font-bold border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 shadow-sm"
+                                                                        className="rounded-xl font-bold border-green-600 bg-white text-green-700 hover:border-green-700 hover:bg-green-700 hover:text-white shadow-sm hover:shadow-green-100"
                                                                     >
                                                                         Review
                                                                     </Button>
