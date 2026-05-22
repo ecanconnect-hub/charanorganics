@@ -30,8 +30,13 @@ const categoryPalettes = [
   { bg: '#EFFBF9', soft: '#CFF4EC', accent: '#168070', deep: '#0C453D', border: '#8DD8CC' },
 ];
 
-const centeredWrapStyle = { maxWidth: '1180px' };
-const wideCenteredWrapStyle = { maxWidth: '1240px' };
+const centeredWrapStyle = { maxWidth: '1120px', marginLeft: 'auto', marginRight: 'auto' };
+const wideCenteredWrapStyle = { maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto' };
+const sectionInnerStyle = {
+  width: 'min(calc(100% - 2rem), 1180px)',
+  marginLeft: 'auto',
+  marginRight: 'auto',
+};
 
 const courseCategories: CourseCategory[] = [
   {
@@ -526,10 +531,10 @@ function BottleIcon({ className = 'h-6 w-6' }: { className?: string }) {
 
 function SectionHeader({ eyebrow, title, text, dark = false }: { eyebrow: string; title: string; text: string; dark?: boolean }) {
   return (
-    <div className="mx-auto mb-10 flex max-w-3xl flex-col items-center text-center md:mb-14">
-      <p className="mb-3 text-xs font-bold uppercase tracking-normal text-[#A37418]">{eyebrow}</p>
-      <h2 className={`tracking-normal text-3xl md:text-5xl ${dark ? '!text-white' : '!text-[#143E2B]'}`}>{title}</h2>
-      <p className={`mx-auto mt-5 max-w-2xl text-center text-base leading-7 tracking-normal md:text-lg ${dark ? 'text-white/80' : 'text-[#586A5F]'}`}>{text}</p>
+    <div className="mx-auto mb-12 flex w-full max-w-[820px] flex-col items-center justify-center px-4 text-center md:mb-16">
+      <p className="mb-3 w-full text-center text-xs font-bold uppercase tracking-normal text-[#A37418]">{eyebrow}</p>
+      <h2 className={`mx-auto w-full max-w-[780px] text-center tracking-normal text-3xl md:text-5xl ${dark ? '!text-white' : '!text-[#143E2B]'}`}>{title}</h2>
+      <p className={`mx-auto mt-5 w-full max-w-[680px] text-center text-base leading-7 tracking-normal md:text-lg ${dark ? 'text-white/85' : 'text-[#586A5F]'}`}>{text}</p>
     </div>
   );
 }
@@ -562,7 +567,7 @@ function CategoryCard({ category, index }: { category: CourseCategory; index: nu
           {index % 3 === 0 ? <LeafIcon /> : index % 3 === 1 ? <BottleIcon /> : <SparkIcon />}
         </div>
         <span
-          className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm"
+          className="rounded-full !px-3 !py-1 text-xs font-bold text-white shadow-sm"
           style={{ backgroundColor: palette.deep }}
         >
           {category.count} formulas
@@ -577,7 +582,7 @@ function CategoryCard({ category, index }: { category: CourseCategory; index: nu
         {category.items.map((item, itemIndex) => (
           <span
             key={`${category.title}-${item}-${itemIndex}`}
-            className="rounded-full border bg-white/85 px-3 py-1 text-xs font-semibold tracking-normal shadow-[0_2px_8px_rgba(20,62,43,0.04)]"
+            className="rounded-full border bg-white/85 !px-3 !py-1 text-xs font-semibold tracking-normal shadow-[0_2px_8px_rgba(20,62,43,0.04)]"
             style={{ borderColor: palette.border, color: palette.deep }}
           >
             {item}
@@ -592,24 +597,24 @@ export default function HerbalCosmeticDiplomaPage() {
   const totalCount = courseCategories.reduce((sum, category) => sum + category.count, 0);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#FFFDF7] tracking-normal text-[#183D2B]">
-      <section className="relative !px-4 !pb-14 !pt-28 md:!px-6 md:!pb-20 md:!pt-36">
+    <main className="course-page min-h-screen overflow-hidden bg-[#FFFDF7] pb-24 tracking-normal text-[#183D2B] md:pb-0">
+      <section className="relative !px-4 !pb-14 !pt-28 sm:!px-6 md:!pb-20 md:!pt-36 lg:!pt-40">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_10%_20%,rgba(216,199,158,0.45),transparent_28%),radial-gradient(circle_at_90%_10%,rgba(45,106,63,0.18),transparent_30%),linear-gradient(135deg,#fffdf7_0%,#f2ead7_48%,#e8f0df_100%)]" />
-        <div className="mx-auto grid w-full items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]" style={wideCenteredWrapStyle}>
-          <div className="animate-slide-up text-center">
+        <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(0,1fr)_420px]" style={wideCenteredWrapStyle}>
+          <div className="animate-slide-up text-center lg:text-left">
             <div className="mx-auto mb-6 inline-flex items-center gap-3 rounded-full border border-[#D8C79E] bg-white/80 px-4 py-2 shadow-sm">
               <LeafIcon className="h-5 w-5 text-[#2D6A3F]" />
               <span className="text-xs font-bold uppercase tracking-normal text-[#805F18]">Premium herbal cosmetic diploma</span>
             </div>
-            <h1 className="mx-auto max-w-4xl tracking-normal text-4xl !text-[#143E2B] md:text-6xl lg:text-7xl">
+            <h1 className="mx-auto max-w-4xl tracking-normal text-4xl !text-[#143E2B] md:text-6xl lg:mx-0 lg:text-6xl xl:text-7xl">
               Diploma in Herbal Cosmetic Product Making
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 tracking-normal text-[#53665A] md:text-xl">
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 tracking-normal text-[#53665A] md:text-xl lg:mx-0">
               Learn to create a complete herbal beauty catalog from the extracted syllabus: soaps, shampoos, creams, serums, toners, baby care, bath rituals, lip care, masks, and salon-style formulations.
             </p>
-            <div className="mx-auto mt-8 grid max-w-2xl gap-3 sm:grid-cols-2">
+            <div className="mx-auto mt-8 grid max-w-2xl gap-3 sm:grid-cols-2 lg:mx-0">
               {highlights.map((item) => (
-                <div key={item} className="flex items-center gap-3 rounded-[0.5rem] border border-white/80 bg-white/75 !p-3 shadow-sm backdrop-blur">
+                <div key={item} className="flex items-center gap-3 rounded-[0.5rem] border border-white/80 bg-white/75 !p-3 text-left shadow-sm backdrop-blur">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2D6A3F] !p-0 text-white">
                     <LeafIcon className="h-4 w-4" />
                   </span>
@@ -617,11 +622,11 @@ export default function HerbalCosmeticDiplomaPage() {
                 </div>
               ))}
             </div>
-            <div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-2">
-              <a href={whatsappUrl} className="inline-flex min-h-14 w-full items-center justify-center whitespace-nowrap rounded-full bg-[#143E2B] px-6 py-4 text-sm font-bold uppercase tracking-normal !text-white shadow-xl shadow-green-900/15 transition hover:-translate-y-0.5 hover:bg-[#0F2F21] hover:!text-white">
+            <div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-2 lg:mx-0">
+              <a href={whatsappUrl} className="inline-flex min-h-14 w-full items-center justify-center whitespace-nowrap rounded-full bg-[#143E2B] !px-6 !py-4 text-sm font-bold uppercase tracking-normal !text-white shadow-xl shadow-green-900/15 transition hover:-translate-y-0.5 hover:bg-[#0F2F21] hover:!text-white">
                 Enroll Now
               </a>
-              <a href={whatsappUrl} className="inline-flex min-h-14 w-full items-center justify-center whitespace-nowrap rounded-full border border-[#2D6A3F]/25 bg-[#E8F0DF] px-6 py-4 text-sm font-bold uppercase tracking-normal !text-[#143E2B] transition hover:-translate-y-0.5 hover:bg-[#DDEBD5] hover:!text-[#143E2B]">
+              <a href={whatsappUrl} className="inline-flex min-h-14 w-full items-center justify-center whitespace-nowrap rounded-full border border-[#2D6A3F]/25 bg-[#E8F0DF] !px-6 !py-4 text-sm font-bold uppercase tracking-normal !text-[#143E2B] transition hover:-translate-y-0.5 hover:bg-[#DDEBD5] hover:!text-[#143E2B]">
                 WhatsApp Inquiry
               </a>
             </div>
@@ -630,7 +635,7 @@ export default function HerbalCosmeticDiplomaPage() {
           <div className="relative animate-scale-in">
             <div className="relative overflow-hidden rounded-[0.5rem] border border-[#D8C79E] bg-[#143E2B] !p-0 shadow-[0_35px_90px_rgba(22,57,38,0.24)]">
               <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(20,62,43,0.98),rgba(45,106,63,0.78)),radial-gradient(circle_at_20%_20%,rgba(249,230,168,0.35),transparent_30%)]" />
-              <div className="relative min-h-[520px] !p-8 text-white md:!p-10">
+              <div className="relative !p-6 text-center text-white sm:!p-8 md:!p-10">
                 <div className="flex items-center justify-between gap-6">
                   <Image src="/charan-emblem-tight.png" alt="Charan Organics" width={76} height={76} className="rounded-full border border-white/20 bg-white !p-1" priority />
                   <div className="text-right">
@@ -638,12 +643,12 @@ export default function HerbalCosmeticDiplomaPage() {
                     <p className="mt-1 text-4xl font-black tracking-normal">₹10,000</p>
                   </div>
                 </div>
-                <div className="mt-14">
+                <div className="mt-10">
                   <p className="text-sm font-bold uppercase tracking-normal text-[#F9E6A8]">Extracted from syllabus PDF</p>
                   <p className="mt-4 text-6xl font-black leading-none tracking-normal md:text-7xl">{totalCount}+</p>
                   <p className="mt-3 text-2xl tracking-normal text-white">Herbal Cosmetic Formulations Included</p>
                 </div>
-                <div className="mt-12 grid gap-4 sm:grid-cols-3">
+                <div className="mt-8 grid gap-4 sm:grid-cols-3">
                   {[
                     ['Mode', 'Online & Offline'],
                     ['Level', 'Beginners'],
@@ -655,7 +660,7 @@ export default function HerbalCosmeticDiplomaPage() {
                     </div>
                   ))}
                 </div>
-                <div className="absolute bottom-7 left-8 right-8 rounded-[0.5rem] border border-[#F9E6A8]/30 bg-[#FFFDF7] !p-5 text-[#143E2B]">
+                <div className="mt-8 rounded-[0.5rem] border border-[#F9E6A8]/30 bg-[#FFFDF7] !p-5 text-[#143E2B]">
                   <p className="text-sm font-bold uppercase tracking-normal text-[#A37418]">Diploma course syllabus</p>
                   <p className="mt-2 text-sm leading-6 tracking-normal">
                     Learn 269+ herbal cosmetic formulations for skincare, haircare, soaps, baby care, bath products, toners, serums, and more.
@@ -667,20 +672,20 @@ export default function HerbalCosmeticDiplomaPage() {
         </div>
       </section>
 
-      <section className="!px-4 !py-16 md:!px-6 md:!py-24">
-        <div className="mx-auto w-full text-center" style={centeredWrapStyle}>
-          <div className="mx-auto mb-10 max-w-3xl md:mb-14">
+      <section className="!py-20 md:!py-28">
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <div className="mx-auto mb-12 max-w-4xl md:mb-16">
             <p className="mb-3 text-xs font-bold uppercase tracking-normal text-[#A37418]">About course</p>
-            <h2 className="mx-auto max-w-3xl tracking-normal text-3xl !text-[#143E2B] md:text-5xl">From herbal ingredients to a sellable beauty catalog.</h2>
+            <h2 className="mx-auto max-w-4xl tracking-normal text-3xl !text-[#143E2B] md:text-5xl">From herbal ingredients to a sellable beauty catalog.</h2>
           </div>
-          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
+          <div className="mx-auto grid grid-cols-1 gap-8 md:grid-cols-2">
             {[
               'The diploma uses the uploaded syllabus as its foundation and organizes the formulations into practical product-making modules.',
               'Learners explore skincare, haircare, bath care, soaps, baby care, lip care, toners, masks, serums, and specialty cosmetic products.',
               'The course is beginner-friendly, with online and offline learning options for flexible study.',
               'The syllabus is especially useful for people who want to create handmade products, boutique offerings, salon add-ons, or home business collections.',
             ].map((text) => (
-              <div key={text} className="flex flex-col items-center rounded-[0.5rem] border border-[#E2D4B4] bg-white !p-6 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+              <div key={text} className="flex h-full min-h-44 flex-col items-center justify-center rounded-[0.5rem] border border-[#E2D4B4] bg-white !p-8 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                 <SparkIcon className="mb-5 h-7 w-7 text-[#B89238]" />
                 <p className="text-base leading-7 tracking-normal text-[#53665A]">{text}</p>
               </div>
@@ -689,33 +694,37 @@ export default function HerbalCosmeticDiplomaPage() {
         </div>
       </section>
 
-      <section className="bg-[#143E2B] !px-4 !py-16 text-white md:!px-6 md:!py-24">
-        <SectionHeader
-          eyebrow="What you will learn"
-          title="Practical formulation skills across the full beauty shelf"
-          text="Each learning area is based on product names and categories extracted from the syllabus PDF, then grouped for an easy course experience."
-          dark
-        />
-        <div className="mx-auto grid w-full gap-4 md:grid-cols-2 lg:grid-cols-3" style={wideCenteredWrapStyle}>
-          {learningOutcomes.map((item, index) => (
-            <div key={item} className="flex flex-col items-center rounded-[0.5rem] border border-white/15 bg-white/10 !p-6 text-center backdrop-blur transition hover:-translate-y-1 hover:bg-white/[0.14]">
-              <span className="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-[#F9E6A8] !p-0 text-sm font-black text-[#143E2B]">{index + 1}</span>
-              <p className="text-base font-semibold leading-7 tracking-normal text-white">{item}</p>
-            </div>
-          ))}
+      <section className="bg-[#143E2B] !py-20 text-white md:!py-28">
+        <div style={sectionInnerStyle}>
+          <SectionHeader
+            eyebrow="What you will learn"
+            title="Practical formulation skills across the full beauty shelf"
+            text="Each learning area is based on product names and categories extracted from the syllabus PDF, then grouped for an easy course experience."
+            dark
+          />
+          <div className="grid w-full gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {learningOutcomes.map((item, index) => (
+              <div key={item} className="flex flex-col items-center rounded-[0.5rem] border border-white/15 bg-white/10 !p-6 text-center backdrop-blur transition hover:-translate-y-1 hover:bg-white/[0.14]">
+                <span className="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-[#F9E6A8] !p-0 text-sm font-black text-[#143E2B]">{index + 1}</span>
+                <p className="text-base font-semibold leading-7 tracking-normal text-white">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,#FFFDF7_0%,#F3FAEE_38%,#FFF4DD_100%)] !px-4 !py-16 md:!px-6 md:!py-24">
-        <SectionHeader
-          eyebrow="Product categories"
-          title="Extracted syllabus catalog"
-          text="All 269 formulations from the uploaded PDF are organized below into premium, easy-to-scan product modules."
-        />
-        <div className="mx-auto grid w-full gap-5 md:grid-cols-2 xl:grid-cols-3" style={wideCenteredWrapStyle}>
-          {courseCategories.map((category, index) => (
-            <CategoryCard key={category.title} category={category} index={index} />
-          ))}
+      <section className="bg-[linear-gradient(180deg,#FFFDF7_0%,#F3FAEE_38%,#FFF4DD_100%)] !py-20 md:!py-28">
+        <div style={sectionInnerStyle}>
+          <SectionHeader
+            eyebrow="Product categories"
+            title="Extracted syllabus catalog"
+            text="All 269 formulations from the uploaded PDF are organized below into premium, easy-to-scan product modules."
+          />
+          <div className="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {courseCategories.map((category, index) => (
+              <CategoryCard key={category.title} category={category} index={index} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -762,42 +771,46 @@ export default function HerbalCosmeticDiplomaPage() {
         </div>
       </section>
 
-      <section className="bg-white !px-4 !py-16 md:!px-6 md:!py-24">
-        <SectionHeader
-          eyebrow="Testimonials"
-          title="Built for makers who want confidence"
-          text="A premium course page needs social proof that speaks to beginners, business-minded learners, and handmade beauty creators."
-        />
-        <div className="mx-auto grid w-full gap-5 md:grid-cols-3" style={centeredWrapStyle}>
-          {testimonials.map((testimonial) => (
-            <figure key={testimonial.name} className="rounded-[0.5rem] border border-[#E2D4B4] bg-[#FFFDF7] !p-6 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-              <div className="mb-5 flex justify-center text-[#B89238]">
-                <SparkIcon className="h-5 w-5" />
-                <SparkIcon className="h-5 w-5" />
-                <SparkIcon className="h-5 w-5" />
-              </div>
-              <blockquote className="leading-7 tracking-normal text-[#53665A]">&ldquo;{testimonial.text}&rdquo;</blockquote>
-              <figcaption className="mt-6 font-bold tracking-normal text-[#143E2B]">{testimonial.name}</figcaption>
-            </figure>
-          ))}
+      <section className="bg-white !py-20 md:!py-28">
+        <div style={sectionInnerStyle}>
+          <SectionHeader
+            eyebrow="Testimonials"
+            title="Built for makers who want confidence"
+            text="A premium course page needs social proof that speaks to beginners, business-minded learners, and handmade beauty creators."
+          />
+          <div className="grid w-full gap-5 md:grid-cols-3">
+            {testimonials.map((testimonial) => (
+              <figure key={testimonial.name} className="rounded-[0.5rem] border border-[#E2D4B4] bg-[#FFFDF7] !p-6 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                <div className="mb-5 flex justify-center text-[#B89238]">
+                  <SparkIcon className="h-5 w-5" />
+                  <SparkIcon className="h-5 w-5" />
+                  <SparkIcon className="h-5 w-5" />
+                </div>
+                <blockquote className="leading-7 tracking-normal text-[#53665A]">&ldquo;{testimonial.text}&rdquo;</blockquote>
+                <figcaption className="mt-6 font-bold tracking-normal text-[#143E2B]">{testimonial.name}</figcaption>
+              </figure>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="!px-4 !py-16 md:!px-6 md:!py-24">
-        <SectionHeader
-          eyebrow="FAQ"
-          title="Course questions"
-          text="Quick answers for learners planning to join the diploma online or offline."
-        />
-        <div className="mx-auto max-w-4xl space-y-4">
-          {faqs.map((faq) => (
-            <details key={faq.question} className="group rounded-[0.5rem] border border-[#E2D4B4] bg-white !p-6 text-center shadow-sm open:shadow-xl">
-              <summary className="cursor-pointer list-none text-center text-lg font-bold tracking-normal text-[#143E2B]">
-                {faq.question}
-              </summary>
-              <p className="mt-4 leading-7 tracking-normal text-[#53665A]">{faq.answer}</p>
-            </details>
-          ))}
+      <section className="bg-[#FFFDF7] !py-20 md:!py-28">
+        <div style={sectionInnerStyle}>
+          <SectionHeader
+            eyebrow="FAQ"
+            title="Course questions"
+            text="Quick answers for learners planning to join the diploma online or offline."
+          />
+          <div className="mx-auto w-full max-w-4xl space-y-4">
+            {faqs.map((faq) => (
+              <details key={faq.question} className="group rounded-[0.5rem] border border-[#E2D4B4] bg-white !p-6 text-center shadow-sm open:shadow-xl">
+                <summary className="cursor-pointer list-none text-center text-lg font-bold tracking-normal text-[#143E2B]">
+                  {faq.question}
+                </summary>
+                <p className="mt-4 leading-7 tracking-normal text-[#53665A]">{faq.answer}</p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -812,10 +825,10 @@ export default function HerbalCosmeticDiplomaPage() {
           </div>
           <div className="rounded-[0.5rem] border border-white/15 bg-white/10 !p-6 shadow-2xl backdrop-blur">
             <div className="space-y-4">
-              <a href={whatsappUrl} className="flex min-h-14 w-full items-center justify-center whitespace-nowrap rounded-full bg-[#F9E6A8] px-6 py-4 text-sm font-black uppercase tracking-normal !text-[#143E2B] transition hover:-translate-y-0.5 hover:bg-white hover:!text-[#143E2B]">
+              <a href={whatsappUrl} className="flex min-h-14 w-full items-center justify-center whitespace-nowrap rounded-full bg-[#F9E6A8] !px-6 !py-4 text-sm font-black uppercase tracking-normal !text-[#143E2B] transition hover:-translate-y-0.5 hover:bg-white hover:!text-[#143E2B]">
                 Enroll Now
               </a>
-              <a href={whatsappUrl} className="flex min-h-14 w-full items-center justify-center whitespace-nowrap rounded-full border border-[#F9E6A8]/60 bg-[#F9E6A8]/10 px-6 py-4 text-sm font-bold uppercase tracking-normal !text-[#F9E6A8] transition hover:-translate-y-0.5 hover:bg-[#F9E6A8]/20 hover:!text-[#F9E6A8]">
+              <a href={whatsappUrl} className="flex min-h-14 w-full items-center justify-center whitespace-nowrap rounded-full border border-[#F9E6A8]/60 bg-[#F9E6A8]/10 !px-6 !py-4 text-sm font-bold uppercase tracking-normal !text-[#F9E6A8] transition hover:-translate-y-0.5 hover:bg-[#F9E6A8]/20 hover:!text-[#F9E6A8]">
                 WhatsApp Inquiry
               </a>
             </div>
@@ -830,7 +843,7 @@ export default function HerbalCosmeticDiplomaPage() {
             <p className="truncate text-sm font-black tracking-normal text-[#143E2B]">Diploma Course</p>
             <p className="text-xs font-semibold tracking-normal text-[#A37418]">₹10,000 | 269+ formulas</p>
           </div>
-          <a href={whatsappUrl} className="shrink-0 rounded-full bg-[#143E2B] px-5 py-3 text-xs font-black uppercase tracking-normal !text-white hover:!text-white">
+          <a href={whatsappUrl} className="shrink-0 rounded-full bg-[#143E2B] !px-5 !py-3 text-xs font-black uppercase tracking-normal !text-white hover:!text-white">
             Enroll Now
           </a>
         </div>

@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -15,6 +15,10 @@ import { useCart } from '@/lib/cart-context';
 import { useAuth } from '@/lib/auth/context';
 import { Button } from '@/components/ui/Button';
 import logoImage from '@/public/charan-logo.png';
+
+const subscribeToClientSnapshot = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export function Header() {
     const t = useTranslations('nav');
@@ -28,6 +32,7 @@ export function Header() {
 
     const [isScrolled, setIsScrolled] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
+    const hasMounted = useSyncExternalStore(subscribeToClientSnapshot, getClientSnapshot, getServerSnapshot);
     const lastScrollYRef = useRef(0);
     const isScrolledRef = useRef(false);
     const isVisibleRef = useRef(true);
@@ -43,6 +48,7 @@ export function Header() {
     const shouldFocusMobileSearchRef = useRef(false);
     const activeShopQuery = searchParams.get('q') || '';
     const languageToggleLabel = locale === 'en' ? 'TE' : 'EN';
+    const isAuthenticated = hasMounted && Boolean(user);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -379,12 +385,43 @@ export function Header() {
                             </Link>
                         </div>
 
+                        {/* Cart (Optimized Display) */}
+                        <Link href="/cart" className="hidden group relative items-center bg-white text-gray-900 px-4 md:px-10 py-2.5 md:py-4 rounded-2xl md:rounded-[2rem] shadow-xl md:shadow-2xl hover:shadow-green-900/10 hover:border-green-600 transition-all duration-500 border-2 border-gray-100 gap-3 md:gap-8">
+                            <div className="relative">
+                                <svg className="w-5 h-5 md:w-7 md:h-7 text-green-600 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                            </div>
+                            <div className="flex items-center gap-3 md:gap-10 border-l border-gray-100 pl-3 md:pl-10">
+                                <div className="flex flex-col items-center leading-none">
+                                    <span className="text-sm md:text-lg font-bold text-gray-900 mb-0.5 md:mb-1">{items.length}</span>
+                                    <span className="text-[7px] md:text-[9px] font-semibold uppercase tracking-widest text-gray-400">{t('items') || 'Items'}</span>
+                                </div>
+                                <span className="text-sm md:text-base font-bold text-green-600 tracking-tighter">
+                                    ₹{subtotal.toFixed(0)}
+                                </span>
+                            </div>
+                        </Link>
+
+                        {/* Wishlist Link */}
+                        <div className="hidden">
+                            <Link
+                                href="/account/wishlist"
+                                className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-pink-50 hover:text-pink-500 transition-all group"
+                                title="My Wishlist"
+                            >
+                                <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </Link>
+                        </div>
+
                         {/* Profile/Auth (Icon Style) */}
                         <div className="hidden md:block">
                             <Link
-                                href={user ? "/account" : "/login"}
+                                href={isAuthenticated ? "/account" : "/login"}
                                 className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-green-50 hover:text-green-600 transition-all group"
-                                title={user ? t('myAccount') : `${t('login')} / ${t('signup')}`}
+                                title={isAuthenticated ? t('myAccount') : `${t('login')} / ${t('signup')}`}
                             >
                                 <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -467,7 +504,7 @@ export function Header() {
                             </span>
                         </button>
                         <div className="pt-5 mt-3 border-t border-gray-100/80 flex flex-col gap-3">
-                            {user ? (
+                            {isAuthenticated ? (
                                 <Link
                                     href="/account"
                                     onClick={() => setIsMobileMenuOpen(false)}

@@ -616,3 +616,21 @@ nav button {
 .admin-shell .rounded-2xl {
   border-radius: 0.5rem;
 }
+
+/* Diploma course page: isolate premium landing-page layout from broad global spacing helpers. */
+.course-page [class*="flex"]>*+* {
+  margin-left: 0;
+}
+
+.course-page [class*="grid"] {
+  gap: revert-layer;
+}
+
+.course-page [class*="rounded"] {
+  padding: revert-layer;
+}
+
+.course-page button,
+.course-page a {
+  letter-spacing: 0;
+}
