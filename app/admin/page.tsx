@@ -307,21 +307,21 @@ export default function AdminDashboard() {
     return (
         <AdminLayout title="Dashboard" subtitle="Manage your store and orders">
             {/* Quick Action Buttons */}
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="mb-6 flex flex-wrap gap-3">
                 <button
                     onClick={() => setCurrentView('dashboard')}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all ${currentView === 'dashboard'
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-indigo-300'
+                    className={`rounded-md !px-4 !py-2 text-sm font-semibold transition-all ${currentView === 'dashboard'
+                        ? 'bg-emerald-700 text-white shadow-sm'
+                        : 'border border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-900'
                         }`}
                 >
                     📊 Dashboard
                 </button>
                 <button
                     onClick={() => setCurrentView('orders')}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all ${currentView === 'orders'
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-indigo-300'
+                    className={`rounded-md !px-4 !py-2 text-sm font-semibold transition-all ${currentView === 'orders'
+                        ? 'bg-emerald-700 text-white shadow-sm'
+                        : 'border border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-900'
                         }`}
                 >
                     📦 Orders ({orders.length})

@@ -566,3 +566,53 @@ nav button {
 .animate-slideUp {
   animation: slideUp 0.4s ease-out;
 }
+
+/* Admin shell: keep the back-office UI compact and predictable. */
+.admin-shell,
+.admin-shell * {
+  letter-spacing: 0;
+}
+
+.admin-shell h1,
+.admin-shell h2,
+.admin-shell h3,
+.admin-shell h4,
+.admin-shell h5,
+.admin-shell h6 {
+  font-family: var(--font-outfit), sans-serif;
+  letter-spacing: 0;
+}
+
+.admin-shell h1 {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.admin-shell [class*="flex"]>*+* {
+  margin-left: 0;
+}
+
+.admin-shell [class*="grid"] {
+  gap: revert-layer;
+}
+
+.admin-shell [class*="rounded"] {
+  padding: revert-layer;
+}
+
+.admin-shell button,
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select {
+  min-height: 0;
+}
+
+.admin-shell table th,
+.admin-shell table td {
+  padding: 0.875rem 1rem !important;
+}
+
+.admin-shell .rounded-xl,
+.admin-shell .rounded-2xl {
+  border-radius: 0.5rem;
+}

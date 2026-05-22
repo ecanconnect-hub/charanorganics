@@ -139,9 +139,9 @@ export default function HomePage() {
                       {t('home.shopNow')}
                     </Button>
                   </Link>
-                  <Link href="/about" className="w-full sm:w-auto">
+                  <Link href="/herbal-cosmetic-diploma" className="w-full sm:w-auto">
                     <Button variant="outline" size="lg" className="w-full h-16 px-12 text-sm font-bold uppercase tracking-widest group bg-transparent border-2 border-green-700 text-green-800 hover:bg-green-800 hover:text-white transition-all rounded-2xl transform hover:-translate-y-1 active:scale-95">
-                      {t('home.discoverStory')}
+                      Diploma Course
                     </Button>
                   </Link>
                 </div>
@@ -353,8 +353,8 @@ export default function HomePage() {
                 <p className="text-gray-600 text-sm mb-6 font-medium leading-relaxed">
                   Join our small-batch workshops and discover the art of organic crafting.
                 </p>
-                <Link href="/contact" className="inline-flex items-center gap-3 text-green-600 text-xs font-black uppercase tracking-widest hover:gap-5 transition-all group">
-                  Connect with me
+                <Link href="/herbal-cosmetic-diploma" className="inline-flex items-center gap-3 text-green-600 text-xs font-black uppercase tracking-widest hover:gap-5 transition-all group">
+                  What you will learn
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
