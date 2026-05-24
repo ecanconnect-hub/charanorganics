@@ -4,7 +4,7 @@
  * Display full product information with add to cart
  */
 
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { cache } from 'react';
 import { createClient } from '@supabase/supabase-js';
@@ -32,6 +32,12 @@ const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
         persistSession: false,
     },
 });
+
+const legacyProductRedirects: Record<string, string> = {
+    BC021: 'BC307',
+    BC099: 'BC307',
+    BC333: 'BC307',
+};
 
 const getProductBySlug = cache(async (id: string): Promise<ProductRow | null> => {
     const { data } = await supabase
@@ -110,6 +116,11 @@ export default async function ProductDetailPage({
     const product = await getProductBySlug(id);
 
     if (!product) {
+        const redirectId = legacyProductRedirects[id.toUpperCase()];
+        if (redirectId) {
+            redirect(`/product/${redirectId}`);
+        }
+
         notFound();
     }
 

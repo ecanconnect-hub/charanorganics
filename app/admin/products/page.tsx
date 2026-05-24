@@ -22,8 +22,20 @@ type ProductViewRow = ProductRow & {
 };
 type ProfileRoleRow = Pick<Database['public']['Tables']['profiles']['Row'], 'role'>;
 type ViewMode = 'grid' | 'list';
+type ProductSortOption = 'latest_updated' | 'newest' | 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc';
+type ProductStatusFilter = 'all' | 'active' | 'inactive';
 
 const formatCurrency = (value: number) => `Rs. ${Number(value || 0).toFixed(2)}`;
+const formatDate = (value: string | null | undefined) => {
+    if (!value) return '-';
+    return new Intl.DateTimeFormat('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(new Date(value));
+};
 
 export default function AdminProductsPage() {
     const router = useRouter();
@@ -33,6 +45,8 @@ export default function AdminProductsPage() {
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [mobileGridCols, setMobileGridCols] = useState<1 | 2>(2);
     const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState<ProductSortOption>('latest_updated');
+    const [statusFilter, setStatusFilter] = useState<ProductStatusFilter>('all');
 
     useEffect(() => {
         void checkAdmin();
@@ -66,7 +80,7 @@ export default function AdminProductsPage() {
         const { data } = await supabase
             .from('products')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('updated_at', { ascending: false });
 
         setProducts((data || []) as ProductViewRow[]);
         setLoading(false);
@@ -127,23 +141,21 @@ export default function AdminProductsPage() {
     const normalizedSearchQuery = searchQuery.trim().toLowerCase();
 
     const visibleProducts = useMemo(() => {
-        const sortedProducts = [...products].sort((a, b) => {
-            const aKey = (a.title_en || a.title_te || a.product_id || '').toLowerCase();
-            const bKey = (b.title_en || b.title_te || b.product_id || '').toLowerCase();
-            return aKey.localeCompare(bKey, undefined, { sensitivity: 'base' });
-        });
+        const filteredProducts = products.filter((product) => {
+            if (statusFilter === 'active' && !product.is_active) return false;
+            if (statusFilter === 'inactive' && product.is_active) return false;
 
-        if (!normalizedSearchQuery) {
-            return sortedProducts;
-        }
+            if (!normalizedSearchQuery) return true;
 
-        return sortedProducts.filter((product) => {
             const searchableText = [
                 product.product_id,
                 product.title_en,
                 product.title_te,
                 product.description_en,
                 product.description_te,
+                product.specifications_en,
+                product.usage_en,
+                product.additional_info_en,
             ]
                 .filter(Boolean)
                 .join(' ')
@@ -151,7 +163,32 @@ export default function AdminProductsPage() {
 
             return searchableText.includes(normalizedSearchQuery);
         });
-    }, [products, normalizedSearchQuery]);
+
+        return filteredProducts.sort((a, b) => {
+            const aName = (a.title_en || a.title_te || a.product_id || '').toLowerCase();
+            const bName = (b.title_en || b.title_te || b.product_id || '').toLowerCase();
+            const aUpdated = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+            const bUpdated = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+            const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0;
+
+            switch (sortBy) {
+                case 'newest':
+                    return bCreated - aCreated;
+                case 'name_asc':
+                    return aName.localeCompare(bName, undefined, { sensitivity: 'base' });
+                case 'name_desc':
+                    return bName.localeCompare(aName, undefined, { sensitivity: 'base' });
+                case 'price_asc':
+                    return Number(a.current_price || 0) - Number(b.current_price || 0);
+                case 'price_desc':
+                    return Number(b.current_price || 0) - Number(a.current_price || 0);
+                case 'latest_updated':
+                default:
+                    return bUpdated - aUpdated;
+            }
+        });
+    }, [products, normalizedSearchQuery, sortBy, statusFilter]);
 
     const activeVisible = useMemo(() => visibleProducts.filter((p) => p.is_active).length, [visibleProducts]);
 
@@ -213,14 +250,53 @@ export default function AdminProductsPage() {
                         </Link>
                     </div>
                 </div>
-                <div className="mt-4">
-                    <input
-                        type="search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search products by ID, English, Telugu, or description"
-                        className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                    />
+                <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_180px]">
+                    <div>
+                        <label htmlFor="product-search" className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-600">
+                            Search
+                        </label>
+                        <input
+                            id="product-search"
+                            type="search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search by name, ID, Telugu, description, usage, or keywords"
+                            className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="product-sort" className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-600">
+                            Sort
+                        </label>
+                        <select
+                            id="product-sort"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as ProductSortOption)}
+                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        >
+                            <option value="latest_updated">Latest Updated</option>
+                            <option value="newest">Newest Added</option>
+                            <option value="name_asc">Name A-Z</option>
+                            <option value="name_desc">Name Z-A</option>
+                            <option value="price_asc">Price Low-High</option>
+                            <option value="price_desc">Price High-Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="product-status" className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-600">
+                            Status
+                        </label>
+                        <select
+                            id="product-status"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as ProductStatusFilter)}
+                            className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        >
+                            <option value="all">All Products</option>
+                            <option value="active">Active Only</option>
+                            <option value="inactive">Inactive Only</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -267,6 +343,7 @@ export default function AdminProductsPage() {
                                     <h3 className="line-clamp-2 text-sm font-bold text-gray-900 sm:text-base">{product.title_en}</h3>
                                     <p className="line-clamp-1 text-xs text-gray-600 sm:text-sm">{product.title_te}</p>
                                 </div>
+                                <p className="text-[11px] font-semibold text-gray-500">Updated: {formatDate(product.updated_at)}</p>
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-bold text-indigo-600 sm:text-lg">{formatCurrency(product.current_price)}</p>
@@ -306,6 +383,7 @@ export default function AdminProductsPage() {
                                     <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-600">Price</th>
                                     <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-600">Stock</th>
                                     <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-600">Flags</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-600">Updated</th>
                                     <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-600">Status</th>
                                     <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-600">Actions</th>
                                 </tr>
@@ -333,6 +411,7 @@ export default function AdminProductsPage() {
                                             {product.is_new ? 'New' : ''}
                                             {!product.is_best_seller && !product.is_new ? '-' : ''}
                                         </td>
+                                        <td className="px-4 py-3 text-xs font-semibold text-gray-700">{formatDate(product.updated_at)}</td>
                                         <td className="px-4 py-3">
                                             <button
                                                 onClick={() => void toggleActive(product.id, product.is_active)}
