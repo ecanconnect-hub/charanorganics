@@ -26,22 +26,22 @@ type CartLikeItem = {
 };
 
 export const SHIPPING_POLICY_LINES = [
-    '0 to 1 kg: Rs.80',
-    '1.1 to 2 kg: Rs.160',
-    '2.1 to 3 kg: Rs.240',
-    '3.1 to 4 kg: Rs.280',
+    '0 to 1 kg: Rs.60',
+    '1.1 to 2 kg: Rs.120',
+    '2.1 to 3 kg: Rs.180',
+    '3.1 to 4 kg: Rs.240',
     'More than 4 kg: Rs.300',
 ];
 
 const FIXED_SHIPPING_PRODUCT_IDS = new Set(['BC191']);
-const DEFAULT_PRODUCT_SHIPPING_CHARGE = 70;
+const DEFAULT_PRODUCT_SHIPPING_CHARGE = 60;
 
 function getShippingChargeForBillableWeight(billableWeightKg: number): number {
     if (!Number.isFinite(billableWeightKg) || billableWeightKg <= 0) return 0;
-    if (billableWeightKg <= 1) return 80;
-    if (billableWeightKg <= 2) return 160;
-    if (billableWeightKg <= 3) return 240;
-    if (billableWeightKg <= 4) return 280;
+    if (billableWeightKg <= 1) return 60;
+    if (billableWeightKg <= 2) return 120;
+    if (billableWeightKg <= 3) return 180;
+    if (billableWeightKg <= 4) return 240;
     return 300;
 }
 
